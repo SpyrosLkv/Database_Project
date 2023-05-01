@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Book` (
   `no_of_pages` INT NOT NULL,
   `summary` TEXT NULL,
   `image` BLOB(262144) NULL,
-  `language` VARCHAR(45) NOT NULL,
+  `language` VARCHAR(45) NOT NULL DEFAULT 'Greek',
   PRIMARY KEY (`ISBN`))
 ENGINE = InnoDB;
 
@@ -71,8 +71,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `semester_project`.`Card` (
   `user_id` INT NOT NULL,
-  `card_no` TINYINT NOT NULL,
-  `status` ENUM("Pending", "Active", "Inactive", "Missing") NOT NULL,
+  `card_no` TINYINT NOT NULL DEFAULT card_number(`user_id`),
+  `status` ENUM("Pending", "Active", "Inactive", "Missing") NOT NULL DEFAULT "Pending",
   PRIMARY KEY (`user_id`, `card_no`),
   INDEX `fk_Card_Users1_idx` (`user_id` ASC) VISIBLE,
   CONSTRAINT `fk_Card_Users_Id`
@@ -122,7 +122,8 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Lib_Owns_Book` (
   `book_ISBN` BIGINT(13) NOT NULL,
   `library_id` INT NOT NULL,
   `total_copies` SMALLINT NOT NULL,
-  `available_copies` SMALLINT NOT NULL,
+  `available_copies` SMALLINT NOT NULL DEFAULT `available_copies`,
+  CHECK (`available_copies` >= 0 and `available_copies` <= `total_copies`),
   PRIMARY KEY (`book_ISBN`, `library_id`),
   INDEX `fk_Book_has_School - Library_School - Library1_idx` (`library_id` ASC) VISIBLE,
   INDEX `fk_Book_has_School - Library_Book1_idx` (`book_ISBN` ASC) VISIBLE,
@@ -390,6 +391,16 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Wrote` (
     ON DELETE RESTRICT
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
+
+
+--------------------------------------------
+-- This is a function that finds the number of cards
+-- a user has had so far and returns that plus one
+--------------------------------------------
+CREATE FUNCTION card_number (user_id INT) RETURNS INT
+BEGIN 
+  RETURN SELECT count(card_no)+1 FROM `Card` WHERE `user_id` = user_id;
+END
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
