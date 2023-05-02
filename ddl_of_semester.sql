@@ -71,7 +71,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `semester_project`.`Card` (
   `user_id` INT NOT NULL,
-  `card_no` TINYINT NOT NULL DEFAULT card_number(`user_id`),
+  `card_no` TINYINT NOT NULL,
   `status` ENUM("Pending", "Active", "Inactive", "Missing") NOT NULL DEFAULT "Pending",
   PRIMARY KEY (`user_id`, `card_no`),
   INDEX `fk_Card_Users1_idx` (`user_id` ASC) VISIBLE,
@@ -122,11 +122,12 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Lib_Owns_Book` (
   `book_ISBN` BIGINT(13) NOT NULL,
   `library_id` INT NOT NULL,
   `total_copies` SMALLINT NOT NULL,
-  `available_copies` SMALLINT NOT NULL DEFAULT `available_copies`,
-  CHECK (`available_copies` >= 0 and `available_copies` <= `total_copies`),
+  `available_copies` SMALLINT NOT NULL,
   PRIMARY KEY (`book_ISBN`, `library_id`),
   INDEX `fk_Book_has_School - Library_School - Library1_idx` (`library_id` ASC) VISIBLE,
   INDEX `fk_Book_has_School - Library_Book1_idx` (`book_ISBN` ASC) VISIBLE,
+  CONSTRAINT `available_copies_number`
+    CHECK (`available_copies` >= 0 and `available_copies` <= `total_copies`),
   CONSTRAINT `fk_Owns_Book_ISBN`
     FOREIGN KEY (`book_ISBN`)
     REFERENCES `semester_project`.`Book` (`ISBN`)
@@ -393,14 +394,55 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Wrote` (
 ENGINE = InnoDB;
 
 
---------------------------------------------
+-- ----------------------------------------
+-- Trigger for default value of available copies
+-- ----------------------------------------
+
+DELIMITER $
+CREATE TRIGGER set_available_copies
+BEFORE INSERT ON `semester_project`.`Lib_Owns_Book` 
+FOR EACH ROW
+BEGIN 
+  IF NEW.available_copies IS NULL THEN
+    SET NEW.available_copies = NEW.total_copies;
+  END IF;
+END $
+DELIMITER ;
+
+
+-- -----------------------------------------
+-- Trigger for the default value of Card_no
+-- -----------------------------------------
+
+DELIMITER $
+CREATE TRIGGER set_card_no
+BEFORE INSERT ON `semester_project`.`Card`
+FOR EACH ROW
+BEGIN
+  IF NEW.card_no IS NULL THEN
+    SET NEW.card_no = card_number(NEW.user_id);
+  END IF;
+END $
+DELIMITER ;
+
+
+
+-- -----------------------------------------
 -- This is a function that finds the number of cards
 -- a user has had so far and returns that plus one
---------------------------------------------
-CREATE FUNCTION card_number (user_id INT) RETURNS INT
+-- -----------------------------------------
+
+DELIMITER $
+CREATE FUNCTION card_number (user_idd INT) RETURNS INT 
+READS SQL DATA
 BEGIN 
-  RETURN SELECT count(card_no)+1 FROM `Card` WHERE `user_id` = user_id;
-END
+  DECLARE result INT;
+  SELECT count(card_no)+1 INTO result FROM `Card` WHERE `user_id` = user_idd;
+  RETURN result;
+END $
+DELIMITER ;
+
+
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
