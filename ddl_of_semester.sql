@@ -57,7 +57,7 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `semester_project`.`Book` (
   `ISBN` BIGINT(13) NOT NULL,
   `title` VARCHAR(45) NOT NULL,
-  `tublisher` VARCHAR(45) NOT NULL,
+  `publisher` VARCHAR(45) NOT NULL,
   `no_of_pages` INT NOT NULL,
   `summary` TEXT NULL,
   `image` BLOB(262144) NULL,
@@ -147,9 +147,9 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `semester_project`.`Loan` (
   `book_ISBN` BIGINT(13) NOT NULL,
   `user_id` INT NOT NULL,
-  `loan_date` DATETIME NOT NULL,
-  `return_date` DATETIME NULL,
-  `status` ENUM("Active", "Late Active", "Returned", "Late Returned") NOT NULL,
+  `loan_date` DATE NOT NULL DEFAULT (CURRENT_DATE),
+  `return_date` DATE NULL,
+  `status` ENUM("Active", "Late Active", "Returned", "Late Returned") NOT NULL DEFAULT "Active",
   PRIMARY KEY (`book_ISBN`, `user_id`),
   INDEX `fk_Book_has_Users_Users3_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_Book_has_Users_Book2_idx` (`book_ISBN` ASC) VISIBLE,
@@ -174,7 +174,7 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Operator_Appointment` (
   `library_appointment` INT NOT NULL,
   `administrator_id` INT NOT NULL,
   `appointment_no` VARCHAR(45) NOT NULL,
-  `date_of_appointment` DATETIME NULL,
+  `date_of_appointment` DATE NULL DEFAULT (CURRENT_DATE),
   PRIMARY KEY (`operator_id`, `library_appointment`, `administrator_id`, `appointment_no`),
   INDEX `fk_Operator Appointment_School - Library1_idx` (`library_appointment` ASC) VISIBLE,
   INDEX `fk_Operator Appointment_Users2_idx` (`administrator_id` ASC) VISIBLE,
@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Pending_Registrations` (
   `password_hashed` TEXT NOT NULL,
   `first_name` VARCHAR(45) NOT NULL,
   `last_name` VARCHAR(45) NOT NULL,
-  `Birth_Date` DATETIME NOT NULL,
+  `birth_date` DATE NOT NULL,
   `email` VARCHAR(45) NOT NULL,
   `role` ENUM("Admin", "Operator", "Teacher", "Student") NOT NULL,
   `library_id` INT NOT NULL,
@@ -240,9 +240,9 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `semester_project`.`Reservation` (
   `book_ISBN` BIGINT(13) NOT NULL,
   `user_id` INT NOT NULL,
-  `reservation_date` DATETIME NOT NULL,
-  `expiration_date` DATETIME NOT NULL,
-  `status` ENUM("Active", "Honoured", "Expired") NULL,
+  `reservation_date` DATE NOT NULL,
+  `expiration_date` DATE NOT NULL,
+  `status` ENUM("Active", "Honoured", "Expired") NULL DEFAULT "Active",
   PRIMARY KEY (`book_ISBN`, `user_id`),
   INDEX `fk_Book_has_Users_Users2_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_Book_has_Users_Book1_idx` (`book_ISBN` ASC) VISIBLE,
@@ -354,9 +354,9 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Users` (
   `Password_Hashed` TEXT NOT NULL,
   `first_name` VARCHAR(45) NOT NULL,
   `last_name` VARCHAR(45) NOT NULL,
-  `birth_date` DATETIME NOT NULL,
+  `birth_date` DATE NOT NULL,
   `email` VARCHAR(45) NULL,
-  `Role` ENUM("Admin", "Operator", "Teacher", "Student") NOT NULL,
+  `role` ENUM("Admin", "Operator", "Teacher", "Student") NOT NULL,
   `last_update` TIMESTAMP NOT NULL,
   `status` VARCHAR(45) NOT NULL,
   `users_library_id` INT NOT NULL,
@@ -403,8 +403,8 @@ CREATE TRIGGER set_available_copies
 BEFORE INSERT ON `semester_project`.`Lib_Owns_Book` 
 FOR EACH ROW
 BEGIN 
-  IF NEW.available_copies IS NULL THEN
-    SET NEW.available_copies = NEW.total_copies;
+  IF NEW.`available_copies` IS NULL THEN
+    SET NEW.`available_copies` = NEW.`total_copies`;
   END IF;
 END $
 DELIMITER ;
@@ -419,13 +419,92 @@ CREATE TRIGGER set_card_no
 BEFORE INSERT ON `semester_project`.`Card`
 FOR EACH ROW
 BEGIN
-  IF NEW.card_no IS NULL THEN
-    SET NEW.card_no = card_number(NEW.user_id);
+  IF NEW.`card_no` IS NULL THEN
+    SET NEW.`card_no` = card_number(NEW.`user_id`);
+  END IF;
+END $
+DELIMITER ;
+
+-- -----------------------------------------
+-- Trigger for updating the status of the loan
+-- -----------------------------------------
+
+DELIMITER $
+CREATE TRIGGER loan_status
+BEFORE UPDATE ON `semester_project`.`Loan`
+FOR EACH ROW
+BEGIN
+  SET NEW.`loan_date` = OLD.`loan_date`;
+  SET NEW.`book_ISBN` = OLD.`book_ISBN`;
+  SET NEW.`user_id` = OLD.`user_id`;
+  IF OLD.`return_date` IS NOT NULL THEN
+    SET NEW.`return_date` = OLD.`return_date`;
+    SET NEW.`status` = OLD.`status`;
+  END IF;
+  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NULL AND TIMESTAMPDIFF(DAY, OLD.`loan_date`, CURRENT_DATE()) > 14 THEN
+    SET NEW.`status` = "Late Active";
+  END IF;
+  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NOT NULL AND TIMESTAMPDIFF(DAY, NEW.`loan_date`, NEW.`return_date`) > 14 THEN
+    SET NEW.`status` = "Late Returned";
+  END IF;
+  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NOT NULL AND TIMESTAMPDIFF(DAY, NEW.`loan_date`, NEW.`return_date`) <= 14 THEN
+    SET NEW.`status` = "Returned";
+  END IF;
+END $
+DELIMITER ;
+
+-- -----------------------------------------
+-- Trigger for updating the status of the loan
+-- -----------------------------------------
+
+DELIMITER $
+CREATE TRIGGER reservation_status
+BEFORE UPDATE ON `semester_project`.`Reservation`
+FOR EACH ROW
+BEGIN
+  SET NEW.`book_ISBN` = OLD.`book_ISBN`;
+  SET NEW.`user_id` = OLD.`user_id`;
+  SET NEW.`reservation_date` = OLD.`reservation_date`;
+  SET NEW.`expiration_date` = OLD.`expiration_date`;
+  IF OLD.`status` = "Expired" OR OLD.`status` = "Honoured" THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: You cannot change an honoured or expired reservation';
+  END IF;
+  IF TIMESTAMPDIFF(DAY, NEW.`reservation_date`, CURRENT_DATE()) <= 7 THEN
+    SET NEW.`status`= "Expired";
+  END IF;
+END $
+DELIMITER ;
+
+-- -----------------------------------------
+-- Trigger to check the age before inserting data to users
+-- -----------------------------------------
+
+DELIMITER $
+CREATE TRIGGER check_age
+BEFORE INSERT ON `semester_project`.`Users`
+FOR EACH ROW
+BEGIN
+  IF (`role` = 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,(CURRENT_TIMESTAMP) <= 18) OR (`role` <> 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,CURRENT_TIMESTAMP) > 18 )) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'invalide age of user';
   END IF;
 END $
 DELIMITER ;
 
 
+-- -----------------------------------------
+-- Trigger to check the age before inserting data to users_reg
+-- -----------------------------------------
+
+DELIMITER $
+CREATE TRIGGER check_age_reg
+BEFORE INSERT ON `semester_project`.`Pending_Registrations`
+FOR EACH ROW
+BEGIN
+  IF (`role` = 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,(CURRENT_TIMESTAMP) <= 18) OR (`role` <> 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,CURRENT_TIMESTAMP) > 18 )) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'invalide age of user';
+  END IF;
+END $
+DELIMITER ;
 
 -- -----------------------------------------
 -- This is a function that finds the number of cards
