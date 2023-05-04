@@ -292,7 +292,7 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`School_Library` (
   `address` VARCHAR(45) NOT NULL,
   `town` VARCHAR(45) NOT NULL,
   `email` VARCHAR(45) NOT NULL,
-  `principals_id` INT NOT NULL,
+  `principals_id` INT NULL,
   PRIMARY KEY (`library_id`),
   INDEX `fk_School - Library_Users1_idx` (`principals_id` ASC) VISIBLE,
   CONSTRAINT `fk_Principal_id`

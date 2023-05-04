@@ -20,6 +20,7 @@ elements = driver.find_elements_by_xpath("//a")
 
 
 books = []
+unique = set()
 
 
 i = 0
@@ -47,13 +48,17 @@ for element in elements:
             text = cell.text
             print(text)
             if ":" in text:
+                text1 = text.split(":")
+                if text1[0] not in ["Συγγραφείς", "ISBN","Διαθέτης (Εκδότης)"]:
+                    continue
                 text = text.split(":")[1]
             while(True):
                 if text[0] == ' ':
                     text = text[1:]
                 else:
                     break;
-            book.append(text);
+            book.append(text)
+
             # μορφή: [τίτλος, συγγραφείς, ISBN, ,εκδότες]
 
     button = driver.find_element_by_xpath('//div[@class="gwt-Label search-hyperlink"]')
@@ -68,11 +73,16 @@ for element in elements:
     image_url = img_src
     local_filename = "C:/Users/codad/Desktop/GitHub/Database_Project/images/image"+str(i)+".png"
     urllib.request.urlretrieve(image_url,local_filename)
-
-    books.append(book)
+    if len(book) != 4:
+        driver.back()
+        continue
+    if book[2] not in unique:
+        books.append(book)
+        unique.add(book[2])
+        urllib.request.urlretrieve(image_url,local_filename)
     driver.back()
     i +=1
-    if i == 450: 
+    if i == 25: 
         break;
 
 # μέχρις στιγμής έχω πάρει όλα τα βιβλία και τα στοιχεία τους
@@ -92,6 +102,8 @@ for index, book in enumerate(books):
             name = name[1:]
         while name[-1] == " ":
             name = name[:len(name)-2]
+        if any(char in name for char in "()[]"):
+            continue
         authors_correct.append(name)
     books[index][1] = authors_correct
 
@@ -111,6 +123,8 @@ for book in books:
     start = random.randint(0,len(summary_text)-100)
     summary = summary_text[start:start+30]
     summary = summary.replace("\n","")
+    summary = summary.replace("'","")
+    summary = summary.replace('"',"")
     language = random.choice(["Ελληνικά","English"])
     query = "INSERT INTO semester_project.Book (ISBN,title,publisher,no_of_pages,summary,`language`) VALUES ( " + str(ISBN) + ",\"" + title + "\",\"" + publisher + "\"," + str(no_of_pages) + ",\"" + summary + "\",\"" + language + "\");\n"
     file.write(query)
@@ -125,6 +139,7 @@ for book in books:
     last_name = ""
 
     for author in authors:
+        print(author)
         author.lower()
         words = author.split(' ')
 
@@ -142,9 +157,9 @@ for book in books:
             continue
 
 
-        words = [words[0],words[-1]]
+        words = [words[0],words[len(words)-1]]
         if words[0] in list_of_last_names:
-            words = words.reverse()
+            words[1], words[0] = words[0], words[1]
         elif words[1] not in list_of_last_names:
             list_of_last_names.append(words[1])
         
@@ -152,6 +167,9 @@ for book in books:
             last_name = words[1]
             query = "INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( \"" + first_name + "\",\"" + last_name +"\");\n"
             file.write(query);
+        print(words)
+        print(type(words[1]))
+        print(type(list_of_last_names.index(words[1])))
         index = list_of_last_names.index(words[1])+1
         query = "INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( " + str(index) + "," + str(ISBN) + ");\n"
         file.write(query)
@@ -191,11 +209,11 @@ for book in books:
 file.close();
 
 file = open("all_the_isbn.txt", "w")
+file.truncate(0)
 for book in books:
     string = str(book[2])+"\n"
     file.write(string)
 file.close()
-    
-    
+       
 
 driver.quit()
