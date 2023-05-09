@@ -455,14 +455,14 @@ DELIMITER ;
 -- If there is a return date I should also check if the status is correct
 -- -----------------------------------------
 
-DELIMITER $
-CREATE TRIGGER loan_integrty
-BEFORE INSERT ON `semester_project`.`Loan`
-FOR EACH ROW
-BEGIN
+-- DELIMITER $
+-- CREATE TRIGGER loan_integrty
+-- BEFORE INSERT ON `semester_project`.`Loan`
+-- FOR EACH ROW
+-- BEGIN
 
-END $
-DELIMITER ;
+-- END $
+-- DELIMITER ;
 
 -- -----------------------------------------
 -- Trigger for updating the status of the loan
