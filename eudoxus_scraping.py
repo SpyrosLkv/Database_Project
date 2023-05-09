@@ -82,7 +82,7 @@ for element in elements:
         urllib.request.urlretrieve(image_url,local_filename)
     driver.back()
     i +=1
-    if i == 25: 
+    if i == 200: 
         break;
 
 # μέχρις στιγμής έχω πάρει όλα τα βιβλία και τα στοιχεία τους
@@ -187,7 +187,7 @@ for book in books:
     no_of_keys = random.randint(1,3)
     for i in range(1,no_of_keys+1):
         dromeas = (dromeas+1)%len(keywords)
-        query = "INSERT INTO semester_project.Keywords_in_book (keyword_id,book_ISBN) VALUES ( \"" + keywords[dromeas] + "\"," + str(ISBN) + ");\n"
+        query = "INSERT INTO semester_project.Keywords_in_book (keyword_id,book_ISBN) VALUES ( \"" + str(dromeas+1) + "\"," + str(ISBN) + ");\n"
         file.write(query)
 
 thematic_categories = ["Romance","Mystery","Thriller","Science Fiction","Fantasy","Historical Fiction","Horror","Biography/Memoir","Self-help","Travel","Business","Education","Poetry"]
@@ -201,7 +201,7 @@ for book in books:
     no_of_themes = random.randint(1,3)
     for i in range(1,no_of_themes+1):
         dromeas = (dromeas+1)%len(thematic_categories)
-        query = "INSERT INTO semester_project.Belongs_in (category_id,book_ISBN) VALUES ( \"" + thematic_categories[dromeas] + "\"," + str(ISBN) + ");\n"
+        query = "INSERT INTO semester_project.Belongs_in (category_id,book_ISBN) VALUES ( \"" + str(dromeas+1) + "\"," + str(ISBN) + ");\n"
         file.write(query)
 
 

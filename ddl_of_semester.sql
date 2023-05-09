@@ -235,6 +235,28 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
+-- Table `semester_project`.`Request`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `semester_project`.`Request` (
+  `book_ISBN` BIGINT(13) NOT NULL,
+  `user_id` INT NOT NULL,
+  PRIMARY KEY (`book_ISBN`, `user_id`),
+  INDEX `fk_Book_has_Users_Users1_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_Book_has_Users_Book1_idx` (`book_ISBN` ASC) VISIBLE,
+  CONSTRAINT `fk_Book_Requested`
+    FOREIGN KEY (`book_ISBN`)
+    REFERENCES `semester_project`.`Book` (`ISBN`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Request_User_id`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `semester_project`.`Users` (`user_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
 -- Table `semester_project`.`Reservation`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `semester_project`.`Reservation` (
