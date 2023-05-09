@@ -378,7 +378,7 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Users` (
   `last_name` VARCHAR(255) NOT NULL,
   `birth_date` DATE NOT NULL,
   `email` VARCHAR(255) NULL,
-   user_role ENUM('Admin', 'Operator', 'Teacher', 'Student') NOT NULL,
+  `user_role` ENUM('Admin', 'Operator', 'Teacher', 'Student') NOT NULL,
   `last_update` DATE NOT NULL DEFAULT (CURRENT_DATE),
   `user_status` VARCHAR(255) NOT NULL,
   `users_library_id` INT NOT NULL,
