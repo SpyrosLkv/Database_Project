@@ -44,6 +44,6 @@ i = 0
 for school in range(1,6):
     no_of_phones = random.choice([1,2])
     for j in range(no_of_phones):
-        query = "INSERT ON semester_project.School_Phone_No (phone_no,library_id) VALUES (" + phone_nos[i] + "," + str(school) +");\n"
+        query = "INSERT INTO semester_project.School_Phone_No (phone_no,library_id) VALUES (" + phone_nos[i] + "," + str(school) +");\n"
         dml.write(query)
         i+=1
