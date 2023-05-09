@@ -206,7 +206,7 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Pending_Registrations` (
   `last_name` VARCHAR(255) NOT NULL,
   `birth_date` DATE NOT NULL,
   `email` VARCHAR(255) NOT NULL,
-  `role` ENUM("Admin", "Operator", "Teacher", "Student") NOT NULL,
+  `user_role` ENUM("Admin", "Operator", "Teacher", "Student") NOT NULL,
   `library_id` INT NOT NULL,
   PRIMARY KEY (`username`, `library_id`),
   INDEX `fk_Pending Registrations_School - Library1_idx` (`library_id` ASC) VISIBLE,
@@ -506,7 +506,7 @@ CREATE TRIGGER check_age
 BEFORE INSERT ON `semester_project`.`Users`
 FOR EACH ROW
 BEGIN
-  IF (`role` = 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,(CURRENT_TIMESTAMP) <= 18) OR (`role` <> 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,CURRENT_TIMESTAMP) > 18 )) THEN
+  IF (`user_role` = 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,(CURRENT_TIMESTAMP) <= 18) OR (`user_role` <> 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,CURRENT_TIMESTAMP) > 18 )) THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'invalide age of user';
   END IF;
 END $
@@ -522,7 +522,7 @@ CREATE TRIGGER check_age_reg
 BEFORE INSERT ON `semester_project`.`Pending_Registrations`
 FOR EACH ROW
 BEGIN
-  IF (`role` = 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,(CURRENT_TIMESTAMP) <= 18) OR (`role` <> 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,CURRENT_TIMESTAMP) > 18 )) THEN
+  IF (`user_role` = 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,(CURRENT_TIMESTAMP) <= 18) OR (`user_role` <> 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,CURRENT_TIMESTAMP) > 18 )) THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'invalide age of user';
   END IF;
 END $
