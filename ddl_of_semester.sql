@@ -448,6 +448,23 @@ END $
 DELIMITER ;
 
 -- -----------------------------------------
+-- Trigger for inserting in to loans
+-- If the book is in the library of the user
+-- And if there are available copies
+-- Then the loan will be inserted and if there is no return date the available copies will drop
+-- If there is a return date I should also check if the status is correct
+-- -----------------------------------------
+
+DELIMITER $
+CREATE TRIGGER loan_integrty
+BEFORE INSERT ON `semester_project`.`Loan`
+FOR EACH ROW
+BEGIN
+
+END $
+DELIMITER ;
+
+-- -----------------------------------------
 -- Trigger for updating the status of the loan
 -- -----------------------------------------
 
