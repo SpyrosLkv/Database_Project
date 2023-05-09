@@ -506,8 +506,8 @@ CREATE TRIGGER check_age
 BEFORE INSERT ON `semester_project`.`Users`
 FOR EACH ROW
 BEGIN
-  IF (NEW.`user_role` = 'Student' AND TIMESTAMPDIFF(YEAR,NEW.`birth_date`,(CURRENT_TIMESTAMP) <= 18) OR (NEW.`user_role` <> 'Student' AND TIMESTAMPDIFF(YEAR,NEW.`birth_date`,CURRENT_TIMESTAMP) > 18 )) THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'invalide age of user';
+  IF ((NEW.`user_role` = 'Student' AND TIMESTAMPDIFF(YEAR,NEW.`birth_date`,NOW()) >= 18) OR (NEW.`user_role` <> 'Student' AND TIMESTAMPDIFF(YEAR,NEW.`birth_date`,NOW()) < 18 )) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = NEW.`birth_date`;
   END IF;
 END $
 DELIMITER ;
@@ -522,8 +522,8 @@ CREATE TRIGGER check_age_reg
 BEFORE INSERT ON `semester_project`.`Pending_Registrations`
 FOR EACH ROW
 BEGIN
-  IF (NEW.`user_role` = 'Student' AND TIMESTAMPDIFF(YEAR,NEW.`birth_date`,(CURRENT_TIMESTAMP) <= 18) OR (NEW.`user_role` <> 'Student' AND TIMESTAMPDIFF(YEAR,NEW.`birth_date`,CURRENT_TIMESTAMP) > 18 )) THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'invalide age of user';
+  IF ((NEW.`user_role` = 'Student' AND TIMESTAMPDIFF(YEAR,NEW.`birth_date`,NOW()) >= 18) OR (NEW.`user_role` <> 'Student' AND TIMESTAMPDIFF(YEAR,NEW.`birth_date`,NOW()) < 18 )) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = NEW.`birth_date`;
   END IF;
 END $
 DELIMITER ;
