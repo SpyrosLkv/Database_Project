@@ -40,7 +40,9 @@ for lib in range(1,6):
         role = "Student"
         status = "Active"
         library_id = lib
-        query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"
+        # query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"
+        query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+status+"',"+str(library_id)+");\n"
+        print(query)
         dml.write(query)
 
 
@@ -63,7 +65,8 @@ for i in range(0,2):
     role = "Admin"
     status = "Active"
     library_id = random.randint(1,6)
-    query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"    
+    # query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"    
+    query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+status+"',"+str(library_id)+");\n"
     dml.write(query)
 
 
@@ -86,7 +89,8 @@ for i in range(1,6):
     role = "Operator"
     status = "Active"
     library_id = i
-    query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"    
+    # query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"    
+    query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+status+"',"+str(library_id)+");\n"
     dml.write(query)
 # 20 teachers
 
@@ -106,7 +110,8 @@ for i in range(20):
     role = "Teacher"
     status = "Active"
     library_id = random.randint(1,6)
-    query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"    
+    # query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"    
+    query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+status+"',"+str(library_id)+");\n"
     dml.write(query)
 
 
@@ -117,3 +122,5 @@ for i in range(20):
 for i in range(1,129):
     query = "INSERT INTO semester_project.Card (user_id,card_no,status) VALUES("+ str(i) +",1,'Active');\n"
     dml.write(query)
+
+dml.close()
