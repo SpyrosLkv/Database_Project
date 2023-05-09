@@ -462,16 +462,14 @@ FOR EACH ROW
 BEGIN
   DECLARE avail_copies INT;
   DECLARE lib_id INT;
-  SELECT lob.`available_copies` 
-  FROM `semester_project`.`Lib_Owns_Book` lob 
-  INNER JOIN `semester_project`.`School_Library` s
-  ON s.`library_id` = lob.`library_id`
-  INNER JOIN `semester_project`.`Users` u
-  ON s.`library_id` = u.`library_id`
-  WHERE u.`user_id` = NEW.`user_id` and lob.`book_ISBN` = NEW.`book_ISBN`;
-  IF FOUND_ROWS() = 0 THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Book does not exist in library of user';
-  END IF;
+  -- SELECT lob.`available_copies` 
+  -- FROM `semester_project`.`Lib_Owns_Book` lob 
+  -- INNER JOIN `semester_project`.`School_Library` s
+  -- ON s.`library_id` = lob.`library_id`
+  -- INNER JOIN `semester_project`.`Users` u
+  -- ON s.`library_id` = u.`library_id`
+  -- WHERE u.`user_id` = NEW.`user_id` and lob.`book_ISBN` = NEW.`book_ISBN`;
+  
 
   SET avail_copies = ( 
     SELECT lob.`available_copies` 
@@ -482,6 +480,9 @@ BEGIN
     ON s.`library_id` = u.`library_id`
     WHERE u.`user_id` = NEW.`user_id` and lob.`book_ISBN` = NEW.`book_ISBN`
   );
+  IF FOUND_ROWS() = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Book does not exist in library of user';
+  END IF;
   IF avail_copies = 0 THEN 
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot borrow unavailable book';
   END IF;
