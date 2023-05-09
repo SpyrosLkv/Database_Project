@@ -460,6 +460,8 @@ CREATE TRIGGER loan_integrty
 BEFORE INSERT ON `semester_project`.`Loan`
 FOR EACH ROW
 BEGIN
+  DECLARE avail_copies INT;
+  DECLARE lib_id INT;
   SELECT lob.`available_copies` 
   FROM `semester_project`.`Lib_Owns_Book` lob 
   INNER JOIN `semester_project`.`School_Library` s
@@ -470,7 +472,7 @@ BEGIN
   IF FOUND_ROWS() = 0 THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Book does not exist in library of user';
   END IF;
-  DECLARE avail_copies INT;
+
   SET avail_copies = ( 
     SELECT lob.`available_copies` 
     FROM `semester_project`.`Lib_Owns_Book` lob 
@@ -483,7 +485,7 @@ BEGIN
   IF avail_copies = 0 THEN 
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot borrow unavailable book';
   END IF;
-  DECLARE lib_id INT;
+
   SET lib_id = (
     SELECT `library_id`
     FROM `semester_project`.`Users`
