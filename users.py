@@ -41,7 +41,6 @@ for lib in range(1,6):
         status = "Active"
         library_id = lib
         query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"
-        # query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+ str(100) +"','"+status+"',"+str(library_id)+");\n"
         print(query)
         dml.write(query)
 
@@ -66,7 +65,6 @@ for i in range(0,2):
     status = "Active"
     library_id = random.randint(1,5)
     query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"    
-    # query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+ str(100) +"','"+status+"',"+str(library_id)+");\n"
     dml.write(query)
 
 
@@ -90,7 +88,6 @@ for i in range(1,6):
     status = "Active"
     library_id = i
     query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"    
-    # query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+ str(100) +"','"+status+"',"+str(library_id)+");\n"    
     dml.write(query)
 # 20 teachers
 
@@ -111,7 +108,6 @@ for i in range(20):
     status = "Active"
     library_id = random.randint(1,5)
     query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"    
-    # query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+ str(100) +"','"+status+"',"+str(library_id)+");\n"
     dml.write(query)
 
 
