@@ -506,7 +506,7 @@ CREATE TRIGGER check_age
 BEFORE INSERT ON `semester_project`.`Users`
 FOR EACH ROW
 BEGIN
-  IF (`user_role` = 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,(CURRENT_TIMESTAMP) <= 18) OR (`user_role` <> 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,CURRENT_TIMESTAMP) > 18 )) THEN
+  IF (NEW.`user_role` = 'Student' AND TIMESTAMPDIFF(YEAR,NEW.`birth_date`,(CURRENT_TIMESTAMP) <= 18) OR (NEW.`user_role` <> 'Student' AND TIMESTAMPDIFF(YEAR,NEW.`birth_date`,CURRENT_TIMESTAMP) > 18 )) THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'invalide age of user';
   END IF;
 END $
