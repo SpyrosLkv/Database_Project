@@ -32,7 +32,7 @@ for index in range(1,6):
         avail = total
         
         if rand_num < 0.7:
-            query = "INSERT ON semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (" + str(ISBN) + "," + str(index) + "," + str(total) + "," + str(avail) + ");\n"
+            query = "INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (" + str(ISBN) + "," + str(index) + "," + str(total) + "," + str(avail) + ");\n"
             dml.write(query)
             query2 = str(ISBN)+"\n"
             books_of_lib.write(query2)
