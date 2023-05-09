@@ -484,7 +484,7 @@ BEGIN
     FROM `semester_project`.`Users`
     WHERE `user_id` = NEW.`user_id`
   );
-  IF NEW.`return_date` IS NOT NULL THEN
+  IF NEW.`return_date` IS NULL THEN
     UPDATE `semester_project`.`Lib_Owns_Book` SET `available_copies` = avail_copies-1 WHERE `book_ISBN` = NEW.`book_ISBN` and `library_id` = lib_id;
   END IF;
 END $
