@@ -477,7 +477,7 @@ BEGIN
     INNER JOIN `semester_project`.`School_Library` s
     ON s.`library_id` = lob.`library_id`
     INNER JOIN `semester_project`.`Users` u
-    ON s.`library_id` = u.`library_id`
+    ON s.`library_id` = u.`users_library_id`
     WHERE u.`user_id` = NEW.`user_id` and lob.`book_ISBN` = NEW.`book_ISBN`
   );
   IF FOUND_ROWS() = 0 THEN
@@ -488,7 +488,7 @@ BEGIN
   END IF;
 
   SET lib_id = (
-    SELECT `library_id`
+    SELECT `users_library_id`
     FROM `semester_project`.`Users`
     WHERE `user_id` = NEW.`user_id`
   );
