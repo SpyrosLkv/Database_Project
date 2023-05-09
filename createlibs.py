@@ -23,13 +23,20 @@ for index in range(5):
     dml.write(query)
 
 for index in range(1,6):
-    for ISBN in ISBN_list:
+    filename = "books_of_lib_" + str(index) +".txt"
+    books_of_lib = open(filename,"w", encoding="UTF-8")
+    books_of_lib.truncate(0)
+    for index2, ISBN in enumerate(ISBN_list):
         rand_num = random.random()
         total = random.randint(2,10);
         avail = total
+        
         if rand_num < 0.7:
             query = "INSERT ON semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (" + str(ISBN) + "," + str(index) + "," + total + "," + avail + ");\n"
             dml.write(query)
+            query2 = str(ISBN)+"\n"
+            books_of_lib.write(query2)
+    books_of_lib.close()
 
 phone_nos = ["6954363464","2103753456","6923459878","2133859677","2180267385","6996454323","2220009998","2068433987","6920347958","2103890545"];
 
