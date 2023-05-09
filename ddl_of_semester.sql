@@ -22,8 +22,8 @@ USE `semester_project` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `semester_project`.`Authors` (
   `author_id` INT NOT NULL AUTO_INCREMENT,
-  `first_name` VARCHAR(45) NOT NULL,
-  `last_name` VARCHAR(45) NOT NULL,
+  `first_name` VARCHAR(255) NOT NULL,
+  `last_name` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`author_id`))
 ENGINE = InnoDB
 KEY_BLOCK_SIZE = 4;
@@ -56,12 +56,12 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `semester_project`.`Book` (
   `ISBN` BIGINT(13) NOT NULL,
-  `title` VARCHAR(45) NOT NULL,
-  `publisher` VARCHAR(45) NOT NULL,
+  `title` VARCHAR(255) NOT NULL,
+  `publisher` VARCHAR(255) NOT NULL,
   `no_of_pages` INT NOT NULL,
   `summary` TEXT NULL,
   `image` BLOB(262144) NULL,
-  `language` VARCHAR(45) NOT NULL DEFAULT 'Greek',
+  `language` VARCHAR(255) NOT NULL DEFAULT 'English',
   PRIMARY KEY (`ISBN`))
 ENGINE = InnoDB;
 
@@ -88,7 +88,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `semester_project`.`Keywords` (
   `keyword_id` INT NOT NULL AUTO_INCREMENT,
-  `keyword` VARCHAR(45) NOT NULL,
+  `keyword` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`keyword_id`))
 ENGINE = InnoDB;
 
@@ -173,7 +173,7 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Operator_Appointment` (
   `operator_id` INT NOT NULL,
   `library_appointment` INT NOT NULL,
   `administrator_id` INT NOT NULL,
-  `appointment_no` VARCHAR(45) NOT NULL,
+  `appointment_no` INT NOT NULL,
   `date_of_appointment` DATE NULL DEFAULT (CURRENT_DATE),
   PRIMARY KEY (`operator_id`, `library_appointment`, `administrator_id`, `appointment_no`),
   INDEX `fk_Operator Appointment_School - Library1_idx` (`library_appointment` ASC) VISIBLE,
@@ -200,12 +200,12 @@ ENGINE = InnoDB;
 -- Table `semester_project`.`Pending_Registrations`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `semester_project`.`Pending_Registrations` (
-  `username` VARCHAR(45) NOT NULL,
+  `username` VARCHAR(255) NOT NULL,
   `password_hashed` TEXT NOT NULL,
-  `first_name` VARCHAR(45) NOT NULL,
-  `last_name` VARCHAR(45) NOT NULL,
+  `first_name` VARCHAR(255) NOT NULL,
+  `last_name` VARCHAR(255) NOT NULL,
   `birth_date` DATE NOT NULL,
-  `email` VARCHAR(45) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
   `role` ENUM("Admin", "Operator", "Teacher", "Student") NOT NULL,
   `library_id` INT NOT NULL,
   PRIMARY KEY (`username`, `library_id`),
@@ -310,10 +310,10 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `semester_project`.`School_Library` (
   `library_id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(45) NOT NULL,
-  `address` VARCHAR(45) NOT NULL,
-  `town` VARCHAR(45) NOT NULL,
-  `email` VARCHAR(45) NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
+  `address` VARCHAR(255) NOT NULL,
+  `town` VARCHAR(255) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
   `principals_id` INT NULL,
   PRIMARY KEY (`library_id`),
   INDEX `fk_School - Library_Users1_idx` (`principals_id` ASC) VISIBLE,
@@ -346,7 +346,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `semester_project`.`Thematic_Category` (
   `category_id` INT NOT NULL AUTO_INCREMENT,
-  `category` VARCHAR(45) NOT NULL,
+  `category` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`category_id`))
 ENGINE = InnoDB;
 
@@ -372,15 +372,15 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `semester_project`.`Users` (
   `user_id` INT NOT NULL AUTO_INCREMENT,
-  `username` VARCHAR(45) NOT NULL,
+  `username` VARCHAR(255) NOT NULL,
   `Password_Hashed` TEXT NOT NULL,
-  `first_name` VARCHAR(45) NOT NULL,
-  `last_name` VARCHAR(45) NOT NULL,
+  `first_name` VARCHAR(255) NOT NULL,
+  `last_name` VARCHAR(255) NOT NULL,
   `birth_date` DATE NOT NULL,
-  `email` VARCHAR(45) NULL,
+  `email` VARCHAR(255) NULL,
   `role` ENUM("Admin", "Operator", "Teacher", "Student") NOT NULL,
   `last_update` TIMESTAMP NOT NULL,
-  `status` VARCHAR(45) NOT NULL,
+  `status` VARCHAR(255) NOT NULL,
   `users_library_id` INT NOT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE INDEX `Username_UNIQUE` (`username` ASC) VISIBLE,
