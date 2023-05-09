@@ -41,6 +41,7 @@ for lib in range(1,6):
         status = "Active"
         library_id = lib
         query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"
+        print(query)
         dml.write(query)
 
 
@@ -62,7 +63,7 @@ for i in range(0,2):
     email = username + "@gmail.com"
     role = "Admin"
     status = "Active"
-    library_id = random.randint(1,6)
+    library_id = random.randint(1,5)
     query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"    
     dml.write(query)
 
@@ -105,7 +106,7 @@ for i in range(20):
     email = username + "@gmail.com"
     role = "Teacher"
     status = "Active"
-    library_id = random.randint(1,6)
+    library_id = random.randint(1,5)
     query = "INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('"+username+"','"+readable_password+"','"+first+"','"+last+"','"+birth_date+"','"+email+"','"+role+"','"+status+"',"+str(library_id)+");\n"    
     dml.write(query)
 
@@ -117,3 +118,5 @@ for i in range(20):
 for i in range(1,129):
     query = "INSERT INTO semester_project.Card (user_id,card_no,status) VALUES("+ str(i) +",1,'Active');\n"
     dml.write(query)
+
+dml.close()

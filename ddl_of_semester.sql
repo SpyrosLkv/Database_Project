@@ -377,9 +377,9 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Users` (
   `first_name` VARCHAR(255) NOT NULL,
   `last_name` VARCHAR(255) NOT NULL,
   `birth_date` DATE NOT NULL,
-  `email` VARCHAR(255) NULL,
-  `user_role` ENUM('Admin', 'Operator', 'Teacher', 'Student') NOT NULL,
+  `email` VARCHAR(255) ,
   `last_update` DATE NOT NULL DEFAULT (CURRENT_DATE),
+  `user_role` ENUM('Admin', 'Operator', 'Teacher', 'Student') NOT NULL,
   `user_status` VARCHAR(255) NOT NULL,
   `users_library_id` INT NOT NULL,
   PRIMARY KEY (`user_id`),
@@ -522,7 +522,7 @@ CREATE TRIGGER check_age_reg
 BEFORE INSERT ON `semester_project`.`Pending_Registrations`
 FOR EACH ROW
 BEGIN
-  IF (`user_role` = 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,(CURRENT_TIMESTAMP) <= 18) OR (`user_role` <> 'Student' AND TIMESTAMPDIFF(YEAR,`birth_date`,CURRENT_TIMESTAMP) > 18 )) THEN
+  IF (NEW.`user_role` = 'Student' AND TIMESTAMPDIFF(YEAR,NEW.`birth_date`,(CURRENT_TIMESTAMP) <= 18) OR (NEW.`user_role` <> 'Student' AND TIMESTAMPDIFF(YEAR,NEW.`birth_date`,CURRENT_TIMESTAMP) > 18 )) THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'invalide age of user';
   END IF;
 END $
