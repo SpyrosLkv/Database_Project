@@ -192,7 +192,6 @@ INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "ΝΙΚΟΣ
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 2,9789604616206);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "Paul","Deitel");
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 3,9789605126803);
-INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 3,9789605126803);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "Stroustrup","Bjarne");
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 4,9789604911141);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "WESTFALL","RICHARD");
@@ -279,7 +278,6 @@ INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "Θεολό
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 43,9789602660300);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 21,9789607510112);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 42,9789607510112);
-INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 42,9789607510112);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 22,9786185066901);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "W.E.","PRIMA");
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 44,9789602547014);
@@ -351,7 +349,6 @@ INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "PORT","S."
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 71,9789605241568);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "STONE","C.");
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 72,9789605241568);
-INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 47,9789602663080);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 47,9789602663080);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 42,9789602663080);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 60,9789604562817);
@@ -432,7 +429,7 @@ INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 102,9789604613
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "Rosen","H.");
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 103,9789604186143);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "ΜΙΧΑΗΛ","ΚΟΛΟΥΝΤΖΑΚΗΣ");
-INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 104,978-960-603-361-2);
+INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 104,9789606033612);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 43,9786185066451);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 52,9789607182685);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 28,9789607182685);
@@ -467,7 +464,6 @@ INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 103,9789604187
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "DiStefano","J.");
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 115,9608050294);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 33,9608050294);
-INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 115,9608050294);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 26,9789602663042);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 60,9789602663042);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 51,9789609400442);
@@ -564,7 +560,7 @@ INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 148,9789604618
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "Τζουβάρας","Αθανάσιος");
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 149,9604314971);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "ΓΕΩΡΓΙΟΣ","ΚΟΛΕΤΣΟΣ");
-INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 150,978-960-603-311-7);
+INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 150,9789606033117);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 26,9789602663059);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "Παπαδιάς","Β.");
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 151,9789602663059);
@@ -596,13 +592,13 @@ INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 160,9789604911
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "Harris","Fred");
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 161,9789604911554);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "ΝΙΚΟΛΑΟΣ","ΜΗΤΡΟΥ");
-INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 162,978-960-603-299-8);
+INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 162,9789606032998);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 21,9789604186440);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 67,9789609853118);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "ΧΡΥΣΑΦΙΝΟΥ","ΟΥΡΑΝΙΑ");
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 163,9789606706639);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "ΜΙΧΑΗΛ","ΛΟΥΛΑΚΗΣ");
-INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 164,978-960-603-169-4);
+INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 164,9789606031694);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "Black","W.");
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 165,9789604117178);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 115,9789604117178);
@@ -630,7 +626,6 @@ INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 174,9789604189
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 20,9789604189793);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 173,9789602663707);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 33,9789605240592);
-INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 72,9789605240592);
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 72,9789605240592);
 INSERT INTO semester_project.Authors (first_name,last_name) VALUES ( "Μπίλλης","Ευριπίδης");
 INSERT INTO semester_project.Wrote (author_id,book_ISBN) VALUES ( 175,9789602663639);
