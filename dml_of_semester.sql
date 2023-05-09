@@ -1552,7 +1552,6 @@ INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,av
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789604117178,1,3,3);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789607888365,1,9,9);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789604189519,1,5,5);
-INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9604314297,1,4,4);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789604911066,1,5,5);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9786185066536,1,8,8);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789604564620,1,5,5);
@@ -1829,7 +1828,6 @@ INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,av
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789605860431,3,10,10);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789604187201,3,6,6);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789606030604,3,3,3);
-INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (,3,2,2);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789603322092,4,6,6);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789604911141,4,7,7);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789607309471,4,2,2);
@@ -1962,7 +1960,6 @@ INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,av
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789604187324,4,7,7);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789604187201,4,8,8);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789606030604,4,8,8);
-INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (,4,3,3);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789603322092,5,9,9);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789604616206,5,7,7);
 INSERT INTO semester_project.Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES (9789605126803,5,7,7);
