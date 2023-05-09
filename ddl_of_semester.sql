@@ -455,14 +455,45 @@ DELIMITER ;
 -- If there is a return date I should also check if the status is correct
 -- -----------------------------------------
 
--- DELIMITER $
--- CREATE TRIGGER loan_integrty
--- BEFORE INSERT ON `semester_project`.`Loan`
--- FOR EACH ROW
--- BEGIN
-
--- END $
--- DELIMITER ;
+DELIMITER $
+CREATE TRIGGER loan_integrty
+BEFORE INSERT ON `semester_project`.`Loan`
+FOR EACH ROW
+BEGIN
+  SELECT lob.`available_copies` 
+  FROM `semester_project`.`Lib_Owns_Book` lob 
+  INNER JOIN `semester_project`.`School_Library` s
+  ON s.`library_id` = lob.`library_id`
+  INNER JOIN `semester_project`.`Users` u
+  ON s.`library_id` = u.`library_id`
+  WHERE u.`user_id` = NEW.`user_id` and lob.`book_ISBN` = NEW.`book_ISBN`;
+  IF FOUND_ROWS() = 0 THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Book does not exist in library of user';
+  END IF;
+  DECLARE avail_copies INT;
+  SET avail_copies = ( 
+    SELECT lob.`available_copies` 
+    FROM `semester_project`.`Lib_Owns_Book` lob 
+    INNER JOIN `semester_project`.`School_Library` s
+    ON s.`library_id` = lob.`library_id`
+    INNER JOIN `semester_project`.`Users` u
+    ON s.`library_id` = u.`library_id`
+    WHERE u.`user_id` = NEW.`user_id` and lob.`book_ISBN` = NEW.`book_ISBN`
+  );
+  IF avail_copies = 0 THEN 
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot borrow unavailable book';
+  END IF;
+  DECLARE lib_id INT;
+  SET lib_id = (
+    SELECT `library_id`
+    FROM `semester_project`.`Users`
+    WHERE `user_id` = NEW.`user_id`
+  );
+  IF NEW.`return_date` IS NOT NULL THEN
+    UPDATE `semester_project`.`Lib_Owns_Book` SET `available_copies` = avail_copies-1 WHERE `book_ISBN` = NEW.`book_ISBN` and `library_id` = lib_id;
+  END IF;
+END $
+DELIMITER ;
 
 -- -----------------------------------------
 -- Trigger for updating the status of the loan
