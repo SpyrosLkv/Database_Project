@@ -152,13 +152,12 @@
         
         if (result.redirect_url){
           console.log(result);
-          document.querySelector('#error-message').textContent = 'this should have worked';
           window.location.href = result.redirect_url;
         } else {
           if (result.error == "the username already exists")
             document.querySelector('#error-message').textContent = result.error;
           else if (reuslt.error){
-            document.querySelector('#error-message').textContent = 'an error occurred but not caught';
+            document.querySelector('#error-message').textContent = 'an error occurred';
           }
           else{
             console.log(result);
@@ -167,7 +166,7 @@
 
       } catch (error) {
         console.error(error);
-        document.querySelector('#error-message').textContent = 'an error occurred and caught';
+        document.querySelector('#error-message').textContent = 'an error occurred';
       }
     });
     </script>
