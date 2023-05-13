@@ -12,6 +12,7 @@ app.config['MYSQL_PASSWORD'] = 'toyot2002'
 app.config['MYSQL_DB'] = 'semester_project'
 app.config['MYSQL_CONNECT_TIMEOUT'] = 300
 
+app.secret_key = 'VideoTapes'
 
 mysql = MySQL(app)
 
@@ -75,7 +76,7 @@ def signUp():
 
 ''' κώδικας για το Login '''
 @app.route('/signin')
-def showSIgnin():
+def signin():
     return render_template('signin.html')
 
 
@@ -94,7 +95,6 @@ def validateLogin():
                 if len(data) == 0:
                     return json.dumps({'error': "wrong credentials"})
                 role = data[0][8]
-                print(role)
                 session['user']= data[0][0]
                 session['role']= data[0][8]
                 if role == "Student":
