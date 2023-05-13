@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, json
+from flask import Flask, render_template, request, json, redirect, url_for
 from flask_mysqldb import MySQL
 import hashlib
 import binascii
@@ -10,6 +10,7 @@ app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = 'toyot2002'
 app.config['MYSQL_DB'] = 'semester_project'
+app.config['MYSQL_CONNECT_TIMEOUT'] = 300
 
 
 mysql = MySQL(app)
@@ -44,40 +45,33 @@ def signUp():
         library_id = int(request.form['inputLibrary'])
 
         if first_name and last_name and _email and username and _password:
-            conn = mysql.connection
-            cursor = conn.cursor()
-
-            query = "select username from Users where username = %s;"
-            params = (username,)
-            cursor.execute(query,params)
-            data = cursor.fetchall()
-
-            if len(data) == 0:
-                query = "insert into Pending_Registrations (username,password_hashed,first_name,last_name,birth_date,email,user_role,library_id) values (%s,%s,%s,%s,%s,%s,%s,"+str(library_id)+");"
-                params = (username,HashPass(_password),first_name,last_name,birth_date,_email,user_role)
-                print(query,params)
+            with mysql.connection.cursor() as cursor:
+                query = "select username from Users where username = %s;"
+                params = (username,)
                 cursor.execute(query,params)
-                print("now we're trying to commit")
-                conn.commit()
-                print("now we send back a message")
-                return json.dumps({'message': 'User created successfully !'})
-                print("this shouldve returned")
-            else:
-                print("len!=0")
-                return 'hello'
+                data = cursor.fetchall()
+
+                if len(data) == 0:
+                    query = "insert into Pending_Registrations (username,password_hashed,first_name,last_name,birth_date,email,user_role,library_id) values (%s,%s,%s,%s,%s,%s,%s,"+str(library_id)+");"
+                    params = (username,HashPass(_password),first_name,last_name,birth_date,_email,user_role)
+                    cursor.execute(query,params)
+                    mysql.connection.commit()
+                    # return redirect('/')
+                    # return render_template('index.html')
+                    return json.dumps({'message': 'User created successfully !', 'redirect_url': '/'})
+                else:
+                    return json.dumps({'error': str(data[0])})
             
         else:
             return json.dumps({'html': '<span>Enter the required fields</span>'})
     except Exception as e:
-        print("the exception is:",str(e))
         return json.dumps({'error': str(e)})
+
     # except Exception as e: (Should really have a try: catch: here, will work on it..12/05)
-    finally:
-        print("finally")
-        cursor.close()
-        print("cursored")
-        conn.close()
-        print("connectioned")
+
+@app.route('/success')
+def success():
+    return render_template('index.html')
 
 
 if __name__ == "__main__":

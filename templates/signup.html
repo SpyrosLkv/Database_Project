@@ -141,7 +141,15 @@
               "Content-Type": "application/x-www-form-urlencoded",
             },
           });
-          console.log(await res.json());
+          const data = await res.json();
+          
+          if (data.redirect_url){
+            console.log(data);
+            window.location.href = data.redirect_url;
+          } else{
+            console.log(data);
+          }
+          
         });
     </script>
   </body>
