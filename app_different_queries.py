@@ -98,7 +98,7 @@ def validateLogin():
                 session['user']= data[0][0]
                 session['role']= data[0][8]
                 if role == "Student":
-                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/userhome'})
+                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/Studenthome'})
                 if role == "Teacher":
                     return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/userhome'})
                 if role == "Operator":
@@ -111,6 +111,12 @@ def validateLogin():
     except Exception as e:
         return json.dumps({'error': str(e)})
 
+@app.route('/Studenthome')
+def StudentHome():
+    if session.get('user'):
+        return render_template('Studenthome.html')
+    else:
+        return render_template('error.html', error='Unauthorized Access')
 
 @app.route('/userhome')
 def userHome():
@@ -118,7 +124,22 @@ def userHome():
         return render_template('userhome.html')
     else:
         return render_template('error.html', error='Unauthorized Access')
+
+@app.route('/api/get_data')
+def get_user_data():
+    user_id = int(session['user'])
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "select * from Users where user_id = "+str(user_id)+";"
+            cursor.execute(query)
+            data = cursor.fetchall()
+            data = data[0]
+            return json.dumps({'username': str(data[1]), 'first_name' : str(data[3]), 'last_name' : str(data[4]), 'birth_date' : str(data[5]), 'email' : str(data[6])}) 
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
     
+
 @app.route('/logout')
 def logout():
     session.pop('user', None)
