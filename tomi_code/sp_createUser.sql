@@ -1,5 +1,9 @@
 DELIMITER $$
 
+-- κάνω query για να δω αν υπάρχει ήδη
+-- κάνω '' για το όνομα της βιβλιοθήκης που θα δώσει
+-- το στέλνω στα  registrations
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_createUser`(
     IN p_first_name VARCHAR(45),
     IN p_last_name VARCHAR(45),
