@@ -100,11 +100,11 @@ def validateLogin():
                 if role == "Student":
                     return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/Studenthome'})
                 if role == "Teacher":
-                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/userhome'})
+                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/Teacherhome'})
                 if role == "Operator":
-                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/userhome'})
+                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/Operatorhome'})
                 if role == "Admin":
-                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/userhome'})
+                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/Adminhome'})
                 
         else:
             return json.dumps({'html': '<span>Enter the required fields</span>'})
@@ -117,6 +117,29 @@ def StudentHome():
         return render_template('Studenthome.html')
     else:
         return render_template('error.html', error='Unauthorized Access')
+
+@app.route('/Teacherhome')
+def StudentHome():
+    if session.get('user'):
+        return render_template('Teacherhome.html')
+    else:
+        return render_template('error.html', error='Unauthorized Access')
+    
+
+@app.route('/Operatorhome')
+def StudentHome():
+    if session.get('user'):
+        return render_template('Operatorhome.html')
+    else:
+        return render_template('error.html', error='Unauthorized Access')
+    
+@app.route('/Adminhome')
+def StudentHome():
+    if session.get('user'):
+        return render_template('Adminhome.html')
+    else:
+        return render_template('error.html', error='Unauthorized Access')
+
 
 @app.route('/userhome')
 def userHome():
