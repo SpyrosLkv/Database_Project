@@ -119,7 +119,7 @@ def StudentHome():
         return render_template('error.html', error='Unauthorized Access')
 
 @app.route('/Teacherhome')
-def StudentHome():
+def TeacherHome():
     if session.get('user'):
         return render_template('Teacherhome.html')
     else:
@@ -127,14 +127,14 @@ def StudentHome():
     
 
 @app.route('/Operatorhome')
-def StudentHome():
+def OperatorHome():
     if session.get('user'):
         return render_template('Operatorhome.html')
     else:
         return render_template('error.html', error='Unauthorized Access')
     
 @app.route('/Adminhome')
-def StudentHome():
+def AdminHome():
     if session.get('user'):
         return render_template('Adminhome.html')
     else:
