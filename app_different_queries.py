@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, json, redirect, url_for
+from flask import Flask, render_template, request, json, redirect, session
 from flask_mysqldb import MySQL
 import hashlib
 import binascii
@@ -15,19 +15,20 @@ app.config['MYSQL_CONNECT_TIMEOUT'] = 300
 
 mysql = MySQL(app)
 
+''' Κώδικας για το Hashing  του password '''
 def HashPass(original_text):
     hash_password = hashlib.sha256(original_text.encode()).digest()
     answer = binascii.hexlify(hash_password).decode()
     return answer
 
+''' main '''
 @app.route("/")
 def main():
     return render_template('index.html')
 
-
+''' κώδικας για την εγγραφή '''
 @app.route('/signup')
 def signup():
-
     return render_template('signup.html')
 
 
@@ -72,10 +73,56 @@ def signUp():
 
     # except Exception as e: (Should really have a try: catch: here, will work on it..12/05)
 
-@app.route('/success')
-def success():
-    return render_template('index.html')
+''' κώδικας για το Login '''
+@app.route('/signin')
+def showSIgnin():
+    return render_template('signin.html')
 
+
+@app.route('/api/validateLogin', methods=['POST'])
+def validateLogin():
+    try:
+        _username = request.form['inputUserName']
+        _password = request.form['inputPassword']
+        if _username and _password:
+            with mysql.connection.cursor() as cursor:
+                hashed = HashPass(_password)
+                query = "select * from Users where username = %s and Password_Hashed = %s;"
+                params = (_username,hashed)
+                cursor.execute(query,params)
+                data = cursor.fetchall()
+                if len(data) == 0:
+                    return json.dumps({'error': "wrong credentials"})
+                role = data[0][8]
+                print(role)
+                session['user']= data[0][0]
+                session['role']= data[0][8]
+                if role == "Student":
+                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/userhome'})
+                if role == "Teacher":
+                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/userhome'})
+                if role == "Operator":
+                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/userhome'})
+                if role == "Admin":
+                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/userhome'})
+                
+        else:
+            return json.dumps({'html': '<span>Enter the required fields</span>'})
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
+
+@app.route('/userhome')
+def userHome():
+    if session.get('user'):
+        return render_template('userhome.html')
+    else:
+        return render_template('error.html', error='Unauthorized Access')
+    
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect('/')
 
 if __name__ == "__main__":
     app.run()
