@@ -50,8 +50,11 @@ def signUp():
                 params = (username,)
                 cursor.execute(query,params)
                 data = cursor.fetchall()
+                query = "select username from Pending_Registrations where username = %s;"
+                cursor.execute(query,params)
+                data2 = cursor.fetchall()
 
-                if len(data) == 0:
+                if len(data) == 0 and len(data2) == 0:
                     query = "insert into Pending_Registrations (username,password_hashed,first_name,last_name,birth_date,email,user_role,library_id) values (%s,%s,%s,%s,%s,%s,%s,"+str(library_id)+");"
                     params = (username,HashPass(_password),first_name,last_name,birth_date,_email,user_role)
                     cursor.execute(query,params)
@@ -60,7 +63,7 @@ def signUp():
                     # return render_template('index.html')
                     return json.dumps({'message': 'User created successfully !', 'redirect_url': '/'})
                 else:
-                    return json.dumps({'error': str(data[0])})
+                    return json.dumps({'error': "the username already exists"})
             
         else:
             return json.dumps({'html': '<span>Enter the required fields</span>'})

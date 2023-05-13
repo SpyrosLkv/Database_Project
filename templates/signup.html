@@ -13,6 +13,7 @@
   </head>
 
   <body>
+
     <div class="container">
       <div class="header">
         <nav
@@ -37,9 +38,11 @@
           </ul>
         </nav>
       </div>
+
       <div class="p-5 mb-4 bg-light rounded-3">
         <div class="container-fluid py-5">
           <h1 class="display-5 fw-bold text-center">Bucket List App</h1>
+          <div class="display-6 fw-bold text-center" id="error-message">  </div>
           <form id="form-signin" action="/api/signup" method="POST">
             <label for="inputFirstName" class="sr-only">First Name</label>
             <input
@@ -129,28 +132,44 @@
       </footer>
     </div>
     <script>
-      document
-        .querySelector("#form-signin")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
-          console.log(new URLSearchParams(new FormData(e.target)).toString());
-          const res = await fetch("/api/signup", {
-            body: new URLSearchParams(new FormData(e.target)).toString(),
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-          });
-          const data = await res.json();
-          
-          if (data.redirect_url){
-            console.log(data);
-            window.location.href = data.redirect_url;
-          } else{
-            console.log(data);
-          }
-          
+    const form = document.querySelector("#form-signin");
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const body = new URLSearchParams(formData).toString();
+
+      try {
+        const res = await fetch("/api/signup", {
+          method: "POST",
+          body: body,
+          headers:{
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
         });
+
+        const result = await res.json();
+        
+        if (result.redirect_url){
+          console.log(result);
+          document.querySelector('#error-message').textContent = 'this should have worked';
+          window.location.href = result.redirect_url;
+        } else {
+          if (result.error == "the username already exists")
+            document.querySelector('#error-message').textContent = result.error;
+          else if (reuslt.error){
+            document.querySelector('#error-message').textContent = 'an error occurred but not caught';
+          }
+          else{
+            console.log(result);
+          }
+        }
+
+      } catch (error) {
+        console.error(error);
+        document.querySelector('#error-message').textContent = 'an error occurred and caught';
+      }
+    });
     </script>
   </body>
 </html>
