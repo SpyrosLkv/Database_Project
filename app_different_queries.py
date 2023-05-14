@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, json, redirect, session
+from flask import Flask, render_template, request, json, redirect, session, jsonify
 from flask_mysqldb import MySQL
 import hashlib
 import binascii
@@ -108,14 +108,7 @@ def validateLogin():
                 session['user']= data[0][0]
                 session['role']= data[0][8]
                 return json.dumps({'message': 'Credentials Correct!', 'redirect_url': Home_for_role[session['role']]})
-                if role == "Student":
-                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/Studenthome'})
-                if role == "Teacher":
-                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/Teacherhome'})
-                if role == "Operator":
-                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/Operatorhome'})
-                if role == "Admin":
-                    return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/Adminhome'})
+                
                 
         else:
             return json.dumps({'html': '<span>Enter the required fields</span>'})
@@ -136,7 +129,6 @@ def TeacherHome():
     else:
         return render_template('error.html', error='Unauthorized Access')
     
-
 @app.route('/Operatorhome')
 def OperatorHome():
     if session.get('user'):
@@ -150,7 +142,6 @@ def AdminHome():
         return render_template('Adminhome.html')
     else:
         return render_template('error.html', error='Unauthorized Access')
-
 
 @app.route('/userhome')
 def userHome():
@@ -171,8 +162,6 @@ def get_user_data():
             return json.dumps({'username': str(data[1]), 'first_name' : str(data[3]), 'last_name' : str(data[4]), 'birth_date' : str(data[5]), 'email' : str(data[6])}) 
     except Exception as e:
         return json.dumps({'error': str(e)})
-
-    
 
 @app.route('/change_password')
 def password_page():
@@ -233,7 +222,76 @@ def change_attr():
     except Exception as e:
         return json.dumps({'error': str(e)})
 
+@app.route('/pending_registrations')
+def load_reg():
+    return render_template('manageusers.html')
 
+@app.route('/api/getregistrations', methods=['GET'])
+def get_pending_registrations():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = 'select users_library_id from Users where user_id='+str(session['user'])+";"
+            cursor.execute(query)
+            library = cursor.fetchall()
+            library = int(library[0][0])
+            query = 'select * from Pending_Registrations where library_id='+str(library)+";"
+            cursor.execute(query)
+            data = cursor.fetchall()
+            response = []
+            for row in data:
+                registration_dict = {
+                    'username': row[0],
+                    'first_name': row[2],
+                    'last_name': row[3],
+                    'birth_date': row[4],
+                    'email': row[5],
+                    'role': row[6]
+                }
+                response.append(registration_dict)
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
+@app.route('/api/process_registration', methods=['POST'])
+def process_registration():
+    try:
+        data = request.get_json()
+        action = data['action']
+        username = data['username']
+        print(username, action)
+        with mysql.connection.cursor() as cursor:
+            if action == "deny":
+                query = "DELETE FROM Pending_Registrations WHERE username = '"+username+"';"
+                cursor.execute(query)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/pending_registrations'})
+            elif action == "accept":
+                query = "SELECT * FROM Pending_Registrations WHERE username = '"+username+"';"
+                cursor.execute(query)
+                data = cursor.fetchall()
+                data = data[0]
+                library_id = int(data[7])
+                query = "DELETE FROM Pending_Registrations WHERE username = '"+username+"';"
+                cursor.execute(query)
+                mysql.connection.commit()
+                query = "INSERT INTO Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES (%s,%s,%s,%s,%s,%s,%s,'Active',"+str(library_id)+");"
+                params = (data[0],data[1],data[2],data[3],data[4],data[5],data[6],)
+                print(query, params)
+                cursor.execute(query,params)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/pending_registrations'})
+            else:
+                return json.dumps({'error': 'Something has gone wrong!'})
+            
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+    
+    
+
+    #retrive data from the request
+    response = 1
+
+    return response;
 
 @app.route('/logout')
 def logout():
