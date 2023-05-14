@@ -10,11 +10,7 @@
       crossorigin="anonymous"
     />
   </head>
-  <style>
-    UserData {
-        display: none;
-    }
-  </style>
+
   <body>
     <div class="container">
       <div class="header">
@@ -22,7 +18,7 @@
           class="border-bottom flex-wrap mb-4 py-3 d-flex justify-content-center"
         >
           <a
-            href="/"
+            href="/Operatorhome"
             class="text-dark text-decoration-none mb-3 mb-md-0 d-flex align-items-center me-md-auto"
           >
             <span class="fs-4">Python Flask App</span>
@@ -44,7 +40,12 @@
         </div>
       </div>
       <button id="show_table" onclick="toggleTable()">Show My Info</button>
-      <table id="UserData">
+      <style>
+        #UserData {
+            display: none;
+        }
+      </style>
+      <table id="UserData" style="display:none">
         <thead>
             <tr>
                 <th>Your Data</th>
