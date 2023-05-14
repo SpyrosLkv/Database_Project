@@ -26,6 +26,10 @@ Home_for_role = {'Student': '/Studenthome',
                  'Teacher': '/Teacherhome',
                  'Operator': '/Operatorhome',
                  'Admin': '/Adminhome'}
+Html_for_role = {'Student': 'Studenthome.html',
+                 'Teacher': 'Teacherhome.html',
+                 'Operator': 'Operatorhome.html',
+                 'Admin': 'Adminhome.html'}
 
 
 ''' main '''
@@ -151,7 +155,7 @@ def AdminHome():
 @app.route('/userhome')
 def userHome():
     if session.get('user'):
-        return render_template('userhome.html')
+        return render_template(Html_for_role[session['role']])
     else:
         return render_template('error.html', error='Unauthorized Access')
 
@@ -204,6 +208,32 @@ def change_password():
             return json.dumps({'html': '<span> Enter the required fields</span>'})
     except Exception as e:
         return json.dumps({'error': str(e)})
+
+@app.route('/change_attributes')
+def attributes_page():
+    return render_template('change_attributes.html')
+
+@app.route('/api/change_attributes', methods=['POST'])
+def change_attr():
+    try:
+        firstname = request.form["inputFirstName"]
+        lastname = request.form["inputLastName"]
+        birthdate = request.form["inputBirthDate"]
+        email = request.form["inputEmail"]
+        if firstname and lastname and birthdate and email:
+            with mysql.connection.cursor() as cursor:
+                query = "update Users set first_name = %s,last_name = %s, birth_date = %s, email = %s where user_id = "+str(session['user'])+";"
+                params = (firstname,lastname,birthdate,email,)
+                cursor.execute(query,params)
+                mysql.connection.commit()
+
+                return json.dumps({'message': 'attributes updated', 'redirect_url': Home_for_role[session['role']]})
+        else:
+            return json.dumps({'error': 'Not all required fields were filled'})
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
+
 
 @app.route('/logout')
 def logout():
