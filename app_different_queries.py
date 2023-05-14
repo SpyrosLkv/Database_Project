@@ -22,6 +22,12 @@ def HashPass(original_text):
     answer = binascii.hexlify(hash_password).decode()
     return answer
 
+Home_for_role = {'Student': '/Studenthome',
+                 'Teacher': '/Teacherhome',
+                 'Operator': '/Operatorhome',
+                 'Admin': '/Adminhome'}
+
+
 ''' main '''
 @app.route("/")
 def main():
@@ -97,6 +103,7 @@ def validateLogin():
                 role = data[0][8]
                 session['user']= data[0][0]
                 session['role']= data[0][8]
+                return json.dumps({'message': 'Credentials Correct!', 'redirect_url': Home_for_role[session['role']]})
                 if role == "Student":
                     return json.dumps({'message': 'Credentials Correct!', 'redirect_url': '/Studenthome'})
                 if role == "Teacher":
@@ -162,6 +169,41 @@ def get_user_data():
         return json.dumps({'error': str(e)})
 
     
+
+@app.route('/change_password')
+def password_page():
+    return render_template('ChangePassword.html')
+
+@app.route('/api/changePass', methods=['POST'])
+def change_password():
+    try:
+        oldPassword = request.form['inputOldPassword']
+        newPassword1 = request.form['inputNewPassword1']
+        newPassword2 = request.form['inputNewPassword2']
+        print(oldPassword, newPassword1, newPassword2)
+        if oldPassword and newPassword1 and newPassword2:
+            with mysql.connection.cursor() as cursor:
+                oldHashed = HashPass(oldPassword)
+                query = "select Password_Hashed from Users where user_id ="+str(session['user'])+";"
+                cursor.execute(query);
+                data = cursor.fetchall()
+                if oldHashed != data[0][0]:
+                    print("wrong old password:", oldPassword)
+                    return json.dumps({'error': "Wrong Old Password"})
+                if newPassword1 != newPassword2:
+                    return json.dumps({'error': "New Passwords don't match"})
+                newHashed = HashPass(newPassword1)
+                query = "UPDATE Users SET Password_Hashed = %s WHERE user_id = "+str(session['user'])+';'
+                params = (newHashed,)
+                cursor.execute(query,params)
+                mysql.connection.commit()
+
+                return json.dumps({'message': 'Password Changed!', 'redirect_url': Home_for_role[session['role']]})
+
+        else:
+            return json.dumps({'html': '<span> Enter the required fields</span>'})
+    except Exception as e:
+        return json.dumps({'error': str(e)})
 
 @app.route('/logout')
 def logout():
