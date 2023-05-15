@@ -8,11 +8,48 @@
     <body>
         <div class="container">
             <form action="" class="search-bar">
-                <input type = "text" placeholder="search for books in your library" name = "q">
+                <input type = "search" id = "searchBar" placeholder="search for books in your library" name = "q">
                 <button type="submit">
                         <img src="images/search.png">
                 </button>
+                <div id = "searchResults"></div>
             </form>
         </div>
     </body>
+    <script>
+        const searchBar = document.getElementById('searchBar');
+        const searchResults = document.getElementById('searchResults');
+
+        let timeoutId;
+        searchBar.addEventListener('input', handleSearch);
+
+        function handleSearch() {
+            clearTimeout(timeoutId);
+
+            const query = searchBar.value;
+            timeoutId = setTimeout(fetchSearchResults(query), 500);
+        }
+
+        function fetchSearchResults(query) {
+            fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type' : 'application/json'
+                },
+                body : JSON.stringify({query: query})
+            })
+            .then(Response => Response.json())
+            .then(data => {
+                const results = data.results;
+
+                searchResults.innerHTML = '';
+
+                results.forEach(results => {
+                    const resultItem = document.createElement('div');
+                    resultItem.textContent = result;
+                    searchResults.appendChild(resultItem);
+                });
+            })
+        }
+    </script>
 </html>
