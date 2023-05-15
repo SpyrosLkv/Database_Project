@@ -27,6 +27,9 @@ def showSignUp():
 def showSignin():
     return render_template('signin.html')
 
+@app.route('/book_search')
+def showSearchbar():
+    return render_template('searchbar.html')
 
 @app.route('/api/validateLogin', methods=['POST'])
 def validateLogin():

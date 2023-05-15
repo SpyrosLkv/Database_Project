@@ -1,17 +1,19 @@
-from PIL import Image
+import mysql.connector
 import os
 
 
+cnx = mysql.connector.connect(
+    user='root',
+    password ='toyot2002',
+    host='localhost',
+    database='semester_project'
+)
+
+
+
 filename = "all_the_isbn.txt"
-
-file = open(filename,'r')
-
-filename = "dml_for_photos.sql"
-
-dml = open(filename,"w")
-dml.truncate(0)
-
-isbn_list = file.read().split("\n")
+isbn_file = open(filename, "r")
+isbn_list = isbn_file.read().split("\n")
 if isbn_list[-1] == "":
     isbn_list = isbn_list[:len(isbn_list)-2]
 
@@ -31,6 +33,16 @@ for isbn in isbn_list:
         i+=1
         continue
     
-    query = "UPDATE semester_project.Book SET image = LOAD_FILE('"+ img_path +"') WHERE ISBN ="+ isbn +";\n"
-    dml.write(query)
+    with open(img_path, 'rb') as file:
+        image_data = file.read()
+
+    cursor = cnx.cursor()
+    insert_query = "UPDATE Book SET image =%s WHERE ISBN ="+str(isbn)+";"
+    image_data_blob = mysql.connector.Binary(image_data)
+    insert_data = (image_data_blob,)
+    cursor.execute(insert_query,insert_data)
+    cnx.commit()
+
+    cursor.close()
     i+=1
+cnx.close()
