@@ -293,6 +293,11 @@ def process_registration():
 
     return response;
 
+@app.route('/book_search')
+def showSearchbar():
+    return render_template('searchbar.html')
+
+
 @app.route('/logout')
 def logout():
     session.pop('user', None)
