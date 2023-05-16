@@ -296,6 +296,28 @@ def process_registration():
 @app.route('/book_search')
 def showSearchbar():
     return render_template('searchbar.html')
+@app.route('/api/book_search', methods = ['POST'])
+def bookSearch():
+    try:
+        _book = request.form['inputBook']
+        if _book:
+            with mysql.connection.cursor() as cursor:
+                string1 = "'%"
+                string2 = "%';"
+                merged_string = string1 + str(_book) + string2
+                query = "select title,publisher from Book where title LIKE %s"
+                cursor.execute(query, merged_string)
+                results = cursor.fetchall()
+                if (len(results) == 0):
+                    return json.dumps({'message' : 'No books found relative to the searched word'})
+                else:
+                    for row in results:
+                        print(row)
+        else:
+            return json.dumps({'html': '<span> Enter the required fields</span>'})
+
+    except Exception as e:
+        return render_template('error.html', error = str(e))
 
 
 @app.route('/logout')
