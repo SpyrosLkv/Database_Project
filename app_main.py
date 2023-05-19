@@ -3,6 +3,10 @@ from flask_mysqldb import MySQL
 import hashlib
 import binascii
 from datetime import datetime
+import os
+import mimetypes
+import base64
+
 app = Flask(__name__)
 
 
@@ -30,7 +34,9 @@ Home_for_role = {'Student': '/Studenthome',
 Html_for_role = {'Student': 'Studenthome.html',
                  'Teacher': 'Teacherhome.html',
                  'Operator': 'Operatorhome.html',
-                 'Admin': 'Adminhome.html'}
+                 'Admin': 'Adminhome.html'}   
+
+
 
 
 ''' main '''
@@ -296,12 +302,6 @@ def process_registration():
     except Exception as e:
         return json.dumps({'error': str(e)})
     
-    
-
-    #retrive data from the request
-    response = 1
-
-    return response;
 
 @app.route('/book_search')
 def showSearchbar():
@@ -487,6 +487,138 @@ def return_lib_names():
     except Exception as e:
         return json.dumps({'error': str(e)})
 
+@app.route('/newbook')
+def newbookpage():
+    return render_template('NewBook.html')
+
+@app.route('/api/newbook', methods=['POST'])
+def newbookinsert():
+    try:
+        print("started")
+        ISBN = int(request.form['inputISBN'])
+        print(ISBN)
+        title = request.form['inputTitle']
+        print(title)
+        publisher = request.form['inputPublisher']
+        print(publisher)
+        pages = int(request.form['inputPages'])
+        print(pages)
+        summary = request.form['inputSummary']
+        print(summary)
+        image = request.files['inputImage']
+
+        language = request.form['inputLanguage']
+        print(language)
+        keywords = request.form['inputKeywords']
+        print(keywords)
+        authors = request.form['inputAuthors']
+        print(authors)
+        categories = request.form['inputThematic']
+        print(categories)
+        print("got data")
+        if ISBN and title and publisher and pages and summary and image and language and keywords and authors and categories:
+            print("everything in")
+            file_type, _ = mimetypes.guess_type(image.filename)
+            allowed_types = ['image/jpeg', 'image/jpg', 'image/png']
+            if file_type not in allowed_types:
+                return json.dumps({'error': 'Invalid file type. Only JPEG, JPG, and PNG files are allowed'})
+            print("good file type")
+            max_size = 250 * 1024 
+            if len(image.read()) > max_size:
+                return json.dumps({'error': 'File too large'})
+            print("good size")
+            image.seek(0)
+
+            file_bytes = image.read()
+
+            keywords = keywords.split(",")
+            authors = authors.split(",")
+            categories = categories.split(",")
+            with mysql.connection.cursor() as cursor:
+                print("about to insert")
+                query = "INSERT INTO Book (ISBN,title,publisher,no_of_pages,summary,image,language) VALUES ("+str(ISBN)+",%s,%s,"+str(pages)+",%s,%s,%s);"
+                params = (title,publisher,summary,base64.b64encode(file_bytes),language)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+                print("inserted")
+                for keyword in keywords:
+                    query = "select keyword_id from Keywords where keyword = %s;"
+                    params = (keyword,)
+                    cursor.execute(query,params)
+                    data = cursor.fetchall()
+                    if len(data) == 0:
+                        query = "INSERT INTO Keywords (keyword) VALUES (%s);"
+                        params = (keyword,)
+                        cursor.execute(query,params)
+                        mysql.connection.commit()
+                        query = "select keyword_id from Keywords where keyword = %s;"
+                        cursor.execute(query,params)
+                        data = cursor.fetchall()
+                        keyword_id = int(data[0][0])
+                        query = "INSERT INTO Keywords_in_book (keyword_id,book_ISBN) VALUES ("+str(keyword_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                    else:
+                        keyword_id = int(data[0][0])
+                        query = "INSERT INTO Keywords_in_book (keyword_id,book_ISBN) VALUES ("+str(keyword_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                print("good with keywords")
+                for author in authors:
+                    first_name = author.split(" ")[0]
+                    last_name = author.split(" ")[1]
+                    query = "select author_id from Authors where first_name = %s and last_name = %s;"
+                    params = (first_name,last_name,)
+                    cursor.execute(query,params)
+                    data = cursor.fetchall()
+                    if len(data) == 0:
+                        query = "INSERT INTO Authors (first_name,last_name) VALUES (%s,%s);"
+                        params = (first_name,last_name,)
+                        cursor.execute(query,params)
+                        mysql.connection.commit()
+                        query = "select author_id from Authors where first_name = %s and last_name = %s;"
+                        cursor.execute(query,params)
+                        data = cursor.fetchall()
+                        author_id = int(data[0][0])
+                        query = "INSERT INTO Wrote (author_id,book_ISBN) VALUES ("+str(author_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                    else:
+                        author_id = int(data[0][0])
+                        query = "INSERT INTO Wrote (author_id,book_ISBN) VALUES ("+str(author_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                print("good with authors")
+                for category in categories:
+                    query = "select category_id from Thematic_Category where category = %s;"
+                    params = (category,)
+                    cursor.execute(query,params)
+                    data = cursor.fetchall()
+                    if len(data) == 0:
+                        query = "INSERT INTO Thematic_Category (category) VALUES (%s);"
+                        params = (category,)
+                        cursor.execute(query,params)
+                        mysql.connection.commit()
+                        query = "select category_id from Thematic_Category where category = %s;"
+                        cursor.execute(query,params)
+                        data = cursor.fetchall()
+                        category_id = int(data[0][0])
+                        query = "INSERT INTO Belongs_in (category_id,book_ISBN) VALUES ("+str(category_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                    else:
+                        category_id = int(data[0][0])
+                        query = "INSERT INTO Belongs_in (category_id,book_ISBN) VALUES ("+str(category_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                print("good with categories")
+                return json.dumps({'redirect_url': '/userhome'})
+
+
+        else:
+            return json.dumps({'error': 'Not all required fields were filled'})
+    except Exception as e:
+        return json.dumps({'error': str(e)})
 
 @app.route('/logout')
 def logout():
