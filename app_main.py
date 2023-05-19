@@ -295,6 +295,17 @@ def process_registration():
                 print(query, params)
                 cursor.execute(query,params)
                 mysql.connection.commit()
+                ''' 
+                Create User's first Card
+                '''
+                query = "SELECT user_id from Users where username = %s;"
+                params = (username,)
+                cursor.execute(query,params)
+                user_id = int(cursor.fetchall()[0][0])
+
+                query = "INSERT INTO Card (user_id,card_no,status) VALUES ("+str(user_id)+",1,'Active');"
+                cursor.ececute(query)
+                mysql.connection.commit()
                 return json.dumps({'redirect_url': '/pending_registrations'})
             else:
                 return json.dumps({'error': 'Something has gone wrong!'})
@@ -603,6 +614,7 @@ def newbookinsert():
             return json.dumps({'errorshow': 'Not all required fields were filled'})
     except Exception as e:
         return json.dumps({'error': str(e)})
+
 @app.route('/api/get_phones', methods=['GET'])
 def get_phones():
     try:
