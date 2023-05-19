@@ -450,6 +450,21 @@ def change_lib():
 def delete_lib():
     return render_template('Delete_Lib.html')
 
+@app.route('/api/getschools', methods=['GET'])
+def return_lib_names():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = 'select name from School_Library;'
+            cursor.execute(query)
+            data = cursor.fetchall()
+            response = []
+            for row in data:
+                lib = {'name': row}
+                response.append(lib)
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
 @app.route('/logout')
 def logout():
     session.pop('user', None)
