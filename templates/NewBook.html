@@ -165,8 +165,15 @@
                     if (result.redirect_url){
                         window.location.href = result.redirect_url;
                     } else {
-						console.log(result);
-					
+						if (result.errorshow){
+                            document.querySelector('#error-message').textContent= result.errorshow;
+                        }
+                        else if (result.error){
+                            document.querySelector('#error-message').textContent = 'an error has occured';
+                        }
+                        else {
+                            console.log(result);
+                        }
                     }
                 } catch (error) {
 					console.error(error);
