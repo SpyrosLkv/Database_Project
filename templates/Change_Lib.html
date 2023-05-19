@@ -51,11 +51,11 @@
             </div>
             <div class="bg-light rounded-3 mb-4 p-5">
                 <div class="container-fluid py-5">
-                    <h1 class="text-center fw-bold display-5">Choose Library to Delete</h1>
+                    <h1 class="text-center fw-bold display-5">Change Library</h1>
                     <div class="display-6 fw-bold text-center" id="error-message"> </div>
-                    <form>
+                    <form id="form-changelib" action="/api/changelib" method="post">
                         <label for="dropdown" class="sr-only">Library</label>
-                        <select id="dropdown" class="search-dropdown">
+                        <select id="dropdown" class="search-dropdown" name="dropdown">
                         </select>
                         <script>
                             fetch('api/getschools')
@@ -73,15 +73,40 @@
                             })
                         </script>
                         <br>
-                        <label for="inputPassword" class="sr-only">Password</label>
+                        <label for="inputNewName" class="sr-only">New Name</label>
                         <input 
-							type="Password" 
-							name="inputPassword" 
-							id="inputPassword" 
+							type="Name" 
+							name="inputNewName" 
+							id="inputNewName" 
 							class="form-control" 
-							placeholder="Your Password" 
+							placeholder="New Name" 
 							required>
-                        <button id="Del" class="btn btn-lg btn-primary btn-block" type="submit">Delete</button>
+                        <label for="inputNewAddress" class="sr-only">New Address</label>
+                        <input 
+                            type="Address" 
+                            name="inputNewAddress" 
+                            id="inputNewAddress"
+                            class="form-control" 
+                            placeholder="New Address" 
+                            required>
+                        <label for="inputNewCity" class="sr-only">New City</label>
+                        <input 
+                            type="City" 
+                            name="inputNewCity" 
+                            id="inputNewCity" 
+                            class="form-control" 
+                            placeholder="New City" 
+                            required>
+                        <label for="inputNewEmail" class="sr-only">New Email</label>
+                        <input 
+                            type="Email" 
+                            name="inputNewEmail" 
+                            id="inputNewEmail" 
+                            class="form-control" 
+                            placeholder="New Email" 
+                            required>
+                                                
+                        <button id="Del" class="btn btn-lg btn-primary btn-block" type="submit">Change</button>
                     </form>
             </div>
 
@@ -92,7 +117,40 @@
 			</footer>
         </div>
         <script>
-            
+            const form = document.querySelector('#form-changelib');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const body = new URLSearchParams(formData).toString();
+
+                try{
+                    const res = await fetch("/api/changelib", {
+                        method: "POST",
+                        body: body,
+                        headers:{
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                    });
+
+                    const result = await res.json();
+                    if (result.redirect_url){
+                        window.location.href = result.redirect_url;
+                    } else {
+						if (result.error == "wrong password"){
+							document.querySelector('#error-message').textContent = result.error;
+						}
+						else if (result.error){
+							document.querySelector('#error-message').textContent = 'an error occurred';
+						}
+						else {
+							console.log(result);
+						}
+					}
+                } catch(error){
+                    console.error(error);
+                    document.querySelector('#error-message').textContent = 'an error occured';
+                }
+            })
         </script>
     </body>
 </html>

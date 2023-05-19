@@ -446,9 +446,26 @@ def library_creation_form_process():
 def change_lib():
     return render_template('Change_Lib.html')
 
-@app.route('/delete_lib')
-def delete_lib():
-    return render_template('Delete_Lib.html')
+@app.route('/api/changelib', methods=['POST'])
+def change_library():
+    try:
+        old_name = request.form.get("dropdown")
+        new_name = request.form["inputNewName"]
+        new_address = request.form["inputNewAddress"]
+        new_city = request.form["inputNewCity"]
+        new_email = request.form["inputNewEmail"]
+        if old_name and new_address and new_city and new_email and new_name:
+            with mysql.connection.cursor() as cursor:
+                query = "update School_Library set name = %s, address = %s, town = %s, email = %s where name = %s;"
+                params = (new_name,new_address,new_city,new_email,old_name,)
+                cursor.execute(query,params)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/manip_lib'})
+        else:
+            return json.dumps({'error': 'Not all required fields were filled'})
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+    
 
 @app.route('/api/getschools', methods=['GET'])
 def return_lib_names():
@@ -464,6 +481,7 @@ def return_lib_names():
             return jsonify(response)
     except Exception as e:
         return json.dumps({'error': str(e)})
+
 
 @app.route('/logout')
 def logout():
