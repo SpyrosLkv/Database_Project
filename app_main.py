@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, json, redirect, session, json
 from flask_mysqldb import MySQL
 import hashlib
 import binascii
+from datetime import datetime
 app = Flask(__name__)
 
 
@@ -224,7 +225,7 @@ def change_attr():
 
 @app.route('/pending_registrations')
 def load_reg():
-    return render_template('manageusers.html')
+    return render_template('manageregistrations.html')
 
 @app.route('/api/getregistrations', methods=['GET'])
 def get_pending_registrations():
@@ -238,12 +239,16 @@ def get_pending_registrations():
             cursor.execute(query)
             data = cursor.fetchall()
             response = []
+
+            
+
             for row in data:
+
                 registration_dict = {
                     'username': row[0],
                     'first_name': row[2],
                     'last_name': row[3],
-                    'birth_date': row[4],
+                    'birth_date': str(row[4]),
                     'email': row[5],
                     'role': row[6]
                 }
@@ -319,6 +324,82 @@ def bookSearch():
     except Exception as e:
         return render_template('error.html', error = str(e))
 
+
+@app.route('/pending_operator_registrations')
+def pending_operators():
+    return render_template('OperatorRegistrations.html')
+
+@app.route('/api/get_operator_registrations', methods=['GET'])
+def get_operator_registrations():
+    try:
+        with mysql.connection.cursor() as cursor:
+            
+            query = "select * from Pending_Registrations where user_role = 'Operator' or user_role = 'Admin';"
+            cursor.execute(query)
+            data = cursor.fetchall()
+            response = []
+
+            ''' 
+            Εδώ θα κάνουμε το query για να πάρουμε τα ονόματα των βιβλιοθηκών σε σχέση με τα id
+            '''
+
+            query = "select library_id, name from School_Library;"
+            cursor.execute(query)
+            libraries = cursor.fetchall()
+            libs = {}
+            for library in libraries:
+                libs[library[0]] = library[1]
+            
+
+            for row in data:
+
+                registration_dict = {
+                    'username': row[0],
+                    'first_name': row[2],
+                    'last_name': row[3],
+                    'birth_date': str(row[4]),
+                    'email': row[5],
+                    'role': row[6],
+                    'school': libs[row[7]]
+                }
+                response.append(registration_dict)
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
+@app.route('/api/process_operator', methods=['POST'])
+def process_operator():
+    try:
+        data = request.get_json()
+        action = data['action']
+        username = data['username']
+        print(username, action)
+        with mysql.connection.cursor() as cursor:
+            if action == "deny":
+                query = "DELETE FROM Pending_Registrations WHERE username = '"+username+"';"
+                cursor.execute(query)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/pending_registrations'})
+            elif action == "accept":
+                query = "SELECT * FROM Pending_Registrations WHERE username = '"+username+"';"
+                cursor.execute(query)
+                data = cursor.fetchall()
+                data = data[0]
+                library_id = int(data[7])
+                query = "DELETE FROM Pending_Registrations WHERE username = '"+username+"';"
+                cursor.execute(query)
+                mysql.connection.commit()
+                query = "INSERT INTO Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES (%s,%s,%s,%s,%s,%s,%s,'Active',"+str(library_id)+");"
+                params = (data[0],data[1],data[2],data[3],data[4],data[5],data[6],)
+                print(query, params)
+                cursor.execute(query,params)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/pending_operator_registrations'})
+            else:
+                return json.dumps({'error': 'Something has gone wrong!'})
+            
+    except Exception as e:
+        return json.dumps({'error': str(e)})
 
 @app.route('/logout')
 def logout():
