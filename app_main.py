@@ -635,7 +635,54 @@ def get_phones():
             
     except Exception as e:
         return json.dumps({'error': str(e)})
+
+@app.route('/card_condition')
+def show_card_status():
+    try:
+        card_no = 0
+        card_status = 'Inactive'
+        user_id = int(session['user'])
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT max(card_no) from Card where user_id = "+str(user_id)+";"
+            cursor.execute(query)
+            card_no = int(cursor.fetchall()[0][0])
+            query = "SELECT status from Card where user_id = "+str(user_id)+" and card_no="+str(card_no)+";"
+            cursor.execute(query)
+            card_status = cursor.fetchall()[0][0]
+        return render_template("CardStatus.html", card_no = card_no, status = card_status)
+    except Exception as e:
+        return redirect('/logout')
     
+
+@app.route('/api/lostcard', methods=['POST'])
+def lost_card():
+    try:
+        user_id = int(session['user'])
+        password = request.form['inputPassword']
+        if password:
+            with mysql.connection.cursor() as cursor:
+
+                query = "SELECT Password_Hashed FROM Users where user_id = "+ str(user_id)+";"
+                cursor.execute(query)
+                if HashPass(password) != cursor.fetchall()[0][0]:
+                    json.dumps({'errorshow': 'Wrong Password'})
+                
+                query = "SELECT card_no FROM Card where user_id ="+str(user_id)+" and status = 'Active';"
+                cursor.execute(query)
+                cardno = int(cursor.fetchall()[0][0])
+                query = "UPDATE Card SET status = 'Missing' WHERE user_id="+str(user_id)+" and card_no="+str(cardno)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+                query = "INSERT INTO Card (user_id,card_no,status) VALUES ("+str(user_id)+","+str(cardno + 1)+",'Pending');"
+                cursor.execute(query)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/userhome'})
+        else:
+            return json.dumps({'errorshow': 'Not all required fields were filled'})
+
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
 @app.route('/logout')
 def logout():
     session.pop('user', None)
