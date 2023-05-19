@@ -603,7 +603,27 @@ def newbookinsert():
             return json.dumps({'errorshow': 'Not all required fields were filled'})
     except Exception as e:
         return json.dumps({'error': str(e)})
+@app.route('/api/get_phones', methods=['GET'])
+def get_phones():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT number from User_Phone_No where user_id = " + str(session['user'])
+            cursor.execute(query)
+            data = cursor.fetchall() 
+            counter = 0
+            response = []
 
+            for phones in data:
+                counter += 1
+                response.append({
+                    "id": counter,
+                    "number": phones[0]
+                })
+            return jsonify(response)
+            
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+    
 @app.route('/logout')
 def logout():
     session.pop('user', None)
