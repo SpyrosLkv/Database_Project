@@ -234,7 +234,7 @@ def get_pending_registrations():
             cursor.execute(query)
             library = cursor.fetchall()
             library = int(library[0][0])
-            query = 'select * from Pending_Registrations where library_id='+str(library)+";"
+            query = 'select * from Pending_Registrations where library_id='+str(library)+" and (user_role = 'Teacher' or user_role = 'Student');"
             cursor.execute(query)
             data = cursor.fetchall()
             response = []
