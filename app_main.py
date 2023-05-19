@@ -55,7 +55,8 @@ def signUp():
         _password = request.form['inputPassword']
         birth_date = request.form['inputBirth_Date']
         user_role = request.form['inputUser_Role']
-        library_id = int(request.form['inputLibrary'])
+        # library_id = int(request.form['inputLibrary'])
+        library_name = request.form.get("dropdown")
 
         if first_name and last_name and _email and username and _password:
             with mysql.connection.cursor() as cursor:
@@ -68,12 +69,16 @@ def signUp():
                 data2 = cursor.fetchall()
 
                 if len(data) == 0 and len(data2) == 0:
+                    query = "select * from School_Library where name = %s;"
+                    params = (library_name,)
+                    cursor.execute(query,params)
+                    data = cursor.fetchall()
+                    library_id = int(data[0][0])
                     query = "insert into Pending_Registrations (username,password_hashed,first_name,last_name,birth_date,email,user_role,library_id) values (%s,%s,%s,%s,%s,%s,%s,"+str(library_id)+");"
                     params = (username,HashPass(_password),first_name,last_name,birth_date,_email,user_role)
                     cursor.execute(query,params)
                     mysql.connection.commit()
-                    # return redirect('/')
-                    # return render_template('index.html')
+
                     return json.dumps({'message': 'User created successfully !', 'redirect_url': '/'})
                 else:
                     return json.dumps({'error': "the username already exists"})
