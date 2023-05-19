@@ -9,6 +9,25 @@
       integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
       crossorigin="anonymous"
     />
+    <style>
+      button {
+        background-color: #0d6efd;
+        color: white;
+        border-radius: 10px; /* Adjust the value to change the roundness */
+        padding: 10px 20px;
+
+      }
+      .div1 {
+        background-color: #eaafff;
+        border-radius: 10px;
+        padding: 20px;
+      }
+      .div2 {
+        background-color: #c5e8ff;
+        border-radius: 10px;
+        padding: 20px;
+      }
+    </style>
   </head>
   
   <body>
@@ -113,33 +132,46 @@
             }     
         });
       </script>
-      <a href="/book_search">
-        <button>Books</button>
-      </a>
-      <a href="/past_loans">
-        <button>My past Loans and Reservations</button>
-      </a>
-      <a href="/card_condition">
-        <button>My Card Status</button>
-      </a>
-      <a href="/change_attributes">
-        <button>Change My Attributes</button>
-      </a>
-      <a href="/pending_registrations">
-        <button>Operator Registrations</button>
-      </a>
-      <a href="/pending_cards">
-        <button>Operators' Cards</button>
-      </a>
-      <a href="/add_lib">
-        <button>Add, Change, or Delete Library</button>
-      </a>
-      <a href="/backup">
-        <button>Create Backup or Restore Database</button>
-      </a>
+      <br><br>
+      <div class="div1">
+        <div>
+          <h1 class="text-center">Your Account</h1>
+        </div>
+        <a href="/book_search">
+          <button>Books</button>
+        </a>
+        <a href="/past_loans">
+          <button>My past Loans and Reservations</button>
+        </a>
+        <a href="/card_condition">
+          <button>My Card Status</button>
+        </a>
+        <a href="/change_attributes">
+          <button>Change My Attributes</button>
+        </a>
+      </div>
+      <br><br>
+      <div class="div2">
+        <div>
+          <h1 class="text-center">Manage Library System</h1>
+        </div>
+        <a href="/pending_operator_registrations">
+          <button>Operator Registrations</button>
+        </a>
+        <a href="/pending_operator_cards">
+          <button>Operators' Cards</button>
+        </a>
+        <a href="/add_lib">
+          <button>Add, Change, or Delete Library</button>
+        </a>
+        <a href="/backup">
+          <button>Create Backup or Restore Database</button>
+        </a>
+      </div>
+      
       <footer class="footer">
         <a href="/change_password">
-          <button>Change my password</button>
+          Change my password
         </a>
         <p>&copy; NTUA 2023</p>
       </footer>

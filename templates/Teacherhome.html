@@ -9,6 +9,20 @@
       integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
       crossorigin="anonymous"
     />
+    <style>
+      button {
+        background-color: #0d6efd;
+        color: white;
+        border-radius: 10px; /* Adjust the value to change the roundness */
+        padding: 10px 20px;
+
+      }
+      .div1 {
+        background-color: #eaafff;
+        border-radius: 10px;
+        padding: 20px;
+      }
+    </style>
   </head>
 
   <body>
@@ -39,7 +53,7 @@
           <h1 class="text-center fw-bold display-5">Welcome Home!</h1>
         </div>
       </div>
-      <button id="show_table" onclick="toggleTable()">Show My Info</button>
+      <button id="show_table" onclick="toggleTable()">Show My Info</button><br>
       <style>
         #UserData {
             display: none;
@@ -113,18 +127,25 @@
             }     
         });
       </script>
-      <a href="/book_search">
-        <button>Books</button>
-      </a>
-      <a href="/past_loans">
-        <button>My past Loans and Reservations</button>
-      </a>
-      <a href="/card_condition">
-        <button>My Card Status</button>
-      </a>
-      <a href="/change_attributes">
-        <button>Change My Attributes</button>
-      </a>
+      <br><br>
+      <div class="div1">
+        <div>
+          <h1 class="text-center">Your Account</h1>
+        </div>
+        <a href="/book_search">
+          <button>Books</button>
+        </a>
+        <a href="/past_loans">
+          <button>My past Loans and Reservations</button>
+        </a>
+        <a href="/card_condition">
+          <button>My Card Status</button>
+        </a>
+        <a href="/change_attributes">
+          <button>Change My Attributes</button>
+        </a>
+      </div>
+      
       <footer class="footer">
         <a href="/change_password">
           Change my password
