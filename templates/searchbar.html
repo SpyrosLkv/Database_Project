@@ -1,55 +1,75 @@
 <!DOCTYPE html>
-<html lan = "en">
-    <head>
-        <meta name = "viewport" content = "width=device-width, initial-scale=1.0">
-        <title>Python Flask Library App - Book Search</title>
-        <link rel = "stylesheet" href = "searchbar.css">
-    </head>
-    <body>
-        <div class="container">
-            <form action="" class="search-bar">
-                <input type = "search" id = "searchBar" placeholder="search for books in your library" name = "q">
-                <button type="submit">
-                        <img src="images/search.png">
-                </button>
-                <div id = "searchResults"></div>
-            </form>
-        </div>
-    </body>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Flask Library App - Book Search</title>
+    <link rel="stylesheet" href="searchbar.css">
+    <link rel="stylesheet" href="'table_template.css">
+</head>
+<body>
+    <div class="container">
+        <form action="" class="search-bar">
+            <input type="search" id="searchBar" placeholder="Search for books in your library" name="q">
+            <button type="submit">
+                <img src="images/search.png">
+            </button>
+            <div id="searchResults"></div>
+        </form>
+    </div>
+
     <script>
         const searchBar = document.getElementById('searchBar');
         const searchResults = document.getElementById('searchResults');
 
-        let timeoutId;
-        searchBar.addEventListener('input', handleSearch);
-
-        function handleSearch() {
-            clearTimeout(timeoutId);
-
-            const query = searchBar.value;
-            timeoutId = setTimeout(fetchSearchResults(query), 500);
-        }
 
         function fetchSearchResults(query) {
             fetch('/search', {
                 method: 'POST',
                 headers: {
-                    'Content-Type' : 'application/json'
+                    'Content-Type': 'application/json'
                 },
-                body : JSON.stringify({query: query})
+                body: JSON.stringify({ inputBook: query })
             })
-            .then(Response => Response.json())
-            .then(data => {
-                const results = data.results;
+                .then(response => response.json())
+                .then(data => {
+                    const results = data.results;
 
-                searchResults.innerHTML = '';
+                    // Create table
+                    const table = document.createElement('table');
+                    table.classList.add('content-table');
 
-                results.forEach(results => {
-                    const resultItem = document.createElement('div');
-                    resultItem.textContent = result;
-                    searchResults.appendChild(resultItem);
+                    // Create table header
+                    const tableHeader = document.createElement('tr');
+                    const headers = ['Book Title', 'Publisher'];
+                    headers.forEach(headerText => {
+                        const header = document.createElement('th');
+                        header.textContent = headerText;
+                        tableHeader.appendChild(header);
+                    });
+                    table.appendChild(tableHeader);
+
+                    // Create table rows
+                    results.forEach(result => {
+                        const row = document.createElement('tr');
+                        const columns = [result.title, result.publisher];
+                        columns.forEach(columnText => {
+                            const column = document.createElement('td');
+                            column.textContent = columnText;
+                            row.appendChild(column);
+                        });
+                        table.appendChild(row);
+                    });
+
+                    // Clear previous search results
+                    searchResults.innerHTML = '';
+
+                    // Append table to search results div
+                    searchResults.appendChild(table);
+                })
+                .catch(error => {
+                    console.error('Error: ', error);
                 });
-            })
         }
     </script>
+</body>
 </html>
