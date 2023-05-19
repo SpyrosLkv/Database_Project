@@ -408,6 +408,47 @@ def process_operator():
         return json.dumps({'error': str(e)})
 
 
+@app.route('/manip_lib')
+def manip_lib():
+    return render_template('Library_hub.html')
+
+@app.route('/create_lib')
+def create_lib():
+    return render_template('Create_Library.html')
+
+@app.route('/api/createlib', methods=['POST'])
+def library_creation_form_process():
+    try:
+        name = request.form["inputName"]
+        address = request.form["inputAddress"]
+        city = request.form["inputCity"]
+        email = request.form["inputEmail"]
+        if name and address and city and email:
+            with mysql.connection.cursor() as cursor:
+                query = "select name from School_Library where name = %s;"
+                params = (name,)
+                cursor.execute(query,params)
+                data = cursor.fetchall()
+                if len(data) !=0:
+                    return json.dumps({'error': "School of this name already exists"})
+                print(name,address,city,email);
+                query = "INSERT INTO School_Library (name, address, town, email) VALUES (%s,%s,%s,%s);"
+                params = (name,address,city,email,)
+                cursor.execute(query,params)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/manip_lib'})
+        else:
+            return json.dumps({'html': '<span>Enter the required fields</span>'})
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
+@app.route('/change_lib')
+def change_lib():
+    return render_template('Change_Lib.html')
+
+@app.route('/delete_lib')
+def delete_lib():
+    return render_template('Delete_Lib.html')
 
 @app.route('/logout')
 def logout():
