@@ -311,14 +311,19 @@ def bookSearch():
                 if (len(results) == 0):
                     return json.dumps({'message' : 'No books found relative to the searched word'})
                 else:
+                    books = []
                     for row in results:
-                        print(row)
+                        book = {
+                            'title': row['title'],
+                            'publisher': row['publisher']
+                        }
+                        books.append(book)
+                    return jsonify({'results': books})
         else:
             return json.dumps({'html': '<span> Enter the required fields</span>'})
 
     except Exception as e:
         return render_template('error.html', error = str(e))
-
 
 @app.route('/logout')
 def logout():
