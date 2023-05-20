@@ -615,6 +615,10 @@ def newbookinsert():
     except Exception as e:
         return json.dumps({'error': str(e)})
 
+@app.route('/get_phones')
+def getphones():
+    return render_template('get_phones.html')
+
 @app.route('/api/get_phones', methods=['GET'])
 def get_phones():
     try:
@@ -635,7 +639,50 @@ def get_phones():
             
     except Exception as e:
         return json.dumps({'error': str(e)})
+    
+@app.route('/change_phones')
+def change_phones():
+    return render_template('ChangePhone.html')
 
+@app.route('/api/add_phone', methods = ['POST'])
+def add_phone():
+    data = request.get_json()
+    username = str(session['user'])
+    number = data['number']
+
+    #test
+    if not isinstance(number,str) or len(number) == 0:
+        return jsonify({'message' : 'Error', 'error': 'Invalid number'})
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "INSERT INTO User_Phone_No (number, user_id) VALUES (%s, %s);"
+            params = (number, username)
+            cursor.execute(query,params)
+            mysql.connection.commit()
+            return jsonify({'message': 'Success'})
+    except Exception as e:
+        return jsonify({'message': 'Error'})
+    
+@app.route('/api/delete_phone', methods = ['POST'])
+def delete_phone():
+    data = request.get_json()
+    number = data['number']
+
+    #test
+    if not isinstance(number,str) or len(number) == 0:
+        return jsonify({'message' : 'Error', 'error': 'Invalid number'})
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "DELETE FROM User_Phone_No WHERE number = %s;"
+            params =(number,)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+            response_data = {'message': 'Success'}
+            return json.dumps(response_data)
+    except Exception as e:
+        response_data = {'message': 'Error'}
+        return json.dumps(response_data)
+    
 @app.route('/card_condition')
 def show_card_status():
     try:
@@ -682,6 +729,150 @@ def lost_card():
 
     except Exception as e:
         return json.dumps({'error': str(e)})
+
+@app.route('/pending_cards')
+def show_pending_card_page():
+    return render_template('pendingcards.html')
+
+
+
+@app.route('/api/getcards', methods=['GET'])
+def get_pending_cards():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = 'select users_library_id from Users where user_id='+str(session['user'])+";"
+            cursor.execute(query)
+            library = cursor.fetchall()
+            library = int(library[0][0])
+            query = "SELECT u.username, u.first_name, u.last_name, u.email, u.user_role, c.card_no FROM Card c JOIN Users u ON c.user_id = u.user_id WHERE c.status = 'Pending' AND u.users_library_id = "+str(library)+";"
+            cursor.execute(query)
+            data = cursor.fetchall()
+            response = []
+
+            
+
+            for row in data:
+
+                registration_dict = {
+                    'username': row[0],
+                    'first_name': row[1],
+                    'last_name': row[2],
+                    'email': row[3],
+                    'role': row[4],
+                    'card_no': row[5]
+                }
+                response.append(registration_dict)
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
+
+@app.route('/api/process_card', methods=['POST'])
+def process_card():
+    try:
+        data = request.get_json()
+        action = data['action']
+        username = data['username']
+        card_no = int(data['card_no'])
+        print(username, action)
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT user_id FROM Users WHERE username = %s;"
+            params = (username,)
+            cursor.execute(query,params)
+            user_id = int(cursor.fetchall()[0][0])
+            if action == "deny":
+                query = "UPDATE Card SET status = 'Inactive' where user_id = "+str(user_id)+" AND card_no = "+str(card_no)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/pending_cards'})
+            elif action == "accept":
+                query = "UPDATE Card SET status = 'Active' where user_id = "+str(user_id)+" AND card_no = "+str(card_no)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/pending_cards'})
+            else:
+                return json.dumps({'error': 'Something has gone wrong!'})
+            
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
+@app.route('/manage_users')
+def manage_users():
+    return render_template('/manageusers.html')
+
+@app.route('/api/process_(de)activation')
+def process_act():
+    try:
+        data = request.json()
+        action = data['action']
+        username = data['username']
+        with mysql.connection.cursor() as cursor:
+            if (action == 'activate') :
+                query = "UPDATE Users SET user_status = 'Active' where username = %s;"
+                params = (username,)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+                return jsonify({'message': 'Success'})
+            elif (action == 'deactivate') :
+                query = "UPDATE Users SET user_status = 'Inactive' where usernmae =%s;"
+                params = (username,)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+                return jsonify({'message': 'Success2'})
+            else :
+                return jsonify({'message': 'Wrong action passed'})
+    except Exception as e:
+        return jsonify({'message': 'Error'})
+
+@app.route('/show_myloans')
+def show_myloans():
+    return render_template('/show_myloans.html')
+
+@app.route('/api/get_loans')
+def get_loans():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT book_ISBN, return_date, status from Loan where user_id = %s;"
+            user_id = str(session['user'])
+            params = (user_id,)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+            data = cursor.fetchall()
+            response = []
+
+            for loans in data:
+                response.append({
+                    "isbn" : loans[0],
+                    "return_date" : loans[1],
+                    "status" : loans[2]
+                })
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/late_returns')
+def late_returns():
+    return render_template('late_loans.html')
+
+@app.route('/api/get_lateloans')
+def get_lateloans():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT l.book_ISBN, l.user_id, u.username FROM Loan l JOIN Users u ON  l.user_id = u.user_id WHERE l.status = 'Late Returned';"
+            cursor.execute(query)
+            mysql.connection.commit()
+            data = cursor.fetchall()
+            response = []
+
+            for loans in data:
+                response.append({
+                    "isbn" : loans[0],
+                    "userid" : loans[1],
+                    "username" : loans[2]
+                })
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
 
 @app.route('/logout')
 def logout():
