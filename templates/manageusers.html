@@ -59,7 +59,6 @@
                 activateButton.addEventListener('click', (event) => {
                   event.preventDefault()
                   // Handle the activate action
-                  // Send a request to the server to delete the row from Pending_Registration table and append it to the Users
                   fetch(`/api/process_(de)activation`,{
                       method: 'POST',
                       headers:{
@@ -67,7 +66,7 @@
                       },
                       body: JSON.stringify({
                           action: 'activate',
-                          username: registration.username
+                          username: user.username
                       })
                   })
                   .then((res)=>res.json())
@@ -87,7 +86,6 @@
                 deactivateButton.addEventListener('click', (event) => {
                   event.preventDefault();
                   //Handle the deactivate action
-                  // Send a request to the server to delete the row from the Pending Registration table
                   fetch(`/api/process_(de)activation`,{
                       method: 'POST',
                       headers:{
@@ -95,7 +93,7 @@
                       },
                       body: JSON.stringify({
                           action: 'deactivate',
-                          username: registration.username
+                          username: user.username
                       })
                   })
                   .then((res)=>res.json())
