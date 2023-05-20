@@ -849,6 +849,30 @@ def get_loans():
             return jsonify(response)
     except Exception as e:
         return json.dumps({'error' : str(e)})
+    
+@app.route('/late_returns')
+def late_returns():
+    return render_template('late_loans.html')
+
+@app.route('/api/get_lateloans')
+def get_lateloans():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT l.book_ISBN, l.user_id, u.username FROM Loan l JOIN Users u ON  l.user_id = u.user_id WHERE l.status = 'Late Returned';"
+            cursor.execute(query)
+            mysql.connection.commit()
+            data = cursor.fetchall()
+            response = []
+
+            for loans in data:
+                response.append({
+                    "isbn" : loans[0],
+                    "userid" : loans[1],
+                    "username" : loans[2]
+                })
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
 
 @app.route('/logout')
 def logout():
