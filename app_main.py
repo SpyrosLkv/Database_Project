@@ -796,7 +796,33 @@ def process_card():
     except Exception as e:
         return json.dumps({'error': str(e)})
 
+@app.route('/manage_users')
+def manage_users():
+    return render_template('/manageusers.html')
 
+@app.route('/api/process_(de)activation')
+def process_act():
+    try:
+        data = request.json()
+        action = data['action']
+        username = data['username']
+        with mysql.connection.cursor() as cursor:
+            if (action == 'activate') :
+                query = "UPDATE Users SET user_status = 'Active' where username = %s;"
+                params = (username,)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+                return jsonify({'message': 'Success'})
+            elif (action == 'deactivate') :
+                query = "UPDATE Users SET user_status = 'Inactive' where usernmae =%s;"
+                params = (username,)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+                return jsonify({'message': 'Success2'})
+            else :
+                return jsonify({'message': 'Wrong action passed'})
+    except Exception as e:
+        return jsonify({'message': 'Error'})
 
 
 
