@@ -10,6 +10,22 @@
       crossorigin="anonymous"
     />
     <link href="../static/signup.css" rel="stylesheet" />
+    <style>
+      .form-control{
+          margin-bottom: 20px;
+      }
+      .search-dropdown{
+          display: flex;
+          width: 300px;
+          padding: 8px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          background-color: #fff;
+          font-size: 14px;
+          margin-bottom: 10px;
+      }
+      
+    </style>
   </head>
 
   <body>
@@ -111,15 +127,24 @@
               placeholder="'Student','Teacher','Operator','Admin'"
               required
             />
-            <label for="inputLibrary" class="sr-only"> Library Id</label>
-            <input
-              type="library"
-              name="inputLibrary"
-              id="inputLibrary"
-              class="form-control"
-              placeholder="Library"
-              required
-            />
+            <label for="dropdown" class="sr-only">Library</label>
+            <select id="dropdown" class="search-dropdown" name="dropdown">
+            </select>
+            <script>
+                fetch('api/getschools')
+                .then(response => response.json())
+                .then(libraries=>{
+                    const dropdown = document.getElementById('dropdown');
+                    // loop through the array of objects and create an option for each element
+                    libraries.forEach(library => {
+                        // Create new row
+                        const opt = document.createElement('option');
+                        opt.textContent = `${library.name}`;
+                        dropdown.appendChild(opt);
+                        
+                    });
+                })
+            </script>
             <button class="btn btn-lg btn-primary btn-block" type="submit">
               Sign up
             </button>

@@ -2235,6 +2235,10 @@ INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_nam
 INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('LucasBrown187','53afd05ba722640a961cc46d61cfab2e95a174ec0904dacdd848ae6d834441dc','Lucas','Brown','1980-5-17','LucasBrown187@gmail.com','Teacher','Active',1);
 INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('LucasMoore269','f91354be9bee07505fbc99204a09cd81f4ae3af2eb607f7fec4b1fcb213a14f9','Lucas','Moore','1983-1-6','LucasMoore269@gmail.com','Teacher','Active',1);
 INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('LoganWalker864','0d26c460d9c832539e9ed12ae95a47f502455dadfd5d65949073880eac54f991','Logan','Walker','1980-10-25','LoganWalker864@gmail.com','Teacher','Active',3);
+INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('Student1','5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','jonh','smith','2007-5-17','Lucassmith187@gmail.com','Student','Active',1);
+INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('Teacher1','5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','john','smith','1980-5-17','Lucassmith187@gmail.com','Teacher','Active',1);
+INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('Operator1','5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','john','smith','1980-5-17','Lucassmith187@gmail.com','Operator','Active',1);
+INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('Admin1','5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','john','smith','1980-5-17','Lucassmith187@gmail.com','Admin','Active',1);
 INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(1,1,'Active');
 INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(2,1,'Active');
 INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(3,1,'Active');
@@ -2362,6 +2366,10 @@ INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(124,1,'Active'
 INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(125,1,'Active');
 INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(126,1,'Active');
 INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(127,1,'Active');
+INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(128,1,'Active');
+INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(129,1,'Active');
+INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(130,1,'Active');
+INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(131,1,'Active');
 INSERT INTO semester_project.Reviews (book_ISBN,user_id,likert_rating,review) VALUES (9789603322092,43,5,'some sort of  holographic m');
 INSERT INTO semester_project.Reviews (book_ISBN,user_id,likert_rating,review) VALUES (9789603322092,52,5,'power. More pollen, moreflowe');
 INSERT INTO semester_project.Reviews (book_ISBN,user_id,likert_rating,review) VALUES (9789603322092,66,5,'n, moreflowers, more nectar, ');

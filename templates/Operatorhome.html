@@ -9,6 +9,38 @@
       integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
       crossorigin="anonymous"
     />
+    <style>
+      button {
+        background-color: #0d6efd;
+        color: white;
+        border-radius: 10px; /* Adjust the value to change the roundness */
+        padding: 10px 20px;
+
+      }
+      .bigimportantbutton{
+        background-color: #0d6efd;
+        /* display: block; */
+        color: white;
+        font-size: 24px;
+        border-radius: 10px; /* Adjust the value to change the roundness */
+        padding: 15px 30px;
+        margin: 0 auto;
+      }
+      .importantbutton_container{
+        display: flex;
+        justify-content: center;
+      }
+      .div1 {
+        background-color: #eaafff;
+        border-radius: 10px;
+        padding: 20px;
+      }
+      .div2 {
+        background-color: #c5e8ff;
+        border-radius: 10px;
+        padding: 20px;
+      }
+    </style>
   </head>
 
   <body>
@@ -39,7 +71,7 @@
           <h1 class="text-center fw-bold display-5">Welcome Home!</h1>
         </div>
       </div>
-      <button id="show_table" onclick="toggleTable()">Show My Info</button>
+      <button id="show_table" onclick="toggleTable()">Show My Info</button><br>
       <style>
         #UserData {
             display: none;
@@ -113,37 +145,61 @@
             }     
         });
       </script>
-      <a href="/book_search">
-        <button>Books</button>
-      </a>
-      <a href="/past_loans">
-        <button>My past Loans and Reservations</button>
-      </a>
-      <a href="/card_condition">
-        <button>My Card Status</button>
-      </a>
-      <a href="/change_attributes">
-        <button>Change My Attributes</button>
-      </a>
-      <a href="/pending_registrations">
-        <button>Show Pending Registrations</button>
-      </a>
-      <a href="/pending_cards">
-        <button>Pending Cards</button>
-      </a>
-      <a href="/manage_users">
-        <button>Manage Users</button>
-      </a>
-      <a href="/book_management">
-        <button>Manage Library</button>
-      </a>
-      <a href="/loans_and_reservations">
-        <button>Manage Loans</button>
-      </a>
-      <a href="/late_returns">
-        <button>Late Returns</button>
-      </a>
-      
+      <br>
+      <br>
+      <div class="div1">
+        <div>
+          <h1 class="text-center">Your Account</h1>
+        </div>
+        <a href="/book_search">
+          <button>Books</button>
+        </a>
+        <a href="/past_loans">
+          <button>My past Loans and Reservations</button>
+        </a>
+        <a href="/card_condition">
+          <button>My Card Status</button>
+        </a>
+        <a href="/change_attributes">
+          <button>Change My Attributes</button>
+        </a>
+      </div>
+
+      <br><br>
+
+
+      <div class="div2">
+        <div>
+          <h1 class="text-center">Manage Your Library</h1>
+        </div>
+        
+        <a href="/pending_registrations">
+          <button>Show Pending Registrations</button>
+        </a>
+        <a href="/pending_cards">
+          <button>Pending Cards</button>
+        </a>
+        <a href="/manage_users">
+          <button>Manage Users</button>
+        </a>
+        <a href="/book_management">
+          <button>Manage Library</button>
+        </a>
+        <a href="/loans_and_reservations">
+          <button>Manage Loans</button>
+        </a>
+        <a href="/late_returns">
+          <button>Late Returns</button>
+        </a>
+      </div>
+
+      <br><br>
+
+      <div class="importantbutton_container">
+        <a href="/newbook">
+          <button class="bigimportantbutton">NEW BOOK!!!</button>
+        </a>
+      </div>
       <footer class="footer">
         <a href="/change_password">
           Change my password
