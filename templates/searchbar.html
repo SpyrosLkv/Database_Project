@@ -3,73 +3,51 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Python Flask Library App - Book Search</title>
-    <link rel="stylesheet" href="searchbar.css">
-    <link rel="stylesheet" href="'table_template.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='searchbar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='table_template.css') }}">
 </head>
 <body>
     <div class="container">
-        <form action="" class="search-bar">
+        <form action="/api/book_search" class="search-bar" onsubmit="event.preventDefault(); fetchSearchResults(document.getElementById('searchBar').value); return false;">
             <input type="search" id="searchBar" placeholder="Search for books in your library" name="q">
             <button type="submit">
-                <img src="images/search.png">
+                <img src="static/images/search.png">
             </button>
-            <div id="searchResults"></div>
         </form>
+        <div id="searchResults"></div>
     </div>
+    
 
     <script>
         const searchBar = document.getElementById('searchBar');
         const searchResults = document.getElementById('searchResults');
 
-
         function fetchSearchResults(query) {
-            fetch('/search', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ inputBook: query })
+            fetch('/api/book_search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ inputBook: query })
             })
-                .then(response => response.json())
-                .then(data => {
-                    const results = data.results;
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Request failed with status ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(JSON.stringify('Response data:'), data); // Log the response data for debugging
 
-                    // Create table
-                    const table = document.createElement('table');
-                    table.classList.add('content-table');
+                const results = data.results;
 
-                    // Create table header
-                    const tableHeader = document.createElement('tr');
-                    const headers = ['Book Title', 'Publisher'];
-                    headers.forEach(headerText => {
-                        const header = document.createElement('th');
-                        header.textContent = headerText;
-                        tableHeader.appendChild(header);
-                    });
-                    table.appendChild(tableHeader);
-
-                    // Create table rows
-                    results.forEach(result => {
-                        const row = document.createElement('tr');
-                        const columns = [result.title, result.publisher];
-                        columns.forEach(columnText => {
-                            const column = document.createElement('td');
-                            column.textContent = columnText;
-                            row.appendChild(column);
-                        });
-                        table.appendChild(row);
-                    });
-
-                    // Clear previous search results
-                    searchResults.innerHTML = '';
-
-                    // Append table to search results div
-                    searchResults.appendChild(table);
-                })
-                .catch(error => {
-                    console.error('Error: ', error);
-                });
+            // Rest of the code...
+            })
+            .catch(error => {
+                console.error(JSON.stringify('Error:'), error);
+            }); 
         }
+    
     </script>
 </body>
 </html>
