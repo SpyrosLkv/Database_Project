@@ -832,7 +832,7 @@ def show_myloans():
 def get_loans():
     try:
         with mysql.connection.cursor() as cursor:
-            query = "SELECT book_ISBN, return_date, status from Loan where user_id = %s;"
+            query = "SELECT book_ISBN, return_date, status from Loan where user_id = %s and (status = 'Active' or status = 'Late Active');"
             user_id = str(session['user'])
             params = (user_id,)
             cursor.execute(query, params)
