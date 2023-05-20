@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, json, redirect, session, json
 from flask_mysqldb import MySQL
 import hashlib
 import binascii
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import mimetypes
 import base64
@@ -805,10 +805,223 @@ def process_card():
     except Exception as e:
         return json.dumps({'error': str(e)})
 
+@app.route('/manage_users')
+def manage_users():
+    return render_template('/manageusers.html')
+
+@app.route('/api/process_(de)activation')
+def process_act():
+    try:
+        data = request.json()
+        action = data['action']
+        username = data['username']
+        with mysql.connection.cursor() as cursor:
+            if (action == 'activate') :
+                query = "UPDATE Users SET user_status = 'Active' where username = %s;"
+                params = (username,)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+                return jsonify({'message': 'Success'})
+            elif (action == 'deactivate') :
+                query = "UPDATE Users SET user_status = 'Inactive' where usernmae =%s;"
+                params = (username,)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+                return jsonify({'message': 'Success2'})
+            else :
+                return jsonify({'message': 'Wrong action passed'})
+    except Exception as e:
+        return jsonify({'message': 'Error'})
+
+@app.route('/show_myloans')
+def show_myloans():
+    return render_template('/show_myloans.html')
+
+@app.route('/api/get_loans')
+def get_loans():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT book_ISBN, return_date, status from Loan where user_id = %s and (status = 'Active' or status = 'Late Active');"
+            user_id = str(session['user'])
+            params = (user_id,)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+            data = cursor.fetchall()
+            response = []
+
+            for loans in data:
+                response.append({
+                    "isbn" : loans[0],
+                    "return_date" : loans[1],
+                    "status" : loans[2]
+                })
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/late_returns')
+def late_returns():
+    return render_template('late_loans.html')
+
+@app.route('/api/get_lateloans')
+def get_lateloans():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT l.book_ISBN, l.user_id, u.username FROM Loan l JOIN Users u ON  l.user_id = u.user_id WHERE l.status = 'Late Returned';"
+            cursor.execute(query)
+            mysql.connection.commit()
+            data = cursor.fetchall()
+            response = []
+
+            for loans in data:
+                response.append({
+                    "isbn" : loans[0],
+                    "userid" : loans[1],
+                    "username" : loans[2]
+                })
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/past_loans')
+def past_loans_reg():
+    return render_template('past_loans_reg.html')
+
+@app.route('/api/past_loans_reg')
+def get_loans_reg():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT book_ISBN, return_date, status from Loan where user_id = %s and (status = 'Returned' or status = 'Late Returned');"
+            user_id = str(session['user'])
+            params = (user_id,)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+            data = cursor.fetchall()
+
+            second_query = "SELECT book_ISBN, expiration_date, status from Reservation where user_id = %s and (status = 'Expired' or status = 'Honoured');"
+            cursor.execute(second_query, params)
+            mysql.connection.commit()
+            second_data = cursor.fetchall()
+
+            response = []
+
+            for loans in data:
+                response.append({
+                    "isbn" : loans[0],
+                    "return_date" : loans[1],
+                    "status" : loans[2]
+                })
+            
+            for reg in second_data:
+                response.append({
+                    "isbn2" : reg[0],
+                    "expiration_date" : reg[1],
+                    "status2" : reg[2]
+                })
+            
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/forced_loans')
+def force_reg():
+    return render_template('force_loans.html')
+
+@app.route('/api/instant_loans', methods =['POST'])
+def instant_loans():
+    try:
+        bookISBN = request.form.get('inputISBN')
+        user_id = request.form.get('inputUserId')
+
+        if bookISBN and user_id:
+            with mysql.connection.cursor() as cursor:
+                #getting the role of the user from the user_id provided
+                query = "SELECT user_role from Users where user_id = %s; "
+                params = (user_id,)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+                data = cursor.fetchall()
 
 
+                #getting how many Late Returns has the user made
+                query2 = "SELECT COUNT(*) from Loan where user_id = %s AND status = 'Late Returned';"
+                cursor.execute(query2, params)
+                mysql.connection.commit()
+                data2 = cursor.fetchall()
 
+                #getting how many active Loans the user has
+                query3 = "SELECT COUNT(*) from Loan WHERE user_id = %s AND (status = 'Active' OR status = 'Late Active');"
+                cursor.execute(query3, params)
+                mysql.connection.commit()
+                data3  = cursor.fetchall()
 
+                #checking every limit of the instant loan
+
+                #late returns
+                if (data2[0][0] != 0) :
+                    return json.dumps({'message' : "Late returns" })
+                
+                #if teach, only 1 book per week
+                if ((data[0][0] == 'Teacher') and (data3[0][0] == 1)) :
+                    return json.dumps({'message' : "Too many books for the week"})
+        
+                #if student, only 2 books per week
+                if ((data[0][0] == 'Student') and (data3[0][0] == 2)) :
+                    return json.dumps({'message' : "Too many books for the week"})
+
+                #if operator, only 1 book per week like the teacher
+                if ((data[0][0] == 'Operator') and (data3[0][0] == 1)) :
+                    return json.dumps({'message' : "Too many books for the week"})        
+
+                #if admin, we don't have to check anything
+                #he can get as many books as he wants
+
+                #if we reach this point, the user satisfies all the limits
+                #so we can perform the query for the loan if there are available copies
+
+                #first we get the library id that user belongs to 
+                query4 = "SELECT users_library_id from Users where user_id = %s;"
+                cursor.execute(query4, params)
+                mysql.connection.commit()
+                data4 = cursor.fetchall()
+
+                #then we find the available copies
+                #if the returned object has length 0 it means book is not in the library
+                query5 = "SELECT available_copies FROM Lib_Owns_Book WHERE book_ISBN = %s AND library_id = %s;"
+                params2 = (bookISBN, data4[0][0],)
+                cursor.execute(query5, params2)
+                mysql.connection.commit()
+                data5 = cursor.fetchall()
+
+                if (len(data5) == 0) :
+                    return json.dumps({'message' : "Book not in library"})
+                
+                if (data5[0][0] == 0) :
+                    return json.dumps({'message' : "Not enough copies"})
+                
+                #we have to get the current date and add 1 week to set the return date
+                current_date = datetime.now().date()
+                new_date = current_date + timedelta(weeks=1)
+                formatted_date = new_date.strftime('%Y-%m-%d')
+
+                #if we reach, all set and we can finally input the loan to the database
+                query6 = "INSERT INTO Loan (book_ISBN, user_id, return_date, status) VALUES (%s, %s, %s, 'Active');"
+                params3 = (bookISBN, user_id, formatted_date,)
+                cursor.execute(query6, params3)
+                mysql.connection.commit()
+
+                #we reduce the available copies of the books by 1
+                new_available_copies = data5[0][0] - 1
+                query7 = "UPDATE Lib_Owns_Book SET available_copies = %s WHERE book_ISBN = %s AND library_id = %s;"
+                params4 = (new_available_copies, bookISBN, data4[0][0])
+                cursor.execute(query7, params4)
+                mysql.connection.commit()
+
+                return json.dumps({'message' : "Loan was registered successfully"})
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+    
 @app.route('/logout')
 def logout():
     session.pop('user', None)
