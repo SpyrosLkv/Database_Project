@@ -824,7 +824,31 @@ def process_act():
     except Exception as e:
         return jsonify({'message': 'Error'})
 
+@app.route('/show_myloans')
+def show_myloans():
+    return render_template('/show_myloans.html')
 
+@app.route('/api/get_loans')
+def get_loans():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT book_ISBN, return_date, status from Loan where user_id = %s;"
+            user_id = str(session['user'])
+            params = (user_id,)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+            data = cursor.fetchall()
+            response = []
+
+            for loans in data:
+                response.append({
+                    "isbn" : loans[0],
+                    "return_date" : loans[1],
+                    "status" : loans[2]
+                })
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
 
 @app.route('/logout')
 def logout():
