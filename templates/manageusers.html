@@ -71,8 +71,16 @@
                   })
                   .then((res)=>res.json())
                   .then((data)=>{
-                    if (data.redirect_url){
-                      window.location.href = data.redirect_url
+                    if (data.message == 'Success'){
+                      alert('User activated successfully');
+                      location.reload();
+                    }
+                    else if(data.message == 'Wrong action passed') {
+                        alert('Something went wrong with programming')
+                        location.reload();
+                    }
+                    else if(data.message == 'Error') {
+                        alert('Error occured while activating user')
                     }
                     else {
                       console.log(data)
@@ -98,8 +106,16 @@
                   })
                   .then((res)=>res.json())
                   .then((data)=>{
-                    if (data.redirect_url){
-                      window.location.href = data.redirect_url
+                    if (data.message == 'Success2'){
+                      alert('User deactivated successfully');
+                      location.reload();
+                    }
+                    else if(data.message == 'Wrong action passed') {
+                        alert('Something went wrong with programming')
+                        location.reload();
+                    }
+                    else if(data.message == 'Error') {
+                        alert('Error occured while deactivating user')
                     }
                     else {
                       console.log(data)
