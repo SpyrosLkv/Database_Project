@@ -639,6 +639,7 @@ def get_phones():
             
     except Exception as e:
         return json.dumps({'error': str(e)})
+    
 @app.route('/card_condition')
 def show_card_status():
     try:
