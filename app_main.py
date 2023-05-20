@@ -316,27 +316,36 @@ def process_registration():
 
 @app.route('/book_search')
 def showSearchbar():
-    return render_template('searchbar.html')
+    return render_template('SearchBar.html')
+
 @app.route('/api/book_search', methods = ['POST'])
 def bookSearch():
     try:
-        _book = request.form['inputBook']
+        _book = request.form['inputTitle']
         if _book:
             with mysql.connection.cursor() as cursor:
                 string1 = "'%"
                 string2 = "%';"
                 merged_string = string1 + str(_book) + string2
-                query = "select title,publisher from Book where title LIKE %s"
-                cursor.execute(query, merged_string)
+                query = "select * from Book where title LIKE {}".format(merged_string)
+                cursor.execute(query)
                 results = cursor.fetchall()
                 if (len(results) == 0):
                     return json.dumps({'message' : 'No books found relative to the searched word'})
                 else:
                     books = []
                     for row in results:
+                        image_data = None
+                        if row[5] is not None:  # Check if photo is not NULL
+                            image_bytes = base64.b64decode(row[5])
+                            image_data = base64.b64encode(image_bytes).decode('utf-8')
                         book = {
-                            'title': row['title'],
-                            'publisher': row['publisher']
+                            'isbn': row[0],
+                            'title': row[1],
+                            'publisher': row[2],
+                            'no_of_pages': row[3],
+                            'language': row[6],
+                            'image_data': image_data
                         }
                         books.append(book)
                     return jsonify({'results': books})
