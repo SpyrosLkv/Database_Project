@@ -873,7 +873,47 @@ def get_lateloans():
             return jsonify(response)
     except Exception as e:
         return json.dumps({'error' : str(e)})
+    
+@app.route('/past_loans')
+def past_loans_reg():
+    return render_template('past_loans_reg.html')
 
+@app.route('/api/past_loans_reg')
+def get_loans_reg():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT book_ISBN, return_date, status from Loan where user_id = %s and (status = 'Returned' or status = 'Late Returned');"
+            user_id = str(session['user'])
+            params = (user_id,)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+            data = cursor.fetchall()
+
+            second_query = "SELECT book_ISBN, expiration_date, status from Reservation where user_id = %s and (status = 'Expired' or status = 'Honoured');"
+            cursor.execute(second_query, params)
+            mysql.connection.commit()
+            second_data = cursor.fetchall()
+
+            response = []
+
+            for loans in data:
+                response.append({
+                    "isbn" : loans[0],
+                    "return_date" : loans[1],
+                    "status" : loans[2]
+                })
+            
+            for reg in second_data:
+                response.append({
+                    "isbn2" : reg[0],
+                    "expiration_date" : reg[1],
+                    "status2" : reg[2]
+                })
+            
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
 @app.route('/logout')
 def logout():
     session.pop('user', None)
