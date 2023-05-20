@@ -647,7 +647,7 @@ def change_phones():
 @app.route('/api/add_phone', methods = ['POST'])
 def add_phone():
     data = request.get_json()
-    username = data['username']
+    username = str(session['user'])
     number = data['number']
 
     #test
@@ -655,7 +655,7 @@ def add_phone():
         return jsonify({'message' : 'Error', 'error': 'Invalid number'})
     try:
         with mysql.connection.cursor() as cursor:
-            query = "INSERT INTO User_Phone_No (number, user_id) VALUES (%s, (SELECT user_id FROM Users where username = %s));"
+            query = "INSERT INTO User_Phone_No (number, user_id) VALUES (%s, %s);"
             params = (number, username)
             cursor.execute(query,params)
             mysql.connection.commit()
