@@ -683,6 +683,76 @@ def lost_card():
     except Exception as e:
         return json.dumps({'error': str(e)})
 
+@app.route('/pending_cards')
+def show_pending_card_page():
+    return render_template('pendingcards.html')
+
+
+
+@app.route('/api/getcards', methods=['GET'])
+def get_pending_cards():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = 'select users_library_id from Users where user_id='+str(session['user'])+";"
+            cursor.execute(query)
+            library = cursor.fetchall()
+            library = int(library[0][0])
+            query = "SELECT u.username, u.first_name, u.last_name, u.email, u.user_role, c.card_no FROM Card c JOIN Users u ON c.user_id = u.user_id WHERE c.status = 'Pending' AND u.users_library_id = "+str(library)+";"
+            cursor.execute(query)
+            data = cursor.fetchall()
+            response = []
+
+            
+
+            for row in data:
+
+                registration_dict = {
+                    'username': row[0],
+                    'first_name': row[1],
+                    'last_name': row[2],
+                    'email': row[3],
+                    'role': row[4],
+                    'card_no': row[5]
+                }
+                response.append(registration_dict)
+            return jsonify(response)
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
+
+@app.route('/api/process_card', methods=['POST'])
+def process_card():
+    try:
+        data = request.get_json()
+        action = data['action']
+        username = data['username']
+        card_no = int(data['card_no'])
+        print(username, action)
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT user_id FROM Users WHERE username = %s;"
+            params = (username,)
+            cursor.execute(query,params)
+            user_id = int(cursor.fetchall()[0][0])
+            if action == "deny":
+                query = "UPDATE Card SET status = 'Inactive' where user_id = "+str(user_id)+" AND card_no = "+str(card_no)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/pending_cards'})
+            elif action == "accept":
+                query = "UPDATE Card SET status = 'Active' where user_id = "+str(user_id)+" AND card_no = "+str(card_no)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/pending_cards'})
+            else:
+                return json.dumps({'error': 'Something has gone wrong!'})
+            
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
+
+
+
+
 @app.route('/logout')
 def logout():
     session.pop('user', None)
