@@ -37,27 +37,17 @@
 					</a>
 
 					<ul class="nav nav-pills">
-						<li class="nav-item">
-							<a href="/" class="nav-link">Home</a>
-						</li>
-						<li class="nav-item">
-							<a href="/signup" class="nav-link">Signup</a>
-						</li>
-						<li class="nav-item">
-							<a href="/signin" class="nav-link active" aria-current="page"
-								>Sign In</a
-							>
-						</li>
-					</ul>
+                        <li class="nav-item">
+                        <a href="/userhome" class="nav-link">Home</a>
+                        </li>
+                        <li class="nav-item">
+                        <a href="/logout" class="nav-link active">Logout</a>
+                        </li>
+                    </ul>
 					 
 				</nav>
 				
 			</div>
-            <footer class="footer">
-				
-				<p>&copy; NTUA 2023</p>
-				
-			</footer>
 		</div>
     </body>
     <!-- Presenting the existing phones of the User to him-->
@@ -97,7 +87,6 @@
         </table>
     </body>
     <form id="addForm">
-        <input type="text" name="username" placeholder="Username">
         <input type="text" name="number" placeholder="Number">
         <button type="submit">Add Number</button>
     </form>
@@ -113,24 +102,16 @@
             event.preventDefault();
     
             const addForm = document.querySelector('#addForm');
-            const usernameInput = addForm.querySelector('#addForm input[name="username"]');
             const numberInput = addForm.querySelector('#addForm input[name="number"]');
 
-
-            const username = usernameInput.value;
             const number = numberInput.value;
     
-            const payload = {
-                username: username,
-                number: number
-            };
-
             fetch('/api/add_phone', {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({number: number})
             })
             .then(response => response.json())
             .then(data => {
@@ -149,7 +130,6 @@
 					alert('Error occured while processing the request');
             });
 
-            usernameInput.value ='';
             numberInput.value = '';
         }
     
@@ -189,4 +169,9 @@
         document.getElementById('deleteForm').addEventListener('submit', handleDeleteFormSubmit);
 
       </script>
+      <body>
+        <footer class="footer">
+            <p>&copy; NTUA 2023</p>
+        </footer>     
+     </body>
 </html>
