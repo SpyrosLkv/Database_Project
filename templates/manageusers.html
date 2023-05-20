@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Manage Users</title>
+        <link rel="stylesheet" href="/static/table_template.css">
+        <!-- if this doesn't apply try: ../static/table_template.css-->
+        
+        <!-- so that the button is the same color as the table-->
+        <style>
+            button {
+                background-color: #009879;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 20px;
+                width: 300px;
+            }
+        </style>
+    </head>
+    <script>
+        fetch('/api/user_search')
+        .then(response => response.json())
+        .then(data => {
+            const table = document.getElementById('content-table');
+
+            data.forEach(user => {
+                const row = document.createElement('tr');
+
+                const idCell = document.createElement('td');
+                idCell.textContent = user.id;
+                row.appendChild(idCell);
+
+                const usernameCell = document.createElement('td');
+                usernameCell.textContent = user.username;
+                row.appendChild(usernameCell);
+
+                const first_nameCell = document.createElement('td');
+                first_nameCell.textContent = user.first_name;
+                row.appendChild(first_nameCell);
+
+                const last_nameCell = document.createElement('td');
+                last_nameCell.textContent = user.last_name;
+                row.appendChild(last_nameCell);
+
+                const birth_dateCell = document.createElement('td');
+                birth_dateCell.textContent = user.birth_date;
+                row.appendChild(birth_dateCell);
+
+                const user_roleCell = document.createElement('td');
+                user_roleCell.textContent = user.user_role;
+                row.appendChild(user_roleCell);
+
+                const user_statusCell = document.createElement('td');
+                user_statusCell.textContent = user.user_status;
+                row.appendChild(user_statusCell);
+                                
+                //create the activate and deactivate buttons
+                const activateButton = document.createElement('button');
+                activateButton.textContent = 'activate';
+                activateButton.addEventListener('click', (event) => {
+                  event.preventDefault()
+                  // Handle the activate action
+                  // Send a request to the server to delete the row from Pending_Registration table and append it to the Users
+                  fetch(`/api/process_(de)activation`,{
+                      method: 'POST',
+                      headers:{
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({
+                          action: 'activate',
+                          username: registration.username
+                      })
+                  })
+                  .then((res)=>res.json())
+                  .then((data)=>{
+                    if (data.redirect_url){
+                      window.location.href = data.redirect_url
+                    }
+                    else {
+                      console.log(data)
+                    }
+                  })
+                });
+                row.appendChild(activateButton);
+
+                const deactivateButton = document.createElement('button');
+                deactivateButton.textContent = 'deactivate';
+                deactivateButton.addEventListener('click', (event) => {
+                  event.preventDefault();
+                  //Handle the deactivate action
+                  // Send a request to the server to delete the row from the Pending Registration table
+                  fetch(`/api/process_(de)activation`,{
+                      method: 'POST',
+                      headers:{
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({
+                          action: 'deactivate',
+                          username: registration.username
+                      })
+                  })
+                  .then((res)=>res.json())
+                  .then((data)=>{
+                    if (data.redirect_url){
+                      window.location.href = data.redirect_url
+                    }
+                    else {
+                      console.log(data)
+                    }
+                  })
+                });
+                row.appendChild(deactivateButton);
+
+
+                table.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error('Error', error);
+        })
+    </script>
+    <body>
+        <h1>Users with searched last name</h1>
+
+        <table id = 'content-table' class = 'content-table'>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Birth Date</th>
+                <th>User Role</th>
+                <th>User Status</th>
+            </tr>
+        </table>
+        <footer class = "footer">
+            <p>&copy; NTUA 2023</p>
+        </footer>
+    </body>
+</html>
