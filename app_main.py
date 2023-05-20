@@ -639,6 +639,50 @@ def get_phones():
             
     except Exception as e:
         return json.dumps({'error': str(e)})
+    
+@app.route('/change_phones')
+def change_phones():
+    return render_template('ChangePhone.html')
+
+@app.route('/api/add_phone', methods = ['POST'])
+def add_phone():
+    data = request.get_json()
+    username = data['username']
+    number = data['number']
+
+    #test
+    if not isinstance(number,str) or len(number) == 0:
+        return jsonify({'message' : 'Error', 'error': 'Invalid number'})
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "INSERT INTO User_Phone_No (number, user_id) VALUES (%s, (SELECT user_id FROM Users where username = %s));"
+            params = (number, username)
+            cursor.execute(query,params)
+            mysql.connection.commit()
+            return jsonify({'message': 'Success'})
+    except Exception as e:
+        return jsonify({'message': 'Error'})
+    
+@app.route('/api/delete_phone', methods = ['POST'])
+def delete_phone():
+    data = request.get_json()
+    number = data['number']
+
+    #test
+    if not isinstance(number,str) or len(number) == 0:
+        return jsonify({'message' : 'Error', 'error': 'Invalid number'})
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "DELETE FROM User_Phone_No WHERE number = %s;"
+            params =(number,)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+            response_data = {'message': 'Success'}
+            return json.dumps(response_data)
+    except Exception as e:
+        response_data = {'message': 'Error'}
+        return json.dumps(response_data)
+    
 @app.route('/card_condition')
 def show_card_status():
     try:
