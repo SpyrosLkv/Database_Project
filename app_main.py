@@ -615,6 +615,10 @@ def newbookinsert():
     except Exception as e:
         return json.dumps({'error': str(e)})
 
+@app.route('/get_phones')
+def getphones():
+    return render_template('get_phones.html')
+
 @app.route('/api/get_phones', methods=['GET'])
 def get_phones():
     try:
@@ -635,7 +639,6 @@ def get_phones():
             
     except Exception as e:
         return json.dumps({'error': str(e)})
-
 @app.route('/card_condition')
 def show_card_status():
     try:
