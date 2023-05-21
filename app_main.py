@@ -1253,7 +1253,7 @@ def get_requests():
     except Exception as e:
         return json.dumps({'error' : str(e)})
     
- @app.route('/satisfy_reservations')
+@app.route('/satisfy_reservations')
 def satisfy_res():
     return render_template('satisfy_reservations.html')
 

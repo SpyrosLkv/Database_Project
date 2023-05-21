@@ -12,7 +12,7 @@ try:
         database='semester_project'
     )
 #  ΕΔΏ ΒΑΖΕΙΣ ΤΟ ΙΣΒΝ ΠΟΥ ΘΕΣ ΝΑ ΔΕΙΣ ΤΗΝ ΦΩΤΟΓΡΑΦΙΑ ΤΟΥ
-    query = "SELECT image FROM Book WHERE ISBN ="+str(1234567890123)+";"
+    query = "SELECT image FROM Book WHERE ISBN ="+str(9789603322092)+";"
     cursor = cnx.cursor()
     cursor.execute(query)
     result = cursor.fetchone()[0]
