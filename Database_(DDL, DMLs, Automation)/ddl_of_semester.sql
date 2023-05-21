@@ -534,7 +534,7 @@ BEGIN
   IF OLD.`status` = "Expired" OR OLD.`status` = "Honoured" THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: You cannot change an honoured or expired reservation';
   END IF;
-  IF TIMESTAMPDIFF(DAY, NEW.`reservation_date`, CURRENT_DATE()) <= 7 THEN
+  IF TIMESTAMPDIFF(DAY, NEW.`reservation_date`, CURRENT_DATE()) >= 7 THEN
     SET NEW.`status`= "Expired";
   END IF;
 END $

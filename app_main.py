@@ -910,10 +910,44 @@ def process_card():
 def manage_users():
     return render_template('/manageusers.html')
 
-@app.route('/api/process_(de)activation')
+@app.route('/api/search_user', methods=['POST'])
+def return_users():
+    try:
+        last_name = request.form['inputLastName']
+        print(last_name)
+        if last_name:
+            with mysql.connection.cursor() as cursor:
+                query = "SELECT * FROM Users WHERE last_name = %s;"
+                params = (last_name,)
+                cursor.execute(query,params)
+                results = cursor.fetchall()
+                if (len(results) == 0):
+                    return json.dumps({'message' : 'No users with this last name'})
+                else:
+                    users = []
+                    for row in results:
+                        user = {
+                            'id': row[0],
+                            'username': row[1],
+                            'first_name': row[3],
+                            'last_name': row[4],
+                            'birth_date': str(row[5]),
+                            'email': row[6],
+                            'user_role': row[8],
+                            'user_status': row[9]
+                        }
+                        users.append(user)
+                    return jsonify({'results': users})
+        else:
+            return json.dumps({'errorshow': 'Not all required fields were filled'})
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
+
+@app.route('/api/process_(de)activation', methods=['POST'])
 def process_act():
     try:
-        data = request.json()
+        data = request.json
         action = data['action']
         username = data['username']
         with mysql.connection.cursor() as cursor:
@@ -924,7 +958,7 @@ def process_act():
                 mysql.connection.commit()
                 return jsonify({'message': 'Success'})
             elif (action == 'deactivate') :
-                query = "UPDATE Users SET user_status = 'Inactive' where usernmae =%s;"
+                query = "UPDATE Users SET user_status = 'Inactive' where username =%s;"
                 params = (username,)
                 cursor.execute(query, params)
                 mysql.connection.commit()
@@ -932,7 +966,61 @@ def process_act():
             else :
                 return jsonify({'message': 'Wrong action passed'})
     except Exception as e:
-        return jsonify({'message': 'Error'})
+        return jsonify({'message': str(e)})
+
+@app.route('/api/process_deletion_of_user', methods=['POST'])
+def delete_user():
+    try:
+        data = request.json
+        username = data['username']
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT user_id FROM Users where username = %s;"
+            params = (username,)
+            cursor.execute(query,params)
+            user_id = int(cursor.fetchall()[0][0])
+
+            query = "DELETE FROM Loan WHERE user_id ="+str(user_id)+";"
+            cursor.execute(query)
+            mysql.connection.commit()
+
+            query = "DELETE FROM Card WHERE user_id ="+str(user_id)+";"
+            cursor.execute(query)
+            mysql.connection.commit()
+
+            query = "DELETE FROM Request WHERE user_id ="+str(user_id)+";"
+            cursor.execute(query)
+            mysql.connection.commit()
+
+            query = "DELETE FROM Reservation WHERE user_id ="+str(user_id)+";"
+            cursor.execute(query)
+            mysql.connection.commit()
+
+            query = "DELETE FROM Reviews WHERE user_id ="+str(user_id)+";"
+            cursor.execute(query)
+            mysql.connection.commit()
+
+            query = "DELETE FROM User_Phone_No WHERE user_id ="+str(user_id)+";"
+            cursor.execute(query)
+            mysql.connection.commit()
+
+            query = "DELETE FROM Operator_Appointment WHERE operator_id ="+str(user_id)+" OR administrator_id ="+str(user_id)+";"
+            cursor.execute(query)
+            mysql.connection.commit()
+
+            query = "UPDATE School_Library SET principals_id = NULL WHERE principals_id = "+str(user_id)+";"
+            cursor.execute(query)
+            mysql.connection.commit()
+
+            query = "DELETE FROM Users Where user_id = "+str(user_id)+";"
+            cursor.execute(query)
+            mysql.connection.commit()
+
+            return jsonify({'message': 'Success'})
+
+
+
+    except Exception as e:
+        return jsonify({'message': str(e)})
 
 @app.route('/show_myloans')
 def show_myloans():
