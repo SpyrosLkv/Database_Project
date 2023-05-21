@@ -1253,6 +1253,114 @@ def get_requests():
     except Exception as e:
         return json.dumps({'error' : str(e)})
     
+ @app.route('/satisfy_reservations')
+def satisfy_res():
+    return render_template('satisfy_reservations.html')
+
+@app.route('/api/get_available_reservations')
+def get_reserv():
+    try:
+        with mysql.connection.cursor() as cursor:
+            #first we need to know at which library the operator works
+            query = "SELECT users_library_id FROM Users WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+
+            query2 = "SELECT r.book_ISBN, u.username, u.first_name, u.last_name, r.expiration_date FROM Reservation r INNER JOIN Users u ON r.user_id = u.user_id INNER JOIN Lib_Owns_Book l ON l.book_ISBN = r.book_ISBN WHERE u.users_library_id = %s AND r.status = 'Active' AND l.available_copies >= 1;"
+            params2 = (data[0][0],)
+            cursor.execute(query2, params2)
+            data2 = cursor.fetchall()
+
+            response = []
+
+            for results in data2:
+                response.append({
+                    "isbn" : results[0],
+                    "username" : results[1],
+                    "first_name" : results[2],
+                    "last_name" : results[3],
+                    "expiration_date" : results[4],
+                })
+
+            return jsonify(response)
+
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/api/proccess_reservations', methods = ['POST'])
+def satisfy_reservations():
+    try:
+        result = request.get_json()
+        action = result['action']
+        username = result['username']
+        book_ISBN = result['book_ISBN']
+        with mysql.connection.cursor() as cursor:
+            if action == "honour":
+                #make the status honoured for the reservation
+                query = "UPDATE Reservation SET status = 'Honoured' WHERE book_ISBN = %s AND user_id = (SELECT user_id FROM Users WHERE username = %s);"
+                params = (book_ISBN, username,)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+
+                #make a loan for the user
+                query2 = "SELECT user_id from Users WHERE username = %s;"
+                params2 = (username,)
+                cursor.execute(query2, params2)
+                data = cursor.fetchall()
+                user_id = data[0][0]
+
+                current_date = datetime.now().date()
+                new_date = current_date + timedelta(weeks=1)
+                formatted_date = new_date.strftime('%Y-%m-%d')
+
+                query3 = "INSERT INTO Loan (book_ISBN, user_id, return_date, status) VALUES (%s, %s, %s, 'Active');"
+                params3 = (book_ISBN, user_id, formatted_date,)
+                cursor.execute(query3, params3)
+                mysql.connection.commit()
+
+                #reduce the available copies of the book by 1
+                query4 = "SELECT users_library_id from Users WHERE username = %s;"
+                cursor.execute(query4, params2)
+                data2 = cursor.fetchall()
+                library_id = data2[0][0]
+
+                query5 = "SELECT available_copies FROM Lib_Owns_Book WHERE book_ISBN = %s AND library_id = %s;"
+                params4 = (book_ISBN, library_id)
+                cursor.execute(query5, params4)
+                data3 = cursor.fetchall()
+                available_copies = data3[0][0]
+
+                query6 = "UPDATE Lib_Owns_Book SET available_copies = %s WHERE book_ISBN = %s AND library_id = %s;"
+                params5 = (available_copies, book_ISBN, library_id,)
+                cursor.execute(query6, params5)
+                mysql.connection.commit()
+
+                return json.dumps({'redirect_url': '/satisfy_reservations'})
+            
+            elif action == 'move_to_expired' :
+                #we just need to update this thing only
+                query7 = "SELECT user_id from Users WHERE username = %s;"
+                params6 = (username,)
+                cursor.execute(query7, params6)
+                data4 = cursor.fetchall()
+                user_id = data4[0][0]
+                
+                query8 = "UPDATE Reservation SET status = 'Expired' WHERE book_ISBN = %s AND user_id = %s;"
+                params7 = (book_ISBN, user_id,)
+                cursor.execute(query8, params7)
+                mysql.connection.commit()
+
+                return json.dumps({'redirect_url': '/satisfy_reservations'})
+            
+            else :
+                return json.dumps({'error' : 'Something went wrong'})
+
+
+    
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
 @app.route('/logout')
 def logout():
     session.pop('user', None)
