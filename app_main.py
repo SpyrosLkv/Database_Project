@@ -1528,10 +1528,6 @@ def get_authors_not_borrowed():
     else:
         return "Unauthorized", 401
 
-@app.route('/logout')
-def logout():
-    session.pop('user', None)
-    return redirect('/')
 
 #query5
 @app.route('/operators_loan_count', methods=['GET'])
@@ -1770,6 +1766,8 @@ def get_loan_rating_search():
         return jsonify(ratings)
     else :
         return "Unauthorized", 401    
+    
+
 @app.route('/logout')
 def logout():
     session.pop('user', None)
