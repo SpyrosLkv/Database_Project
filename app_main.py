@@ -1356,7 +1356,7 @@ def get_reserv():
             cursor.execute(query, params)
             data = cursor.fetchall()
 
-            query2 = "SELECT r.book_ISBN, u.username, u.first_name, u.last_name, r.expiration_date FROM Reservation r INNER JOIN Users u ON r.user_id = u.user_id INNER JOIN Lib_Owns_Book l ON l.book_ISBN = r.book_ISBN WHERE u.users_library_id = %s AND r.status = 'Active' AND l.available_copies >= 1;"
+            query2 = "SELECT DISTINCT r.book_ISBN, u.username, u.first_name, u.last_name, r.expiration_date FROM Reservation r INNER JOIN Users u ON r.user_id = u.user_id INNER JOIN Lib_Owns_Book l ON l.book_ISBN = r.book_ISBN WHERE u.users_library_id = %s AND r.status = 'Active' AND l.available_copies >= 1;"
             params2 = (data[0][0],)
             cursor.execute(query2, params2)
             data2 = cursor.fetchall()
