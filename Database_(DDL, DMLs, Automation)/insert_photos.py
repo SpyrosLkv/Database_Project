@@ -18,7 +18,7 @@ cnx = mysql.connector.connect(
 cwd = os.getcwd()
 cwd =cwd.replace("\\","/")
 
-filename = "/Database_(DDL, DMLs, Automation)/all_the_isbn.txt"
+filename = "/all_the_isbn.txt"
 isbn_file = open(cwd+filename, "r")
 isbn_list = isbn_file.read().split("\n")
 if isbn_list[-1] == "":
@@ -28,7 +28,7 @@ i = 0
 for isbn in isbn_list:
     
 
-    img_path = cwd + "/Database_(DDL, DMLs, Automation)/images/image"+str(i)+".png"
+    img_path = cwd + "/images/image"+str(i)+".png"
     img_size = os.path.getsize(img_path)
     
     if img_size >= 262000:
