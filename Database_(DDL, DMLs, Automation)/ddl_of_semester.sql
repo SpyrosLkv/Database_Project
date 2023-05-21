@@ -173,9 +173,9 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Operator_Appointment` (
   `operator_id` INT NOT NULL,
   `library_appointment` INT NOT NULL,
   `administrator_id` INT NOT NULL,
-  `appointment_no` INT NOT NULL,
+  `appointment_no` INT NOT NULL AUTO_INCREMENT,
   `date_of_appointment` DATE NULL DEFAULT (CURRENT_DATE),
-  PRIMARY KEY (`operator_id`, `library_appointment`, `administrator_id`, `appointment_no`),
+  PRIMARY KEY (`appointment_no`),
   INDEX `fk_Operator Appointment_School - Library1_idx` (`library_appointment` ASC) VISIBLE,
   INDEX `fk_Operator Appointment_Users2_idx` (`administrator_id` ASC) VISIBLE,
   CONSTRAINT `fk_OA_Operator`

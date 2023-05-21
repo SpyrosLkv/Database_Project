@@ -540,16 +540,30 @@ def process_operator():
         print(username, action)
         with mysql.connection.cursor() as cursor:
             if action == "deny":
+                query = "DELETE FROM Reg_Phone_No WHERE registration_username = %s;"
+                params = (username,)
+                cursor.execute(query,params)
+                mysql.connection.commit()
                 query = "DELETE FROM Pending_Registrations WHERE username = '"+username+"';"
                 cursor.execute(query)
                 mysql.connection.commit()
                 return json.dumps({'redirect_url': '/pending_registrations'})
             elif action == "accept":
+
+                query = "SELECT * FROM Reg_Phone_No WHERE registration_username = %s;"
+                params = (username,)
+                cursor.execute(query,params)
+                phones = cursor.fetchall()
+                query = "DELETE FROM Reg_Phone_No WHERE registration_username = %s;"
+                params = (username,)
+                cursor.execute(query,params)
+                mysql.connection.commit()
+
                 query = "SELECT * FROM Pending_Registrations WHERE username = '"+username+"';"
                 cursor.execute(query)
                 data = cursor.fetchall()
+                library_id = int(data[0][7])
                 data = data[0]
-                library_id = int(data[7])
                 query = "DELETE FROM Pending_Registrations WHERE username = '"+username+"';"
                 cursor.execute(query)
                 mysql.connection.commit()
@@ -558,6 +572,37 @@ def process_operator():
                 print(query, params)
                 cursor.execute(query,params)
                 mysql.connection.commit()
+                '''
+                Create User's first Card
+                '''
+                query = "SELECT user_id from Users where username = %s;"
+                params = (username,)
+                cursor.execute(query,params)
+                user_id = int(cursor.fetchall()[0][0])
+
+                query = "INSERT INTO Card (user_id,card_no,status) VALUES ("+str(user_id)+",1,'Active');"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+
+                '''
+                Input Phone Numbers
+                '''
+                for phone in phones:
+                    phone = int(phone[0])
+                    query = "INSERT INTO User_Phone_No (number,user_id) VALUES ("+str(phone)+","+str(user_id)+");"
+                    cursor.execute(query)
+                    mysql.connection.commit()
+
+                '''
+                set oparator appointment if needed
+                '''
+                if data[6] == 'Operator':
+
+                    admin_id = int(session['user'])
+                    query = "INSERT INTO Operator_Appointment (operator_id,library_appointment,administrator_id) VALUES ("+str(user_id)+","+str(library_id)+","+str(admin_id)+");"
+                    cursor.execute(query)
+                    mysql.connection.commit()
                 return json.dumps({'redirect_url': '/pending_operator_registrations'})
             else:
                 return json.dumps({'error': 'Something has gone wrong!'})
