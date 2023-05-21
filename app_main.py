@@ -934,11 +934,11 @@ def process_act():
     except Exception as e:
         return jsonify({'message': 'Error'})
 
-@app.route('/show_myloans')
+@app.route('/show_myloans_reg')
 def show_myloans():
-    return render_template('/show_myloans.html')
+    return render_template('/show_myloans_reg.html')
 
-@app.route('/api/get_loans')
+@app.route('/api/get_loans_reg')
 def get_loans():
     try:
         with mysql.connection.cursor() as cursor:
@@ -948,15 +948,32 @@ def get_loans():
             cursor.execute(query, params)
             mysql.connection.commit()
             data = cursor.fetchall()
-            response = []
+
+            query2 = "SELECT book_ISBN, expiration_date, status from Reservation where user_id = %s and status = 'Active';"
+            cursor.execute(query2, params)
+            mysql.connection.commit()
+            data2 = cursor.fetchall()
+            response1 = []
+            response2 = []
 
             for loans in data:
-                response.append({
+                response1.append({
                     "isbn" : loans[0],
                     "return_date" : loans[1],
                     "status" : loans[2]
                 })
-            return jsonify(response)
+
+            for regestrations in data2:
+                response2.append({
+                    "isbn2" : regestrations[0],
+                    "expiration_date" : regestrations[1],
+                    "status2" : regestrations[2]
+                })
+
+            return jsonify({
+                "loans" : response1,
+                "registrations" : response2
+            })
     except Exception as e:
         return json.dumps({'error' : str(e)})
     
