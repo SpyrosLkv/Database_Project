@@ -1768,6 +1768,103 @@ def get_loan_rating_search():
         return "Unauthorized", 401    
     
 
+@app.route('/book_management')
+def book_manage():
+    return render_template('book_management.html')
+
+@app.route('/api/book_search_system', methods = ['POST'])
+def systemBookSearch():
+    try:
+        _book = request.form['inputTitle']
+        if _book:
+            with mysql.connection.cursor() as cursor:
+
+                string1 = "'%"
+                string2 = "%'"
+                merged_string = string1 + str(_book) + string2
+                query = "SELECT ISBN, title, publisher, no_of_pages, summary, image, language FROM Book  WHERE title LIKE {} ;".format(merged_string)
+                # query = "select * from Book where title LIKE {}".format(merged_string)
+                cursor.execute(query)
+                results = cursor.fetchall()
+                if (len(results) == 0):
+                    return json.dumps({'message' : 'No books found relative to the searched word'})
+                else:
+                    books = []
+                    for row in results:
+                        image_data = None
+                        if row[5] is not None:  # Check if photo is not NULL
+                            image_bytes = base64.b64decode(row[5])
+                            image_data = base64.b64encode(image_bytes).decode('utf-8')
+                        book = {
+                            'isbn': row[0],
+                            'title': row[1],
+                            'publisher': row[2],
+                            'no_of_pages': row[3],
+                            'language': row[6],
+                            'image_data': image_data
+                        }
+                        books.append(book)
+                    return jsonify({'results': books})
+        else:
+            return json.dumps({'html': '<span> Enter the required fields</span>'})
+
+    except Exception as e:
+        return render_template('error.html', error = str(e))
+
+@app.route('/api/add_book_lib', methods=['POST'])
+def add_book_to_my_lib():
+    try:
+        ISBN = int(request.form['inputISBN'])
+        total_copies = int(request.form['inputCopies'])
+        if total_copies < 0:
+            return json.dumps({'errorshow': 'cannot have negative number of copies'})
+        if ISBN :
+            with mysql.connection.cursor() as cursor:
+                query = "SELECT * FROM Book WHERE ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                data = cursor.fetchall()
+                if len(data) == 0:
+                    return json.dumps({'errorshow': 'book does not exist in library'})
+                query = "SELECT users_library_id FROM Users WHERE user_id = "+str(session['user'])+";"
+                cursor.execute(query)
+                library_id = int(cursor.fetchall()[0][0])
+
+                query = "SELECT * FROM Lib_Owns_Book WHERE library_id = "+str(library_id)+" AND book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                results = cursor.fetchall()
+
+                if len(results) == 0:
+
+                    query = "INSERT INTO Lib_Owns_Book (book_ISBN,library_id,total_copies,available_copies) VALUES ("+str(ISBN)+","+str(library_id)+","+str(total_copies)+","+str(total_copies)+");"
+                    cursor.execute(query)
+                    mysql.connection.commit()
+                    return json.dumps({'redirect_url': '/book_management'})
+                else:
+                    if total_copies == 0:
+                        if results[0][2] == results[0][3]:
+                            query = "DELETE FROM Lib_Owns_Book WHERE book_ISBN = "+str(ISBN)+" AND library_id="+str(library_id)+";"
+                            cursor.execute(query)
+                            mysql.connection.commit()
+                            return json.dumps({'redirect_url': '/book_management'})
+                        else:
+                            return json.dumps({'errorshow': '(available copies != total copies) => cannot delete'})
+                    else:
+                        difference_in_copies = total_copies-results[0][2]
+                        new_avail = results[0][3]+difference_in_copies
+                        if new_avail < 0:
+                            return json.dumps({'errorshow': 'new available copies below zero, cannot process'})
+                        else:
+                            query = "UPDATE Lib_Owns_Book SET total_copies ="+str(total_copies)+", available_copies="+str(new_avail)+" WHERE book_ISBN="+str(ISBN)+" AND library_id="+str(library_id)+";"
+                            cursor.execute(query)
+                            mysql.connection.commit()
+                            return json.dumps({'redirect_url': '/book_management'})
+
+        else:
+            return json.dumps({'errorshow': 'Enter the required fields'})
+    except Exception as e:
+        return render_template('error.html', error = str(e))
+
+
 @app.route('/logout')
 def logout():
     session.pop('user', None)
