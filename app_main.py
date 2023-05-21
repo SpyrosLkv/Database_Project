@@ -115,7 +115,9 @@ def validateLogin():
                 cursor.execute(query,params)
                 data = cursor.fetchall()
                 if len(data) == 0:
-                    return json.dumps({'error': "wrong credentials"})
+                    return json.dumps({'errorshow': "wrong credentials"})
+                if data[0][9] != 'Active':
+                    return json.dumps({'errorshow': "account not active"})
                 role = data[0][8]
                 session['user']= data[0][0]
                 session['role']= data[0][8]

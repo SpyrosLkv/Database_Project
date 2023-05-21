@@ -98,8 +98,8 @@
 					if (result.redirect_url){
 						window.location.href = result.redirect_url;
 					} else {
-						if (result.error == "wrong credentials"){
-							document.querySelector('#error-message').textContent = result.error;
+						if (result.errorshow){
+							document.querySelector('#error-message').textContent = result.errorshow;
 						}
 						else if (result.error){
 							document.querySelector('#error-message').textContent = 'an error occurred';
