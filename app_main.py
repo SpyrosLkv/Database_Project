@@ -324,10 +324,15 @@ def bookSearch():
         _book = request.form['inputTitle']
         if _book:
             with mysql.connection.cursor() as cursor:
+                query = "SELECT users_library_id FROM Users WHERE user_id = "+str(session['user'])+";"
+                cursor.execute(query)
+                library_id = int(cursor.fetchall()[0][0])
+
                 string1 = "'%"
-                string2 = "%';"
+                string2 = "%'"
                 merged_string = string1 + str(_book) + string2
-                query = "select * from Book where title LIKE {}".format(merged_string)
+                query = "SELECT b.ISBN, b.title, b.publisher, b.no_of_pages, b.summary, b.image, b.language FROM Book b INNER JOIN Lib_Owns_Book lb ON b.ISBN = lb.book_ISBN WHERE b.title LIKE {} AND lb.library_id=".format(merged_string)  +str(library_id)+";"
+                # query = "select * from Book where title LIKE {}".format(merged_string)
                 cursor.execute(query)
                 results = cursor.fetchall()
                 if (len(results) == 0):
@@ -354,6 +359,101 @@ def bookSearch():
 
     except Exception as e:
         return render_template('error.html', error = str(e))
+
+@app.route('/api/book_search_keyword', methods = ['POST'])
+def bookSearchkey():
+    try:
+        keyword = request.form['inputKey']
+        if keyword:
+            with mysql.connection.cursor() as cursor:
+                query = "SELECT users_library_id FROM Users WHERE user_id = "+str(session['user'])+";"
+                cursor.execute(query)
+                library_id = int(cursor.fetchall()[0][0])
+                query = "SELECT b.ISBN, b.title, b.publisher, b.no_of_pages, b.summary, b.image, b.language FROM Keywords k INNER JOIN Keywords_in_book kb ON k.keyword_id = kb.keyword_id INNER JOIN Book b ON kb.book_ISBN = b.ISBN INNER JOIN Lib_Owns_Book lb ON b.ISBN = lb.book_ISBN WHERE k.keyword= %s AND lb.library_id="+str(library_id)+";"
+                params = (keyword,)
+                cursor.execute(query,params)
+                results = cursor.fetchall()
+                if (len(results) == 0):
+                    return json.dumps({'message' : 'No books found relative to the searched word'})
+                else:
+                    books = []
+                    for row in results:
+                        image_data = None
+                        if row[5] is not None:  # Check if photo is not NULL
+                            image_bytes = base64.b64decode(row[5])
+                            image_data = base64.b64encode(image_bytes).decode('utf-8')
+                        book = {
+                            'isbn': row[0],
+                            'title': row[1],
+                            'publisher': row[2],
+                            'no_of_pages': row[3],
+                            'language': row[6],
+                            'image_data': image_data
+                            
+                        }
+                        books.append(book)
+
+                    return jsonify({'results': books})
+        else:
+            return json.dumps({'html': '<span> Enter the required fields</span>'})
+
+    except Exception as e:
+        return render_template('error.html', error = str(e))
+
+@app.route('/api/requestbook', methods=['POST'])
+def requestbook():
+    try:
+        data = request.get_json()
+        print(data)
+        book_isbn = int(data['book_isbn'])
+        user_id = int(session['user'])
+        print(book_isbn)
+        with mysql.connection.cursor() as cursor:
+            # getting the role of the user from the user_id provided
+            query = "SELECT user_role from Users where user_id = "+str(user_id)+"; "
+            cursor.execute(query)
+            data = cursor.fetchall()
+
+            # getting how many Late Returns has the user made
+            query2 = "SELECT COUNT(*) from Loan where user_id = "+str(user_id)+" AND status = 'Late Returned';"
+            cursor.execute(query2)
+            data2 = cursor.fetchall()
+
+            #getting how many active Loans the user has
+            query3 = "SELECT COUNT(*) from Loan WHERE user_id = "+str(user_id)+" AND loan_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY);"
+            cursor.execute(query3)
+            data3  = cursor.fetchall()
+
+            query4 = "SELECT COUNT(*) FROM Reservation WHERE user_id = "+str(user_id)+" AND reservation_date >= DATE_SUB(CURDATE(), INTERVAL 7 DAY);"
+            cursor.execute(query4)
+            data4  = cursor.fetchall()
+            #checking every limit of the request
+
+            #late returns
+            if (data2[0][0] != 0) :
+                return json.dumps({'message' : "Late returns" })
+            
+            #if teach, only 1 book per week
+            if ((data[0][0] == 'Teacher') and (data3[0][0] == 1) and data4[0][0] == 1) :
+                return json.dumps({'message' : "Too many books for the week"})
+    
+            #if student, only 2 books per week
+            if ((data[0][0] == 'Student') and (data3[0][0] == 2 and data4[0][0] == 1)) :
+                return json.dumps({'message' : "Too many books for the week"})
+
+            #if operator, only 1 book per week like the teacher
+            if ((data[0][0] == 'Operator') and (data3[0][0] == 1 and data4[0][0] == 1)) :
+                return json.dumps({'message' : "Too many books for the week"})
+
+
+            query = "INSERT INTO Request (book_ISBN,user_id) VALUES ("+str(book_isbn)+","+str(user_id)+")"
+            cursor.execute(query)
+            mysql.connection.commit()
+
+            return json.dumps({'redirect_url': '/user_home'})
+    except Exception as e:
+        return render_template('error.html', error = str(e))
+                               
 
 
 @app.route('/pending_operator_registrations')
