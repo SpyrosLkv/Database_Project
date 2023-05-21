@@ -1122,6 +1122,31 @@ def instant_loans():
     except Exception as e:
         return json.dumps({'error' : str(e)})
     
+@app.route('/get_myrequests')
+def get_myrequests():
+    return render_template('get_requests.html')
+
+@app.route('/api/get_requests', methods = ['GET'])
+def get_requests():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT book_ISBN from Request where user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            counter = 0
+            response = []
+
+            for requests in data:
+                counter += 1
+                response.append({
+                    "id" : counter,
+                    "isbn" : requests[0]
+                })
+            return jsonify(response)
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
     
 @app.route('/logout')
 def logout():
