@@ -2161,7 +2161,46 @@ def backup_database(host, user, password, database, output_dir):
         print(e)
         return False
 
+@app.route('/active_loans')
+def get_active_loans():
+    return render_template('active_loans.html')
 
+@app.route('/api/active_loans', methods = ['GET'])
+def active_loans():
+    try:
+        with mysql.connection.cursor() as cursor:
+            #get the library id so we get only the active loans
+            #from the library that the operator works
+            query = "SELECT users_library_id FROM Users WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            library_id = data[0][0]
+
+            query2 = """SELECT DISTINCT l.book_ISBN, l.user_id, u.username, u.first_name, u.last_name, l.return_date
+                        FROM Loan l 
+                        INNER JOIN Users u ON l.user_id = u.user_id
+                        WHERE u.users_library_id = %s AND l.status = 'Active';
+            """
+            params2 = (library_id,)
+            cursor.execute(query2, params2)
+            data2 = cursor.fetchall() 
+            response = []
+
+            for loans in data2:
+                response.append({
+                    "isbn": loans[0],
+                    "user_id": loans[1],
+                    "username" : loans[2],
+                    "first_name" : loans[3],
+                    "last_name" : loans[4],
+                    "return_date" : loans[5]
+                })
+            return jsonify(response)
+            
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+    
 @app.route('/logout')
 def logout():
     session.pop('user', None)
