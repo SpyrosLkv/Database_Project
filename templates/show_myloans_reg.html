@@ -40,15 +40,38 @@
 				
 			</div>
 		</div>
+        <h1>Loans List</h1>
+
+        <table id = "content-table" class = "content-table">
+            <tr>
+                <th>ISBN</th>
+                <th>Return Date</th>
+                <th>Status</th>
+            </tr>
+        </table>
+        <table id = "second-table" class = "content-table">
+            <tr>
+                <th>ISBN</th>
+                <th>Expiration Date</th>
+                <th>Status</th>
+            </tr>
+        </table>
+        <footer class = "footer">
+            <p>&copy; NTUA 2023</p>
+        </footer>
     </body>
 
     <script>
-        fetch('/api/get_loans')
+        fetch('/api/get_loans_reg')
         .then(response => response.json())
         .then(data => {
             const table  = document.getElementById('content-table');
+            const secondTable = document.getElementById('second-table');
 
-            data.forEach(loan => {
+            const loans = data.loans;
+            const registrations = data.registrations;
+
+            loans.forEach(loan => {
                 const row = document.createElement('tr');
 
                 const isbnCell = document.createElement('td');
@@ -65,24 +88,27 @@
 
                 table.appendChild(row);
             });
+
+            registrations.forEach(loan => {
+                const secondRow = document.createElement('tr');
+
+                const isbn2Cell = document.createElement('td');
+                isbn2Cell.textContent = loan.isbn2;
+                secondRow.appendChild(isbn2Cell);
+
+                const expiration_dateCell = document.createElement('td');
+                expiration_dateCell.textContent = loan.expiration_date;
+                secondRow.appendChild(expiration_dateCell);
+
+                const status2Cell = document.createElement('td');
+                status2Cell.textContent = loan.status2;
+                secondRow.appendChild(status2Cell);
+
+                secondTable.appendChild(secondRow);
+            });
         })
         .catch(error => {
             console.error('Error', error);
         })
     </script>
-
-    <body>
-        <h1>Loans List</h1>
-
-        <table id = "content-table" class = "content-table">
-            <tr>
-                <th>ISBN</th>
-                <th>Return Date</th>
-                <th>Status</th>
-            </tr>
-        </table>
-        <footer class = "footer">
-            <p>&copy; NTUA 2023</p>
-        </footer>
-    </body>
 </html>
