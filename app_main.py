@@ -1418,7 +1418,7 @@ def get_reserv():
             cursor.execute(query, params)
             data = cursor.fetchall()
 
-            query2 = "SELECT r.book_ISBN, u.username, u.first_name, u.last_name, r.expiration_date FROM Reservation r INNER JOIN Users u ON r.user_id = u.user_id INNER JOIN Lib_Owns_Book l ON l.book_ISBN = r.book_ISBN WHERE u.users_library_id = %s AND r.status = 'Active' AND l.available_copies >= 1;"
+            query2 = "SELECT DISTINCT r.book_ISBN, u.username, u.first_name, u.last_name, r.expiration_date FROM Reservation r INNER JOIN Users u ON r.user_id = u.user_id INNER JOIN Lib_Owns_Book l ON l.book_ISBN = r.book_ISBN WHERE u.users_library_id = %s AND r.status = 'Active' AND l.available_copies >= 1;"
             params2 = (data[0][0],)
             cursor.execute(query2, params2)
             data2 = cursor.fetchall()
@@ -2015,6 +2015,75 @@ def add_book_to_my_lib():
     except Exception as e:
         return render_template('error.html', error = str(e))
 
+@app.route('/return_book')
+def return_book():
+    return render_template('return_book.html')
+
+@app.route('/api/return_book', methods = ['POST'])
+def book_return():
+    try:
+        bookISBN = request.form.get('inputISBN')
+        user_id = request.form.get('inputUserId')
+
+        if bookISBN and user_id:
+            with mysql.connection.cursor() as cursor:
+                #get the status of the loan
+                query = "SELECT status, return_date from Loan WHERE user_id = %s AND book_ISBN = %s;"
+                params = (user_id, bookISBN)
+                cursor.execute(query, params)
+                data = cursor.fetchall()
+
+                #check if the book is already returned
+                if ((data[0][0] == "Returned") or (data[0][0] == "Late Returned")) :
+                    return json.dumps({'message' : "Book already returned"})
+                
+                #if it is late active or the return_date has passed then change it to late return
+                current_date = datetime.date.today().strftime("%Y-%m-%d")
+                current_date = datetime.datetime.strptime(current_date, "%Y-%m-%d").date()
+
+
+                if  ((data[0][0] == "Late Active") or (data[0][1] < current_date)) :
+                    query2 = "UPDATE Loan SET status = 'Late Returned' WHERE user_id = %s AND book_ISBN = %s;"
+                    cursor.execute(query2, params)
+                    mysql.connection.commit()
+
+                #if it is active like normal, then change it to returned 
+                elif (data[0][0] == 'Active') :
+                    query3 = "UPDATE Loan SET status = 'Returned' WHERE user_id = %s AND book_ISBN = %s;"
+                    cursor.execute(query3, params)
+                    mysql.connection.commit()
+
+                else :
+                    return json.dumps({'error' : "Something went wrong"})
+                
+                #now that we "removed" the loan from the user
+                #we can increase the available copies by 1
+
+                #firstly we need the library id of the user
+                query4 = "SELECT users_library_id FROM Users where user_id = %s;"
+                params2 = (user_id,)
+                cursor.execute(query4, params2)
+                data2 = cursor.fetchall()
+
+                library_id = data2[0][0]
+                #secondly we increase the available copies 
+                query5 = "SELECT available_copies from Lib_Owns_Book WHERE book_ISBN = %s AND library_id = %s;"
+                params3 = (bookISBN, library_id)
+                cursor.execute(query5, params3)
+                data3 = cursor.fetchall()
+
+                new_available_copies = data3[0][0] + 1
+                query6 = "UPDATE Lib_Owns_Book SET available_copies = %s WHERE book_ISBN = %s AND library_id = %s;"
+                params4 = (new_available_copies, bookISBN, library_id)
+                cursor.execute(query6, params4)
+                mysql.connection.commit()
+
+                return json.dumps({'message' : "Book returned successfully"})
+
+
+
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
 
 @app.route('/contact_library')
 def contact_lib():

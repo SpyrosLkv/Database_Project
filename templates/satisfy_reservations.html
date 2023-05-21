@@ -138,7 +138,7 @@
                       body: JSON.stringify({
                           action: 'move_to_expired',
                           username: reservation.username,
-                          book_ISBN: reservation.book_ISBN
+                          book_ISBN: reservation.isbn
                       })
                   })
                   .then((res)=>res.json())
