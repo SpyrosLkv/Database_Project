@@ -657,12 +657,24 @@ def change_library():
         new_address = request.form["inputNewAddress"]
         new_city = request.form["inputNewCity"]
         new_email = request.form["inputNewEmail"]
+        new_principal = request.form.get("inputPrincipal", None)
         if old_name and new_address and new_city and new_email and new_name:
             with mysql.connection.cursor() as cursor:
                 query = "update School_Library set name = %s, address = %s, town = %s, email = %s where name = %s;"
                 params = (new_name,new_address,new_city,new_email,old_name,)
                 cursor.execute(query,params)
                 mysql.connection.commit()
+
+                if new_principal != None:
+                    query = "select user_id from Users where username = %s;"
+                    params = (new_principal,)
+                    cursor.execute(query,params)
+                    data = int(cursor.fetchall()[0][0])
+                    query = "update School_Library set principals_id ="+str(data)+" where name = %s;"
+                    params = (new_name,)
+                    cursor.execute(query,params)
+                    mysql.connection.commit()
+
                 return json.dumps({'redirect_url': '/manip_lib'})
         else:
             return json.dumps({'error': 'Not all required fields were filled'})
