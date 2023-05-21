@@ -65,7 +65,8 @@
 
     <script>
       const backupBtn = document.getElementById('backup-btn');
-
+      const restoreBtn = document.getElementById('restore-btn');
+      
       backupBtn.addEventListener('click', async () => {
         try {
           const response = await fetch('/api/backup_database', { method: 'GET' });
@@ -75,6 +76,17 @@
         } catch (error) {
           console.error(error);
           alert('Error occurred during database backup.');
+        }
+      });
+      restoreBtn.addEventListener('click', async () => {
+        try {
+          const response = await fetch('/api/restore_database', { method: 'GET' });
+          const result = await response.text();
+          console.log(result);
+          alert('Database restore completed successfully.');
+        } catch (error) {
+          console.error(error);
+          alert('Error occurred during database restore.');
         }
       });
     </script>
