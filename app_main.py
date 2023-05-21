@@ -2115,6 +2115,52 @@ def get_lib_phone():
             
     except Exception as e:
         return json.dumps({'error': str(e)})
+   
+#Let Admin backup the database to a backup directory
+@app.route('/backup_database')
+def backup():
+    return render_template('backup_database.html')
+
+@app.route('/api/backup_database', methods=['GET'])
+
+def perform_backup():
+    
+    host = 'localhost'
+    user = 'root'
+    password = 'toyot2002'
+    database = 'semester_project'
+    output_dir = '~/backup'
+
+    success = backup_database(host, user, password, database, output_dir)
+    if success:
+        return "Database backup completed successfully."
+    else:
+        return "Error occurred during database backup."
+    
+def backup_database(host, user, password, database, output_dir):
+    # Create the output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Build the mysqldump command
+    command = [
+        'mysqldump',
+        f'--host={host}',
+        f'--user={user}',
+        f'--password={password}',
+        f'--databases {database}',
+        f'--result-file={output_dir}/{database}.sql',
+    ]
+
+    # Execute the mysqldump command
+    try:
+        subprocess.run(command, check=True)
+        print(f"Database backup completed. Output file: {output_dir}/{database}.sql")
+        return True
+    except subprocess.CalledProcessError as e:
+        print("Error occurred during database backup:")
+        print(e)
+        return False
+
 
 @app.route('/logout')
 def logout():
