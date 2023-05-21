@@ -65,7 +65,6 @@
           <form id="form-signin" action="/api/signup" method="POST">
             <label for="inputFirstName" class="sr-only">First Name</label>
             <input
-              type="FirstName"
               name="inputFirstName"
               id="inputFirstName"
               class="form-control"
@@ -75,7 +74,6 @@
             />
             <label for="inputLastName" class="sr-only">Last Name</label>
             <input
-              type="LastName"
               name="inputLastName"
               id="inputLastName"
               class="form-control"
@@ -85,7 +83,6 @@
             />
             <label for="inputUserName" class="sr-only">Username</label>
             <input
-              type="Username"
               name="inputUserName"
               id="inputUserName"
               class="form-control"
@@ -95,7 +92,6 @@
             />
             <label for="inputEmail" class="sr-only">Email address</label>
             <input
-              type="email"
               name="inputEmail"
               id="inputEmail"
               class="form-control"
@@ -114,7 +110,6 @@
             />
             <label for="inputBirth_Date" class="sr-only">Birth Date</label>
             <input
-              type="birth_date"
               name="inputBirth_Date"
               id="inputBirth_Date"
               class="form-control"
@@ -123,11 +118,18 @@
             />
             <label for="inputUser_Role" class="sr-only"> Role</label>
             <input
-              type="user_role"
               name="inputUser_Role"
               id="inputUser_Role"
               class="form-control"
               placeholder="'Student','Teacher','Operator','Admin'"
+              required
+            />
+            <label for="inputPhone" class="sr-only"> Phone Number</label>
+            <input
+              name="inputPhone"
+              id="inputUPhone"
+              class="form-control"
+              placeholder="Phone Number"
               required
             />
             <label for="dropdown" class="sr-only">Library</label>
