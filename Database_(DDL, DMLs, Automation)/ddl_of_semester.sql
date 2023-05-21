@@ -507,7 +507,6 @@ BEGIN
   SET NEW.`user_id` = OLD.`user_id`;
   IF OLD.`return_date` IS NOT NULL THEN
     SET NEW.`return_date` = OLD.`return_date`;
-    SET NEW.`status` = OLD.`status`;
   END IF;
   IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NULL AND TIMESTAMPDIFF(DAY, OLD.`loan_date`, CURRENT_DATE()) > 14 THEN
     SET NEW.`status` = "Late Active";

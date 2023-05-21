@@ -183,6 +183,37 @@ def get_user_data():
     except Exception as e:
         return json.dumps({'error': str(e)})
 
+@app.route('/api/get_lib_data')
+def get_lib_data():
+    user_id = int(session['user'])
+    try:
+        print("hello")
+        with mysql.connection.cursor() as cursor:
+            query = "select * from Users where user_id = "+str(user_id)+";"
+            cursor.execute(query)
+            data = cursor.fetchall()
+            print("no hello")
+            library_id = int(data[0][10])
+            print(library_id)
+            query = "select * from School_Library where library_id = "+str(library_id)+";"
+            cursor.execute(query)
+            data = cursor.fetchall()
+            print("somehting")
+            data = data[0]
+            print(data)
+            response = "--------------"
+            if data[5] != None:
+                print('here')
+                prin_id = int(data[5])
+                query = "select first_name,last_name from Users where user_id = "+str(prin_id)+";"
+                cursor.execute(query)
+                full_name = cursor.fetchall()[0]
+                response = full_name[0]+" "+full_name[1]
+            return json.dumps({'name': str(data[1]), 'address' : str(data[2]), 'town' : str(data[3]), 'email' : str(data[4]), 'principal' : response}) 
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
+
 @app.route('/change_password')
 def password_page():
     return render_template('ChangePassword.html')
@@ -626,6 +657,7 @@ def library_creation_form_process():
         address = request.form["inputAddress"]
         city = request.form["inputCity"]
         email = request.form["inputEmail"]
+        phones = request.form["inputPhones"]
         if name and address and city and email:
             with mysql.connection.cursor() as cursor:
                 query = "select name from School_Library where name = %s;"
@@ -639,6 +671,17 @@ def library_creation_form_process():
                 params = (name,address,city,email,)
                 cursor.execute(query,params)
                 mysql.connection.commit()
+
+                query = "SELECT library_id FROM School_Library where name = %s;"
+                params = (name,)
+                cursor.execute(query,params)
+                library_id = cursor.fetchall()[0][0]
+                phones = phones.split(',')
+                for phone in phones:
+                    phone = int(phone)
+                    query = "INSERT INTO School_Phone_No (phone_no,library_id) VALUES ("+str(phone)+","+str(library_id)+");"
+                    cursor.execute(query)
+                    mysql.connection.commit()
                 return json.dumps({'redirect_url': '/manip_lib'})
         else:
             return json.dumps({'html': '<span>Enter the required fields</span>'})
@@ -658,14 +701,21 @@ def change_library():
         new_city = request.form["inputNewCity"]
         new_email = request.form["inputNewEmail"]
         new_principal = request.form.get("inputPrincipal", None)
+        phones = request.form["inputPhones"]
         if old_name and new_address and new_city and new_email and new_name:
             with mysql.connection.cursor() as cursor:
+                query = "SELECT library_id FROM School_Library where name = %s;"
+                params = (old_name,)
+                cursor.execute(query,params)
+                library_id = int(cursor.fetchall()[0][0])
+
                 query = "update School_Library set name = %s, address = %s, town = %s, email = %s where name = %s;"
                 params = (new_name,new_address,new_city,new_email,old_name,)
                 cursor.execute(query,params)
                 mysql.connection.commit()
 
-                if new_principal != None:
+                if new_principal != "":
+    
                     query = "select user_id from Users where username = %s;"
                     params = (new_principal,)
                     cursor.execute(query,params)
@@ -673,6 +723,18 @@ def change_library():
                     query = "update School_Library set principals_id ="+str(data)+" where name = %s;"
                     params = (new_name,)
                     cursor.execute(query,params)
+                    mysql.connection.commit()
+
+                query = "DELETE FROM School_Phone_No WHERE library_id = "+str(library_id)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                phones = phones.split(',')
+
+                for phone in phones:
+                    phone = int(phone)
+                    query = "INSERT INTO School_Phone_No (phone_no,library_id) VALUES ("+str(phone)+","+str(library_id)+");"
+                    cursor.execute(query)
                     mysql.connection.commit()
 
                 return json.dumps({'redirect_url': '/manip_lib'})
@@ -1449,9 +1511,9 @@ def satisfy_reservations():
     
     except Exception as e:
         return json.dumps({'error' : str(e)})
-
+ 
 # implementing specified queries for each role (12 in total). Each role's homepage redirects to own queries.
-
+ 
 # query1
 @app.route('/library_stats', methods=['GET'])
 def library_stats():
@@ -1954,10 +2016,41 @@ def add_book_to_my_lib():
         return render_template('error.html', error = str(e))
 
 
+@app.route('/contact_library')
+def contact_lib():
+    return render_template('contactlib.html') 
+
+
+@app.route('/api/get_lib_phone', methods = ['GET'])
+def get_lib_phone():
+    try:
+        with mysql.connection.cursor() as cursor:
+            user_id = int(session['user'])
+            query = "select users_library_id FROM Users where user_id ="+str(user_id)+";"
+            cursor.execute(query)
+            library_id = int(cursor.fetchall()[0][0])
+            query = "SELECT phone_no from School_Phone_No where library_id = " + str(library_id)+";"
+            cursor.execute(query)
+            data = cursor.fetchall() 
+            counter = 0
+            response = []
+
+            for phones in data:
+                counter += 1
+                response.append({
+                    "id": counter,
+                    "number": phones[0]
+                })
+            return jsonify(response)
+            
+    except Exception as e:
+        return json.dumps({'error': str(e)})
+
 @app.route('/logout')
 def logout():
     session.pop('user', None)
     return redirect('/')
+
 
 if __name__ == "__main__":
     app.run()
