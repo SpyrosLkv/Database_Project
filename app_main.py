@@ -2201,8 +2201,8 @@ def active_loans():
     except Exception as e:
         return json.dumps({'error': str(e)})
 #restore functionality, don't mess...
-@app.route('restore_database')
-def restore():
+@app.route('/restore_database')
+def get_restore():
     return render_template('backup_database.html')
 
 
