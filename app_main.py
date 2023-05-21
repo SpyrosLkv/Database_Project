@@ -2200,6 +2200,45 @@ def active_loans():
             
     except Exception as e:
         return json.dumps({'error': str(e)})
+#restore functionality, don't mess...
+@app.route('restore_database')
+def restore():
+    return render_template('backup_database.html')
+
+
+@app.route('/api/restore_database')
+def restore():
+        host = 'localhost'
+        user = 'root'
+        password = 'your_password'
+        database = 'semester_project'
+        backup_file = '/path/to/your/backup.sql'
+
+        if restore_database(host, user, password, database, backup_file):
+            return "Database restore completed successfully."
+        else:
+            return "Error occurred during database restore."
+
+def restore_database(host, user, password, database, backup_file):
+    # Build the mysql command
+    command = [
+        'mysql',
+        f'--host={host}',
+        f'--user={user}',
+        f'--password={password}',
+        f'{database}',
+        f'< {backup_file}',
+    ]
+
+    # Execute the mysql command
+    try:
+        subprocess.run(command, shell=True, check=True)
+        print(f"Database restore completed. Backup file: {backup_file}")
+        return True
+    except subprocess.CalledProcessError as e:
+        print("Error occurred during database restore:")
+        print(e)
+        return False
     
 @app.route('/logout')
 def logout():
