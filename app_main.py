@@ -1360,7 +1360,416 @@ def satisfy_reservations():
     
     except Exception as e:
         return json.dumps({'error' : str(e)})
+
+# implementing specified queries for each role (12 in total). Each role's homepage redirects to own queries.
+
+# query1
+@app.route('/library_stats', methods=['GET'])
+def library_stats():
+    if session.get('role') == 'Admin':
+        return render_template('library_stats.html')
+    else:
+        return "Unauthorized", 401
+
+
+@app.route('/api/library_stats', methods=['GET'])
+def get_library_stats():
+    if session.get('role') == 'Admin':
+        year = request.args.get('year')
+        month = request.args.get('month')
+
+        with mysql.connection.cursor() as cursor:
+            query = """
+                SELECT School_Library.name, library_id, COUNT(*) AS TotalLoans
+                FROM Loan
+                INNER JOIN Users ON Loan.user_id = Users.user_id
+                INNER JOIN School_Library ON Users.users_library_id = School_Library.library_id
+                WHERE YEAR(Loan.loan_date) = %s
+                    AND MONTHNAME(Loan.loan_date) = %s
+                GROUP BY library_id;
+            """
+            params = (year, month)
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+
+        # Process the query result and return as JSON
+        stats = []
+        for row in result:
+            stats.append({
+                'name': row[0],
+                'library_id': row[1],
+                'TotalLoans': row[2]
+            })
+
+        return jsonify(stats)
+    else:
+        return "Unauthorized", 401
+
+# query2
+# fix this
+
+
+@app.route('/authors_stats', methods=['GET'])
+def authors_stats():
+    if session.get('role') == 'Admin':
+        return render_template('authors_stats.html')
+    else:
+        return "Unauthorized", 401
+
+
+@app.route('/api/authors_stats', methods=['GET'])
+def get_authors_stats():
+    if session.get('role') == 'Admin':
+        category = request.args.get('category')
+
+        with mysql.connection.cursor() as cursor:
+            query = """
+                SELECT DISTINCT CONCAT(Authors.first_name, ' ', Authors.last_name) AS author_name
+                FROM Authors
+                INNER JOIN Wrote ON Authors.author_id = Wrote.author_id
+                INNER JOIN Book ON Wrote.Book_ISBN = Book.ISBN
+                INNER JOIN Belongs_in ON Book.ISBN = Belongs_in.Book_ISBN
+                INNER JOIN Thematic_Category ON Belongs_in.category_id = Thematic_Category.category_id
+                WHERE Thematic_Category.category = %s;
+            """
+            cursor.execute(query, (category,))
+            result = cursor.fetchall()
+
+        # Process the query result and return as JSON
+        authors = []
+        for row in result:
+            authors.append({
+                'author_name': row[0]
+            })
+
+        return jsonify(authors)
+    else:
+        return "Unauthorized", 401
+
+# query3
+#find young teachers who have borrowed the most books and the number of books
+@app.route('/teachers_stats', methods=['GET'])
+def teachers_stats():
+    if session.get('role') == 'Admin':
+        return render_template('teachers_stats.html')
+    else:
+        return "Unauthorized", 401
+
+
+@app.route('/api/teachers_stats', methods=['GET'])
+def get_teachers_stats():
+    if session.get('role') == 'Admin':
+        with mysql.connection.cursor() as cursor:
+            query = """
+                SELECT Users.user_id, Users.first_name, Users.last_name, COUNT(*) AS num_books_borrowed
+                FROM Users
+                INNER JOIN Loan ON Users.user_id = Loan.user_id
+                WHERE Users.user_role = 'Teacher'
+                  AND TIMESTAMPDIFF(YEAR, Users.birth_date, CURDATE()) < 40
+                GROUP BY Users.user_id, Users.first_name, Users.last_name
+                ORDER BY num_books_borrowed DESC
+                LIMIT 1;
+            """
+            cursor.execute(query)
+            result = cursor.fetchone()
+
+        # Process the query result and return as JSON
+        if result:
+            user_id, first_name, last_name, num_books_borrowed = result
+            teacher_stats = {
+                'user_id': user_id,
+                'first_name': first_name,
+                'last_name': last_name,
+                'num_books_borrowed': num_books_borrowed
+            }
+            return jsonify(teacher_stats)
+        else:
+            return jsonify({}), 404  # No results found
+    else:
+        return "Unauthorized", 401
+
+#query4
+#Find authors whose books have not been borrowed
+@app.route('/authors_not_borrowed', methods=['GET'])
+def authors_not_borrowed():
+    if session.get('role') == 'Admin':
+        return render_template('authors_not_borrowed.html')
+    else:
+        return "Unauthorized", 401
+
+
+@app.route('/api/authors_not_borrowed', methods=['GET'])
+def get_authors_not_borrowed():
+    if session.get('role') == 'Admin':
+        with mysql.connection.cursor() as cursor:
+            query = """
+                SELECT Authors.author_id, Authors.first_name, Authors.last_name
+                FROM Authors
+                WHERE Authors.author_id NOT IN (
+                    SELECT Wrote.author_id
+                    FROM Wrote
+                    INNER JOIN Loan ON Loan.book_ISBN = Wrote.book_ISBN
+                );
+            """
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        # Process the query result and return as JSON
+        authors = []
+        for row in result:
+            author_id, first_name, last_name = row
+            authors.append({
+                'author_id': author_id,
+                'first_name': first_name,
+                'last_name': last_name
+            })
+
+        return jsonify(authors)
+    else:
+        return "Unauthorized", 401
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect('/')
+
+#query5
+@app.route('/operators_loan_count', methods=['GET'])
+def operators_loan_count():
+    if session.get('role') == 'Admin':
+        return render_template('operators_loan_count.html')
+    else:
+        return "Unauthorized", 401
+
+
+@app.route('/api/operators_loan_count', methods=['GET'])
+def get_operators_loan_count():
+    if session.get('role') == 'Admin':
+        year = request.args.get('year')
+
+        with mysql.connection.cursor() as cursor:
+            query = """
+                SELECT Users.user_id, Users.first_name, Users.last_name
+                FROM Loan
+                INNER JOIN Users ON Loan.user_id = Users.user_id
+                WHERE Users.user_role = 'operator' AND YEAR(Loan.loan_date) = %s
+                GROUP BY Users.user_id
+                HAVING COUNT(*) > 20;
+            """
+            cursor.execute(query, (year,))
+            result = cursor.fetchall()
+
+        # Process the query result and return as JSON
+        operators = []
+        for row in result:
+            user_id, first_name, last_name = row
+            operators.append({
+                'user_id': user_id,
+                'first_name': first_name,
+                'last_name': last_name
+            })
+
+        return jsonify(operators)
+    else:
+        return "Unauthorized", 401
+
+#query6
+
+
+#query7
+#select all the authors which have written more than 5 books less tan the first author 
+@app.route('/authors_less_books', methods=['GET'])
+def authors_less_books():
+    if session.get('role') == 'Admin':
+        return render_template('authors_less_books.html')
+    else:
+        return "Unauthorized", 401
+
+
+@app.route('/api/authors_less_books', methods=['GET'])
+def get_authors_less_books():
+    if session.get('role') == 'Admin':
+        with mysql.connection.cursor() as cursor:
+            query = """
+                SELECT A.author_id, A.first_name, A.last_name
+                FROM Authors A
+                WHERE (SELECT COUNT(*) FROM Wrote W WHERE W.author_id = A.author_id) <
+                      (SELECT COUNT(*) - 5 FROM Wrote GROUP BY author_id ORDER BY COUNT(*) DESC LIMIT 1);
+            """
+            cursor.execute(query)
+            result = cursor.fetchall()
+
+        # Process the query result and return as JSON
+        authors = []
+        for row in result:
+            authors.append({
+                'author_id': row[0],
+                'first_name': row[1],
+                'last_name': row[2]
+            })
+
+        return jsonify(authors)
+    else:
+        return "Unauthorized", 401
+###Implementing all the user_role = 'Operator' queries.
+
+#query8
+#this is a parametric query and appends lines to the query with 'AND' based on how many fields the search is based on
+
+@app.route('/book_search_operator', methods=['GET'])
+def book_search_operator():
+    if session.get('role') == 'Operator':
+        return render_template('book_search_operator.html')
+    else:
+        return "Unauthorized", 401
+
+
+@app.route('/api/book_search_operator', methods=['GET'])
+def get_book_search_operator():
+    if session.get('role') == 'Operator':
+        title = request.args.get('title')
+        category = request.args.get('category')
+        name = request.args.get('name')
+        copies = request.args.get('copies')
+
+        with mysql.connection.cursor() as cursor:
+            query = """
+                SELECT Book.title, Authors.first_name, Authors.last_name, Thematic_Category.category, LOB.total_copies
+                FROM Book 
+                INNER JOIN Wrote ON Book.ISBN = Wrote.book_ISBN
+                INNER JOIN Authors ON Wrote.author_id = Authors.author_id
+                INNER JOIN Belongs_in ON Book.ISBN = Belongs_in.book_ISBN
+                INNER JOIN Thematic_Category ON Belongs_in.category_id = Thematic_Category.category_id
+                INNER JOIN Lib_Owns_Book LOB ON Book.ISBN = LOB.book_ISBN
+                WHERE 1=1
+            """
+            params = []
+
+            if title:
+                query += "AND Book.title LIKE %s "
+                params.append(f"%{title}%")
+
+            if category:
+                query += "AND Thematic_Category.category LIKE %s "
+                params.append(f"%{category}%")
+
+            if name:
+                query += "AND CONCAT(Authors.first_name, ' ', Authors.last_name) LIKE %s "
+                params.append(f"%{name}%")
+
+            if copies:
+                query += "AND LOB.total_copies >= %s "
+                params.append(copies)
+
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+
+        # Process the query result and return as JSON
+        books = []
+        for row in result:
+            books.append({
+                'title': row[0],
+                'first_name': row[1],
+                'last_name': row[2],
+                'category': row[3],
+                'total_copies': row[4]
+            })
+
+        return jsonify(books)
+    else:
+        return "Unauthorized", 401
+
+#query9
+@app.route('/delayed_loan_search', methods=['GET'])
+def delayed_loan_search():
+    if session.get('role') == 'Operator':
+        return render_template('delayed_loan_search.html')
+    else:
+        return "Unauthorized", 401
+
+@app.route('/api/delayed_loan_search', methods=['GET'])
+def get_dealayed_loan_search():
+    if session.get('role') == 'Operator':
+        first_name = request.args.get('first_name')
+        last_name = request.args.get('last_name')
+        delay_days = request.args.get('delay_days')
+
+        with mysql.connection.cursor() as cursor:
+            query = """
+                SELECT Users.first_name, Users.last_name, DATEDIFF(CURDATE(), Loan.return_date) AS delay_days
+                FROM Users
+                INNER JOIN Loan ON Users.user_id = Loan.user_id
+                WHERE Loan.return_date IS NOT NULL
+                AND Loan.status = 'Active' OR 'Late ACTIVE'
+                AND DATEDIFF(CURDATE(), Loan.return_date) > 0
+                AND (Users.first_name LIKE %s OR %s = '')
+                AND (Users.last_name LIKE %s OR %s = '')
+            """
+            params = (f"%{first_name}%", first_name, f"%{last_name}%", last_name)
+
+            if delay_days:
+                query += " AND (DATEDIFF(CURDATE(), Loan.return_date) > %s OR %s = '')"
+                params += (delay_days, delay_days)
+
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+
+        # Process the query result and return as JSON
+        loans = []
+        for row in result:
+            loans.append({
+                'first_name': row[0],
+                'last_name': row[1],
+                'delay_days': row[2]
+            })
+
+        return jsonify(loans)
+
+    else :
+            return "Unauhtorized", 401
     
+#query10
+@app.route('/loan_rating_search', methods=['GET'])
+def loan_rating_search():
+    if session.get('role') == 'Operator':
+        return render_template('loan_rating_search.html')
+    else:
+        return "Unauthorized", 401
+
+
+@app.route('/api/loan_rating_search', methods=['GET'])
+def get_loan_rating_search():
+    if session.get('role') == 'Operator':
+        user_id = request.args.get('user_id')
+        category = request.args.get('category')
+
+        with mysql.connection.cursor() as cursor:
+            query = """
+                SELECT Users.user_id, Thematic_Category.category, AVG(Reviews.likert_rating) AS average_rating
+                FROM Users
+                INNER JOIN Loan ON Users.user_id = Loan.user_id
+                INNER JOIN Belongs_in ON Loan.book_ISBN = Belongs_in.book_ISBN
+                INNER JOIN Thematic_Category ON Belongs_in.category_id = Thematic_Category.category_id
+                INNER JOIN Reviews ON Reviews.book_ISBN = Loan.book_ISBN
+                WHERE(Users.user_id = %s OR %s = '')
+                AND (Thematic_Category.category = %s OR %s = ' ')
+                GROUP BY Users.user_id, Thematic_Category.category;
+            """
+            cursor.execute(query, (user_id, user_id, category, category))
+            result = cursor.fetchall()
+
+        # Process the query result and return as JSON
+        ratings = []
+        for row in result:
+            ratings.append({
+                'user_id': row[0],
+                'category': row[1],
+                'average_rating': float(row[2])
+            })
+
+        return jsonify(ratings)
+    else :
+        return "Unauthorized", 401    
 @app.route('/logout')
 def logout():
     session.pop('user', None)
