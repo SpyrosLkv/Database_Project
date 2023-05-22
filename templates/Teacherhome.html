@@ -22,6 +22,19 @@
         border-radius: 10px;
         padding: 20px;
       }
+
+      .twocolumns {
+        display: flex; /* Use flexbox for the two-column layout */
+        justify-content: space-between; /* Place the columns at the opposite ends */
+      }
+
+      .leftarray {
+        width: 50%; /* Set the width of the left column to 50% */
+      }
+
+      .rightarray {
+        width: 50%; /* Set the width of the right column to 50% */
+      }
     </style>
   </head>
 
@@ -53,45 +66,77 @@
           <h1 class="text-center fw-bold display-5">Welcome Home!</h1>
         </div>
       </div>
-      <button id="show_table" onclick="toggleTable()">Show My Info</button><br>
-      <style>
-        #UserData {
-            display: none;
-        }
-      </style>
-      <table id="UserData" style="display:none">
-        <thead>
-            <tr>
-                <th>Your Data</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Username:</td>
-                <td id="username"> </td>
-            </tr>
-            <tr>
-                <td>First Name:</td>
-                <td id="firstname"> </td>
-            </tr>
-            <tr>
-                <td>Last Name:</td>
-                <td id="lastname"> </td>
-            </tr>
-            <tr>
-                <td>Birth Date:</td>
-                <td id="birthdate"> </td>
-            </tr>
-            <tr>
-                <td>Email:</td>
-                <td id="email"> </td>
-            </tr>
-            <tr>
-                <td>Role:</td>
-                <td>Teacher</td>
-            </tr>
-        </tbody>
-      </table>
+      <div class="twocolumns">
+        <div class="leftarray">
+          <button id="show_table" onclick="toggleTable()">Show My Info</button>
+          <table id="UserData" style="display:none">
+            <thead>
+                <tr>
+                    <th>Your Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Username:</td>
+                    <td id="username"> </td>
+                </tr>
+                <tr>
+                    <td>First Name:</td>
+                    <td id="firstname"> </td>
+                </tr>
+                <tr>
+                    <td>Last Name:</td>
+                    <td id="lastname"> </td>
+                </tr>
+                <tr>
+                    <td>Birth Date:</td>
+                    <td id="birthdate"> </td>
+                </tr>
+                <tr>
+                    <td>Email:</td>
+                    <td id="email"> </td>
+                </tr>
+                <tr>
+                    <td>Role:</td>
+                    <td>Teacher</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="rightarray">
+          <button id="show_table1" onclick="toggleTable1()">Show My Library</button>
+          <table id="LibData" style="display:none">
+            <thead>
+                <tr>
+                    <th>Your Library's Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Name:</td>
+                    <td id="name"> </td>
+                </tr>
+                <tr>
+                    <td>Address:</td>
+                    <td id="address"> </td>
+                </tr>
+                <tr>
+                    <td>Town:</td>
+                    <td id="town"> </td>
+                </tr>
+                <tr>
+                    <td>Email:</td>
+                    <td id="email1"> </td>
+                </tr>
+                <tr>
+                    <td>Principal:</td>
+                    <td id="principal"> </td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
       <script>
         function toggleTable(){
             var table = document.getElementById("UserData");
@@ -103,7 +148,16 @@
 
             
         }
+        function toggleTable1(){
+            var table = document.getElementById("LibData");
+            if (table.style.display == "none"){
+                table.style.display = "table";
+            } else {
+                table.style.display = "none";
+            }
 
+            
+        }
         const table = document.getElementById('UserData');
         const getDataBtn = document.getElementById('show_table');
 
@@ -114,7 +168,7 @@
             if (data.error){
                 console.log(error)
             } else{
-                const item1 = document.getElementById('username');
+              const item1 = document.getElementById('username');
                 const item2 = document.getElementById('firstname');
                 const item3 = document.getElementById('lastname');
                 const item4 = document.getElementById('birthdate');
@@ -124,6 +178,32 @@
                 item3.innerText = data.last_name;
                 item4.innerText = data.birth_date;
                 item5.innerText = data.email; 
+            }     
+        });
+
+
+        const table1 = document.getElementById('LibData');
+        const getLibBtn = document.getElementById('show_table1');
+        getLibBtn.addEventListener('click', async () => {
+            const response = await fetch('/api/get_lib_data');
+            const data = await response.json();
+
+            if (data.error){
+                console.log(error)
+            } else{
+                
+
+
+                const item1 = document.getElementById('name');
+                const item2 = document.getElementById('address');
+                const item3 = document.getElementById('town');
+                const item4 = document.getElementById('email1');
+                const item5 = document.getElementById('principal');
+                item1.innerText = data.name;
+                item2.innerText = data.address;
+                item3.innerText = data.town;
+                item4.innerText = data.email;
+                item5.innerText = data.principal; 
             }     
         });
       </script>
@@ -161,6 +241,10 @@
       <footer class="footer">
         <a href="/change_password">
           Change my password
+        </a>
+        <br>
+        <a href="/contact_library">
+          Contact my Library
         </a>
         <p>&copy; NTUA 2023</p>
       </footer>

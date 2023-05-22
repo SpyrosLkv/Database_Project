@@ -150,7 +150,8 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Loan` (
   `loan_date` DATE NOT NULL DEFAULT (CURRENT_DATE),
   `return_date` DATE NULL,
   `status` ENUM("Active", "Late Active", "Returned", "Late Returned") NOT NULL DEFAULT "Active",
-  PRIMARY KEY (`book_ISBN`, `user_id`),
+  `loan_id` INT NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`loan_id`,`book_ISBN`, `user_id`),
   INDEX `fk_Book_has_Users_Users3_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_Book_has_Users_Book2_idx` (`book_ISBN` ASC) VISIBLE,
   CONSTRAINT `fk_Loan_Book_ISBN`
@@ -173,9 +174,9 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Operator_Appointment` (
   `operator_id` INT NOT NULL,
   `library_appointment` INT NOT NULL,
   `administrator_id` INT NOT NULL,
-  `appointment_no` INT NOT NULL,
+  `appointment_no` INT NOT NULL AUTO_INCREMENT,
   `date_of_appointment` DATE NULL DEFAULT (CURRENT_DATE),
-  PRIMARY KEY (`operator_id`, `library_appointment`, `administrator_id`, `appointment_no`),
+  PRIMARY KEY (`appointment_no`),
   INDEX `fk_Operator Appointment_School - Library1_idx` (`library_appointment` ASC) VISIBLE,
   INDEX `fk_Operator Appointment_Users2_idx` (`administrator_id` ASC) VISIBLE,
   CONSTRAINT `fk_OA_Operator`
@@ -240,7 +241,8 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `semester_project`.`Request` (
   `book_ISBN` BIGINT(13) NOT NULL,
   `user_id` INT NOT NULL,
-  PRIMARY KEY (`book_ISBN`, `user_id`),
+  `request_id` INT NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`request_id`,`book_ISBN`, `user_id`),
   INDEX `fk_Book_has_Users_Users1_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_Book_has_Users_Book1_idx` (`book_ISBN` ASC) VISIBLE,
   CONSTRAINT `fk_Book_Requested`
@@ -265,7 +267,8 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Reservation` (
   `reservation_date` DATE NOT NULL,
   `expiration_date` DATE NOT NULL,
   `status` ENUM("Active", "Honoured", "Expired") NULL DEFAULT "Active",
-  PRIMARY KEY (`book_ISBN`, `user_id`),
+  `reservation_id` INT NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`reservation_id`,`book_ISBN`, `user_id`),
   INDEX `fk_Book_has_Users_Users2_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_Book_has_Users_Book1_idx` (`book_ISBN` ASC) VISIBLE,
   CONSTRAINT `fk_Res_Book_ISBN`
@@ -504,7 +507,6 @@ BEGIN
   SET NEW.`user_id` = OLD.`user_id`;
   IF OLD.`return_date` IS NOT NULL THEN
     SET NEW.`return_date` = OLD.`return_date`;
-    SET NEW.`status` = OLD.`status`;
   END IF;
   IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NULL AND TIMESTAMPDIFF(DAY, OLD.`loan_date`, CURRENT_DATE()) > 14 THEN
     SET NEW.`status` = "Late Active";

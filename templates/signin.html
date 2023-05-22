@@ -58,7 +58,8 @@
 							id="inputUserName" 
 							class="form-control" 
 							placeholder="Username" 
-							required autofocus>
+							required autofocus
+							/>
                         <label for="inputPassword" class="sr-only">Password</label>
                         <input 
 							type="Password" 
@@ -66,7 +67,8 @@
 							id="inputPassword" 
 							class="form-control" 
 							placeholder="Password" 
-							required>
+							required
+							/>
 
                         <button id="btnSignIn" class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
                     </form>
@@ -98,8 +100,8 @@
 					if (result.redirect_url){
 						window.location.href = result.redirect_url;
 					} else {
-						if (result.error == "wrong credentials"){
-							document.querySelector('#error-message').textContent = result.error;
+						if (result.errorshow){
+							document.querySelector('#error-message').textContent = result.errorshow;
 						}
 						else if (result.error){
 							document.querySelector('#error-message').textContent = 'an error occurred';

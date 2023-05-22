@@ -40,36 +40,44 @@
                     <form id="form-createlib" action="/api/createlib" method="post">
                         <label for="inputName" class="sr-only">School Name</label>
                         <input 
-                            type="SchoolName" 
                             name="inputName" 
                             id="inputName"
                             class="form-control" 
                             placeholder="School Name" 
-                            required autofocus>
+                            required autofocus
+                        />
                         <label for="inputAddress" class="sr-only">Address</label>
                         <input 
-                            type="Address" 
                             name="inputAddress"
                             id="inputAddress"
                             class="form-control" 
                             placeholder="Address" 
-                            required>
+                            required
+                        />
                         <label for="inputCity" class="sr-only">City</label>
                         <input
-                            type="City"
                             name="inputCity"
                             id="inputCity"
                             class="form-control" 
                             placeholder="City" 
-                            required>
+                            required
+                        />
                         <label for="inputEmail" class="sr-only">Email</label>
                         <input
-                            type="Email"
                             name="inputEmail"
                             id="inputEmail"
                             class="form-control" 
                             placeholder="Email" 
-                            required>  
+                            required
+                        /> 
+                        <label for="inputPhones" class="sr-only">Phone Numbers</label>
+                        <input
+                            name="inputPhones"
+                            id="inputPhones"
+                            class="form-control" 
+                            placeholder="Add in format 0000000000,1111111111,..." 
+                            required
+                        />  
                         <br>
                         <button id="CreateLIv" class="btn btn-lg btn-primary btn-block" type="submit">Create</button>
                     </form>
