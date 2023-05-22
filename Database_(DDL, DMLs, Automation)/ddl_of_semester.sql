@@ -320,12 +320,12 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Pending_Reviews` (
   PRIMARY KEY (`book_ISBN`, `user_id`),
   INDEX `fk_Book_has_Users_Users1_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_Book_has_Users_Book_idx` (`book_ISBN` ASC) VISIBLE,
-  CONSTRAINT `fk_Rev_Book_ISBN`
+  CONSTRAINT `fk_Pen_Rev_Book_ISBN`
     FOREIGN KEY (`book_ISBN`)
     REFERENCES `semester_project`.`Book` (`ISBN`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
-  CONSTRAINT `fk_Rev_User_Id`
+  CONSTRAINT `fk_Pen_Rev_User_Id`
     FOREIGN KEY (`user_id`)
     REFERENCES `semester_project`.`Users` (`user_id`)
     ON DELETE RESTRICT
