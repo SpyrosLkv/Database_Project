@@ -414,6 +414,7 @@ def bookSearch():
                             'title': row[1],
                             'publisher': row[2],
                             'no_of_pages': row[3],
+                            'summary': row[4],
                             'language': row[6],
                             'image_data': image_data
                         }
@@ -452,6 +453,7 @@ def bookSearchkey():
                             'title': row[1],
                             'publisher': row[2],
                             'no_of_pages': row[3],
+                            'summary': row[4],
                             'language': row[6],
                             'image_data': image_data
                             
@@ -495,6 +497,7 @@ def bookSearchauthor():
                             'title': row[1],
                             'publisher': row[2],
                             'no_of_pages': row[3],
+                            'summary': row[4],
                             'language': row[6],
                             'image_data': image_data
                             
