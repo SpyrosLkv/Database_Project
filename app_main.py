@@ -1206,6 +1206,10 @@ def delete_user():
             cursor.execute(query)
             mysql.connection.commit()
 
+            query = "DELETE FROM Pending_Reviews WHERE user_id ="+str(user_id)+";"
+            cursor.execute(query)
+            mysql.connection.commit()
+
             query = "DELETE FROM Reviews WHERE user_id ="+str(user_id)+";"
             cursor.execute(query)
             mysql.connection.commit()
@@ -2590,7 +2594,201 @@ def delete_myreservations():
         
     except Exception as e:
         return json.dumps({'error' : str(e)})
+
+@app.route('/change_existing_book')
+def change_existing_book_page():
+    return render_template("alter_book.html")
+
+@app.route('/api/deletebook', methods=['POST'])
+def deletebook():
+    try:
+        ISBN = int(request.form['inputISBN1'])
+        if ISBN:
+            with mysql.connection.cursor() as cursor:
+                query = "SELECT ISBN FROM Book WHERE ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                oldbook = cursor.fetchall()
+                if len(oldbook) == 0:
+                    return json.dumps({'errorshow': 'Invalid ISBN'})
+                
+                query = "DELETE FROM Loan WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Belongs_in WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Keywords_in_book WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Lib_Owns_Book WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Pending_Reviews WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Request WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Reservation WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Reviews WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Wrote WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Book WHERE ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/userhome'})
+        else:
+            return json.dumps({'errorshow': 'Not all required fields were filled'})
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
     
+
+@app.route('/api/changebook', methods=['POST'])
+def change_book_api():
+    try:
+        print(type(request.form['inputISBN']))
+        ISBN = int(request.form['inputISBN'])
+        title = request.form['inputTitle']
+        publisher = request.form['inputPublisher']
+        print("hello1")
+        pages = int(request.form['inputPages'])
+        summary = request.form['inputSummary']
+        image = request.files['inputImage']
+        language = request.form['inputLanguage']
+        keywords = request.form['inputKeywords']
+        authors = request.form['inputAuthors']
+        categories = request.form['inputThematic']
+        print("hello")
+        if ISBN and title and publisher and pages and summary and image and language and keywords and authors and categories:
+
+            file_type, _ = mimetypes.guess_type(image.filename)
+            allowed_types = ['image/jpeg', 'image/jpg', 'image/png']
+            if file_type not in allowed_types:
+                return json.dumps({'errorshow': 'Invalid file type. Only JPEG, JPG, and PNG files are allowed'})
+
+            max_size = 250 * 1024 
+            if len(image.read()) > max_size:
+                return json.dumps({'errorshow': 'File too large'})
+
+            image.seek(0)
+
+            file_bytes = image.read()
+
+            keywords = keywords.split(",")
+            authors = authors.split(",")
+            categories = categories.split(",")
+            with mysql.connection.cursor() as cursor:
+                query = "SELECT ISBN FROM Book WHERE ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                oldbook = cursor.fetchall()
+                if len(oldbook) == 0:
+                    return json.dumps({'errorshow': 'Invalid ISBN'})
+                
+                query = "UPDATE Book SET title =%s, publisher =%s, no_of_pages ="+str(pages)+",summary=%s, image=%s, language=%s WHERE ISBN = "+str(ISBN)+";"
+                params = (title,publisher,summary,base64.b64encode(file_bytes),language)
+                cursor.execute(query,params)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Keywords_in_book WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+                query = "DELETE FROM Wrote WHERE book_ISBN = "+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+                query = "DELETE FROM Belongs_in WHERE book_ISBN = "+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                for keyword in keywords:
+                    query = "select keyword_id from Keywords where keyword = %s;"
+                    params = (keyword,)
+                    cursor.execute(query,params)
+                    data = cursor.fetchall()
+                    if len(data) == 0:
+                        query = "INSERT INTO Keywords (keyword) VALUES (%s);"
+                        params = (keyword,)
+                        cursor.execute(query,params)
+                        mysql.connection.commit()
+                        query = "select keyword_id from Keywords where keyword = %s;"
+                        cursor.execute(query,params)
+                        data = cursor.fetchall()
+                        keyword_id = int(data[0][0])
+                        query = "INSERT INTO Keywords_in_book (keyword_id,book_ISBN) VALUES ("+str(keyword_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                    else:
+                        keyword_id = int(data[0][0])
+                        query = "INSERT INTO Keywords_in_book (keyword_id,book_ISBN) VALUES ("+str(keyword_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                for author in authors:
+                    first_name = author.split(" ")[0]
+                    last_name = author.split(" ")[1]
+                    query = "select author_id from Authors where first_name = %s and last_name = %s;"
+                    params = (first_name,last_name,)
+                    cursor.execute(query,params)
+                    data = cursor.fetchall()
+                    if len(data) == 0:
+                        query = "INSERT INTO Authors (first_name,last_name) VALUES (%s,%s);"
+                        params = (first_name,last_name,)
+                        cursor.execute(query,params)
+                        mysql.connection.commit()
+                        query = "select author_id from Authors where first_name = %s and last_name = %s;"
+                        cursor.execute(query,params)
+                        data = cursor.fetchall()
+                        author_id = int(data[0][0])
+                        query = "INSERT INTO Wrote (author_id,book_ISBN) VALUES ("+str(author_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                    else:
+                        author_id = int(data[0][0])
+                        query = "INSERT INTO Wrote (author_id,book_ISBN) VALUES ("+str(author_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                for category in categories:
+                    query = "select category_id from Thematic_Category where category = %s;"
+                    params = (category,)
+                    cursor.execute(query,params)
+                    data = cursor.fetchall()
+                    if len(data) == 0:
+                        query = "INSERT INTO Thematic_Category (category) VALUES (%s);"
+                        params = (category,)
+                        cursor.execute(query,params)
+                        mysql.connection.commit()
+                        query = "select category_id from Thematic_Category where category = %s;"
+                        cursor.execute(query,params)
+                        data = cursor.fetchall()
+                        category_id = int(data[0][0])
+                        query = "INSERT INTO Belongs_in (category_id,book_ISBN) VALUES ("+str(category_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                    else:
+                        category_id = int(data[0][0])
+                        query = "INSERT INTO Belongs_in (category_id,book_ISBN) VALUES ("+str(category_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                return json.dumps({'redirect_url': '/userhome'})
+
+
+        else:
+            return json.dumps({'errorshow': 'Not all required fields were filled'})
+    except Exception as e:
+        return json.dumps({'error': str(e)})   
+
 @app.route('/logout')
 def logout():
     session.pop('user', None)

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title> Python Flask LIbrary App - New Book </title>
+
+        <link 
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+            crossorigin="anonymous"
+          />
+          <style>
+            .form-control{
+                margin-bottom: 20px;
+            }
+            
+          </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <nav
+                    class="border-bottom flex-wrap mb-4 py-3 d-flex justify-content-center"
+                >
+                    <a
+                        href="/userhome"
+                        class="text-dark text-decoration-none mb-3 mb-md-0 d-flex align-items-center me-md-auto"
+                    >
+                        <span class="fs-4">Python Flask App</span>
+                    </a>
+
+                    <ul class="nav nav-pills">
+                        <li class="nav-item">
+                        <a href="/userhome" class="nav-link">Home</a>
+                        </li>
+                        <li class="nav-item">
+                        <a href="/logout" class="nav-link active">Logout</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="bg-light rounded-3 mb-4 p-5">
+                <div class="container-fluid py-5">
+                    <h1 class="text-center fw-bold display-5">Delete By ISBN</h1>
+                    <div class="display-6 fw-bold text-center" id="error-message1"> </div>
+                    <form id="form-delete" action="/api/deletebook" method="post">
+                        <label for="inputISBN1" class="sr-only">ISBN</label>
+                        <input  
+                            name="inputISBN1" 
+                            id="inputISBN1"
+                            class="form-control" 
+                            placeholder="ISBN" 
+                            required autofocus
+                        />
+                        <button id="btnSignIn" class="btn btn-lg btn-primary btn-block" type="submit">Delete From Database</button>
+                    </form>
+                </div>
+                <br>
+                <br>
+                <div class="container-fluid py-5">
+                    <h1 class="text-center fw-bold display-5">Change Book by ISBN</h1>
+                    <div class="display-6 fw-bold text-center" id="error-message"> </div>
+                    <form id="form-changebook" action="/api/changebook" method="post">
+                        <label for="inputISBN" class="sr-only">ISBN</label>
+                        <input 
+                            type="text"
+                            name="inputISBN" 
+                            id="inputISBN"
+                            class="form-control" 
+                            placeholder="ISBN" 
+                            required autofocus
+                        />
+                        <label for="inputTitle" class="sr-only">Title</label>
+                        <input 
+                            name="inputTitle"
+                            id="inputTitle"
+                            class="form-control" 
+                            placeholder="Title" 
+                            required
+                        />
+                        <label for="inputPublisher" class="sr-only">Publisher</label>
+                        <input
+                            name="inputPublisher"
+                            id="inputPublisher"
+                            class="form-control" 
+                            placeholder="Publisher" 
+                            required
+                        />
+                        <label for="inputPages" class="sr-only">Number of Pages</label>
+                        <input
+                            name="inputPages"
+                            id="inputPages"
+                            class="form-control" 
+                            placeholder="Number of Pages" 
+                            required
+                        /> 
+                        <label for="inputSummary" class="sr-only">Summary</label>
+                        <input
+                            name="inputSummary"
+                            id="inputSummary"
+                            class="form-control" 
+                            placeholder="Summary"
+                            required
+                        /> 
+
+                        <label for="inputImage" class="sr-only">Image</label>
+                        <input 
+                            type="file"
+                            name="inputImage"
+                            id="inputImage"
+                            class="form-control"
+                            placeholder="Choose File"
+                            required
+                        />
+
+                        <label for="inputLanguage" class="sr-only">Language</label>
+                        <input
+                            name="inputLanguage"
+                            id="inputLanguage"
+                            class="form-control" 
+                            placeholder="Language" 
+                            required
+                        />
+                        <label for="inputKeywords" class="sr-only">Keywords</label>
+                        <input
+                            name="inputKeywords"
+                            id="inputKeywords"
+                            class="form-control" 
+                            placeholder="Input Keywords in this format: Key1,Key2,..." 
+                            required
+                        />
+                        <label for="inputAuthors" class="sr-only">Authors</label>
+                        <input
+                            name="inputAuthors"
+                            id="inputAuthors"
+                            class="form-control" 
+                            placeholder="Input Authors in this format: firstname1 lastname1,firstname2 lastname2,..." 
+                            required
+                        />
+                        <label for="inputThematic" class="sr-only">Thematic Category</label>
+                        <input
+                            name="inputThematic"
+                            id="inputThematic"
+                            class="form-control" 
+                            placeholder="Input Thematic Categories in this format: Category1,Category2,..." 
+                            required
+                        />
+                        <button id="btnSignIn" class="btn btn-lg btn-primary btn-block" type="submit">Insert to Database</button>
+                    </form>
+            </div>
+
+            <footer class="footer">
+				
+				<p>&copy; NTUA 2023</p>
+				
+			</footer>
+        </div>
+        
+    </body>
+    <script>
+        const form1 = document.querySelector("#form-delete");
+        form1.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form1);
+        const body = new URLSearchParams(formData).toString();
+
+        try {
+            const res = await fetch("/api/deletebook", {
+            method: "POST",
+            body: body,
+            headers:{
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            });
+
+            const result = await res.json();
+            
+            if (result.redirect_url){
+            console.log(result);
+            window.location.href = result.redirect_url;
+            } else {
+            if (result.errorshow)
+                document.querySelector('#error-message1').textContent = result.errorshow;
+            else if (reuslt.error){
+                document.querySelector('#error-message1').textContent = 'an error occurred';
+            }
+            else{
+                console.log(result);
+            }
+            }
+
+        } catch (error) {
+            console.error(error);
+            document.querySelector('#error-message').textContent = 'an error occurred';
+        }
+        });
+
+        const form = document.querySelector('#form-changebook');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData();
+            formData.append('inputISBN', document.getElementById('inputISBN').value);
+            formData.append('inputTitle', document.getElementById('inputTitle').value);
+            formData.append('inputPublisher', document.getElementById('inputPublisher').value);
+            formData.append('inputPages', document.getElementById('inputPages').value);
+            formData.append('inputSummary', document.getElementById('inputSummary').value);
+            formData.append('inputImage', document.getElementById('inputImage').files[0]);
+            formData.append('inputLanguage', document.getElementById('inputLanguage').value);
+            formData.append('inputKeywords', document.getElementById('inputKeywords').value);
+            formData.append('inputAuthors', document.getElementById('inputAuthors').value);
+            formData.append('inputThematic', document.getElementById('inputThematic').value);
+
+
+
+            try{
+                const res = await fetch("/api/changebook", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const result = await res.json();
+                if (result.redirect_url){
+                    window.location.href = result.redirect_url;
+                } else {
+                    if (result.errorshow){
+                        document.querySelector('#error-message').textContent= result.errorshow;
+                    }
+                    else if (result.error){
+                        document.querySelector('#error-message').textContent = 'an error has occured';
+                    }
+                    else {
+                        console.log(result);
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                document.querySelector('#error-message').textContent = 'an error occured';
+            }
+        });
+    </script>
+</html>

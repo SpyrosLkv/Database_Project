@@ -2368,7 +2368,6 @@ INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(127,1,'Active'
 INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(128,1,'Active');
 INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(129,1,'Active');
 INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(130,1,'Active');
-INSERT INTO semester_project.Card (user_id,card_no,status) VALUES(131,1,'Active');
 INSERT INTO semester_project.Reviews (book_ISBN,user_id,likert_rating,review) VALUES (9789603322092,43,5,'some sort of  holographic m');
 INSERT INTO semester_project.Reviews (book_ISBN,user_id,likert_rating,review) VALUES (9789603322092,52,5,'power. More pollen, moreflowe');
 INSERT INTO semester_project.Reviews (book_ISBN,user_id,likert_rating,review) VALUES (9789603322092,66,5,'n, moreflowers, more nectar, ');
