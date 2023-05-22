@@ -1756,12 +1756,14 @@ def get_operators_loan_count():
 
         with mysql.connection.cursor() as cursor:
             query = """
-                SELECT Users.user_id, Users.first_name, Users.last_name
-                FROM Loan
-                INNER JOIN Users ON Loan.user_id = Users.user_id
-                WHERE Users.user_role = 'operator' AND YEAR(Loan.loan_date) = %s
-                GROUP BY Users.user_id
-                HAVING COUNT(*) > 20;
+            SELECT LOB.library_id, U.first_name AS operator_first_name, U.last_name AS operator_last_name
+            FROM Lib_Owns_Book LOB
+            INNER JOIN Loan L ON LOB.book_ISBN = L.book_ISBN
+            INNER JOIN Users U ON LOB.library_id = U.users_library_id
+            WHERE YEAR(L.loan_date) = %s
+                AND U.user_role = 'Operator'
+            GROUP BY LOB.library_id, U.first_name, U.last_name
+            HAVING COUNT(*) > 20;
             """
             cursor.execute(query, (year,))
             result = cursor.fetchall()
