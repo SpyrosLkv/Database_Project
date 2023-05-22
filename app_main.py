@@ -2105,7 +2105,7 @@ def book_return():
         if bookISBN and user_id:
             with mysql.connection.cursor() as cursor:
                 #get the status of the loan
-                query = "SELECT status, return_date from Loan WHERE user_id = %s AND book_ISBN = %s;"
+                query = "SELECT status, loan_date from Loan WHERE user_id = %s AND book_ISBN = %s;"
                 params = (user_id, bookISBN)
                 cursor.execute(query, params)
                 data = cursor.fetchall()
@@ -2119,15 +2119,17 @@ def book_return():
                 current_date = datetime.datetime.strptime(current_date, "%Y-%m-%d").date()
 
 
-                if  ((data[0][0] == "Late Active") or (data[0][1] < current_date)) :
-                    query2 = "UPDATE Loan SET status = 'Late Returned' WHERE user_id = %s AND book_ISBN = %s;"
-                    cursor.execute(query2, params)
+                if  ((data[0][0] == "Late Active") or ((data[0][1] + datetime.timedelta(weeks=1)) >= current_date)) :
+                    query2 = "UPDATE Loan SET status = 'Late Returned', return_date = %s WHERE user_id = %s AND book_ISBN = %s;"
+                    params10 = (current_date, user_id, bookISBN)
+                    cursor.execute(query2, params10)
                     mysql.connection.commit()
 
                 #if it is active like normal, then change it to returned 
                 elif (data[0][0] == 'Active') :
-                    query3 = "UPDATE Loan SET status = 'Returned' WHERE user_id = %s AND book_ISBN = %s;"
-                    cursor.execute(query3, params)
+                    query3 = "UPDATE Loan SET status = 'Returned', return_date = %s WHERE user_id = %s AND book_ISBN = %s;"
+                    params11 = (current_date, user_id, bookISBN)
+                    cursor.execute(query3, params11)
                     mysql.connection.commit()
 
                 else :
