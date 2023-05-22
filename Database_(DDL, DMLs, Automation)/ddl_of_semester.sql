@@ -469,10 +469,8 @@ BEGIN
   SET avail_copies = ( 
     SELECT lob.`available_copies` 
     FROM `semester_project`.`Lib_Owns_Book` lob 
-    INNER JOIN `semester_project`.`School_Library` s
-    ON s.`library_id` = lob.`library_id`
     INNER JOIN `semester_project`.`Users` u
-    ON s.`library_id` = u.`users_library_id`
+    ON lob.`library_id` = u.`users_library_id`
     WHERE u.`user_id` = NEW.`user_id` and lob.`book_ISBN` = NEW.`book_ISBN`
   );
   IF FOUND_ROWS() = 0 THEN
