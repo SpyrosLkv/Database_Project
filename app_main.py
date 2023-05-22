@@ -2453,9 +2453,9 @@ def manage_requests():
                 new_date = current_date + timedelta(weeks=1)
                 formatted_date = new_date.strftime('%Y-%m-%d')
 
-                query = "INSERT INTO Loan (book_ISBN, user_id, return_date, status) VALUES (9789609474085, 128, '2023-06-01', 'Active');"
-                #params = (book_ISBN, user_id, '2023-06-05',)
-                cursor.execute(query)
+                qquery = "INSERT INTO Loan (book_ISBN, user_id, status) VALUES (%s, %s, 'Active');"
+                params = (book_ISBN, user_id,)
+                cursor.execute(query, params)
                 mysql.connection.commit()
 
                 #reduce the available copies of the book by 1
