@@ -1400,14 +1400,9 @@ def instant_loans():
                 if (data5[0][0] == 0) :
                     return json.dumps({'message' : "Not enough copies"})
                 
-                #we have to get the current date and add 1 week to set the return date
-                current_date = datetime.now().date()
-                new_date = current_date + timedelta(weeks=1)
-                formatted_date = new_date.strftime('%Y-%m-%d')
-
                 #if we reach, all set and we can finally input the loan to the database
-                query6 = "INSERT INTO Loan (book_ISBN, user_id, return_date, status) VALUES (%s, %s, %s, 'Active');"
-                params3 = (bookISBN, user_id, formatted_date,)
+                query6 = "INSERT INTO Loan (book_ISBN, user_id, status) VALUES (%s, %s, 'Active');"
+                params3 = (bookISBN, user_id,)
                 cursor.execute(query6, params3)
                 mysql.connection.commit()
 
@@ -1417,6 +1412,10 @@ def instant_loans():
                 params4 = (new_available_copies, bookISBN, data4[0][0])
                 cursor.execute(query7, params4)
                 mysql.connection.commit()
+
+                return json.dumps({'message' : "Loan was registered successfully"})
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
 
                 return json.dumps({'message' : "Loan was registered successfully"})
     except Exception as e:
