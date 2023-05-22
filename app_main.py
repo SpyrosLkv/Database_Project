@@ -2790,6 +2790,82 @@ def change_book_api():
             return json.dumps({'errorshow': 'Not all required fields were filled'})
     except Exception as e:
         return json.dumps({'error': str(e)})   
+    
+@app.route('/add_pending_review')
+def add_review():
+    return render_template('add_pending_review.html')
+
+@app.route('/api/add_pending_reviews', methods = ['POST'])
+def add_pending_review():
+    try:
+        book_ISBN = request.form.get('inputISBN')
+        user_id = str(session['user'])
+        likert_rating = request.form.get('inputLikert_rating')
+        review = request.form.get('inputReview')
+        if book_ISBN and likert_rating and review:
+            with mysql.connection.cursor() as cursor:
+                #check if the book is in the library of the user
+                query = "SELECT users_library_id FROM Users WHERE user_id = %s;"
+                params = (user_id,)
+                cursor.execute(query, params)
+                data = cursor.fetchall()
+                library_id = data[0][0]
+
+                query2 = """SELECT COUNT(*)
+                            FROM Lib_Owns_Book 
+                            WHERE library_id = %s AND book_ISBN = %s;
+                """
+                params2 = (library_id, book_ISBN)
+                cursor.execute(query2, params2)
+                data2 = cursor.fetchall()
+                count2 = data2[0][0]
+                if (count2 == 0) :
+                    return json.dumps({'message' : "Book not in library"})
+                
+                #see if there is already a pending review from this user for
+                #for the specific book
+                query3 = """SELECT COUNT(*) 
+                            FROM Pending_Reviews
+                            WHERE user_id = %s AND book_ISBN = %s;
+                """
+                params3 = (user_id, book_ISBN)
+                cursor.execute(query3, params3)
+                data3 = cursor.fetchall()
+                count3 = data3[0][0]
+                if (count3 >= 1) :
+                    return json.dumps({'message' : "Already pending"})
+                
+                #see if there is already a review from this user
+                #for the specific book
+                query4 = """SELECT COUNT(*) 
+                            FROM Reviews
+                            WHERE user_id = %s AND book_ISBN = %s;
+                """
+                params4 = (user_id, book_ISBN)
+                cursor.execute(query4, params4)
+                data4 = cursor.fetchall()
+                count4 = data4[0][0]
+                if (count4 >= 1) :
+                    return json.dumps({'message' : "Already reviewed"})
+                
+                #check if the likert rating is ok
+                mylikert_rating = float(likert_rating)
+                if (mylikert_rating < 1 or mylikert_rating > 5):
+                    return json.dumps({'message' : "wrong likert rating"})
+                
+                #all the checks passed
+                #we can now insert the review to the pending
+                query5 = """INSERT INTO Pending_Reviews (book_ISBN, user_id, likert_rating, review)
+                            VALUES (%s, %s, %s, %s);
+                """
+                params5 = (book_ISBN, user_id, likert_rating, review)
+                cursor.execute(query5, params5)
+                mysql.connection.commit()
+                return json.dumps({'message' : "Review registered"})
+        return json.dumps({'error' : "Unexpected error occured"})
+
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
 
 @app.route('/logout')
 def logout():
