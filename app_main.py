@@ -1226,7 +1226,7 @@ def show_myloans():
 def get_loans():
     try:
         with mysql.connection.cursor() as cursor:
-            query = "SELECT book_ISBN, return_date, status from Loan where user_id = %s and (status = 'Active' or status = 'Late Active');"
+            query = "SELECT book_ISBN, status from Loan where user_id = %s and (status = 'Active' or status = 'Late Active');"
             user_id = str(session['user'])
             params = (user_id,)
             cursor.execute(query, params)
@@ -1243,8 +1243,7 @@ def get_loans():
             for loans in data:
                 response1.append({
                     "isbn" : loans[0],
-                    "return_date" : loans[1],
-                    "status" : loans[2]
+                    "status" : loans[1]
                 })
 
             for regestrations in data2:
