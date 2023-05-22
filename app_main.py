@@ -2856,6 +2856,76 @@ def add_pending_review():
     except Exception as e:
         return json.dumps({'error' : str(e)})
 
+@app.route('/manage_pending_review')
+def manager_pending():
+    return render_template('manage_pending_reviews.html')
+
+@app.route('/api/get_all_pending_reviews', methods = ['GET'])
+def get_all_pending_reviews():
+    try:
+        with mysql.connection.cursor() as cursor:
+            #first we need to know at which library the operator works
+            query = "SELECT users_library_id FROM Users WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            library_id  = data[0][0]
+
+            #get all the users from the this library that have a pending review
+            #no distinct for the select because we want every pending review separately
+            query2 = """SELECT r.user_id, r.book_ISBN, r.likert_rating, r.review
+                        from Pending_Reviews r
+                        INNER JOIN Users u ON u.user_id = r.user_id
+                        WHERE u.users_library_id = %s;
+            """
+            params2 = (library_id,)
+            cursor.execute(query2, params2)
+            data2 = cursor.fetchall()
+            response = []
+
+            for pending_review in data2:
+                response.append({
+                    "isbn" : pending_review[1],
+                    "user_id" : pending_review[0],
+                    "likert_rating" : pending_review[2],
+                    "review" : pending_review[3]
+                    
+                })
+            return jsonify(response)
+
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/api/proccess_pending_reviews', methods = ['POST'])
+def proccess_pending_reviews():
+    try:
+        result = request.get_json()
+        action = result['action']
+        user_id = result['user_id']
+        book_ISBN = result['book_ISBN']
+        likert_rating = result['likert_rating']
+        review = result['review']
+
+        with mysql.connection.cursor() as cursor:
+            #for both actions we are gonna delete from pending
+            #for accept we are gonna insert it to reviews
+
+            if (action == "accept") :
+                query = "INSERT INTO Reviews(book_ISBN, user_id, likert_rating, review) VALUES (%s, %s, %s, %s);"
+                params = (book_ISBN, user_id, likert_rating, review)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+            
+            query2 = "DELETE FROM Pending_Reviews WHERE book_ISBN = %s AND user_id = %s;"
+            params2 = (book_ISBN, user_id)
+            cursor.execute(query2, params2)
+            mysql.connection.commit()
+
+            return json.dumps({'redirect_url': '/manage_pending_review'})
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
 @app.route('/logout')
 def logout():
     session.pop('user', None)
