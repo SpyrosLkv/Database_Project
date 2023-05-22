@@ -69,6 +69,18 @@ def signUp():
 
         if first_name and last_name and _email and username and _password:
             with mysql.connection.cursor() as cursor:
+                if user_role == 'Operator':
+                    query = "select * from School_Library where name = %s;"
+                    params = (library_name,)
+                    cursor.execute(query,params)
+                    data = cursor.fetchall()
+                    library_id = int(data[0][0])
+                    query = "select user_id from Users where users_library_id ="+str(library_id)+" and user_role= 'Operator';"
+                    cursor.execute(query)
+                    operator = cursor.fetchall()
+                    if len(operator) != 0:
+                        return json.dumps({'errorshow': 'this library already has an operator'})
+
                 query = "select username from Users where username = %s;"
                 params = (username,)
                 cursor.execute(query,params)
@@ -95,7 +107,7 @@ def signUp():
 
                     return json.dumps({'message': 'User created successfully !', 'redirect_url': '/'})
                 else:
-                    return json.dumps({'error': "the username already exists"})
+                    return json.dumps({'errorshow': "the username already exists"})
             
         else:
             return json.dumps({'html': '<span>Enter the required fields</span>'})
