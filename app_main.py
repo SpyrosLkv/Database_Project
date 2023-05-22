@@ -2318,6 +2318,175 @@ def restore_database(host, user, password, database, backup_file):
         print(e)
         return False
     
+@app.route('/req_manager')
+def req_manager():
+    return render_template('manage_requests.html')
+
+@app.route('/api/get_all_requests')
+def get_all_req():
+    try:
+        with mysql.connection.cursor() as cursor:
+            #first we need to know at which library the operator works
+            query = "SELECT users_library_id FROM Users WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            library_id  = data[0][0]
+
+            #get all the users from the this library that have done a request
+            #no distinct for the select because we want every request separately
+            query2 = """SELECT r.user_id, r.book_ISBN
+                        from Request r
+                        INNER JOIN Users u ON u.user_id = r.user_id
+                        WHERE u.users_library_id = %s;
+            """
+            params2 = (library_id,)
+            cursor.execute(query2, params2)
+            data2 = cursor.fetchall()
+
+            #now we are going to check for each user from above
+            #that he satisfies the conditions to be lent a book
+            conditions_and_credentianls = []
+            for user in data2:
+                user_id = user[0]
+                bookISBN = user[1]
+                cond = "Yes"
+                #starting with yes and change it to no if 
+                #don't satisfy the conditions
+
+                #get the role of the user form user_id 
+                query3 = "SELECT user_role from Users where user_id = %s;"
+                params3 = (user_id,)
+                cursor.execute(query3, params3)
+                roles = cursor.fetchall()
+                role = roles[0][0]
+
+                #get how many late returns has the user made
+                query4 = "SELECT COUNT(*) from Loan where user_id = %s AND status = 'Late Returned';"
+                cursor.execute(query4, params3)
+                late_returns = cursor.fetchall()
+                late_return = late_returns[0][0]
+
+                #get how many active Loans the user has
+                query5 = "SELECT COUNT(*) from Loan WHERE user_id = %s AND (status = 'Active' OR status = 'Late Active');"
+                cursor.execute(query5, params3)
+                loans = cursor.fetchall()
+                loan = loans[0][0]
+
+                #check the late returns
+                if (late_return >= 1) :
+                    cond = "No"
+
+                #check conditions depending on role
+                if (role == "Student"):
+                    if (loan > 2) :
+                        cond = "No"
+                if (role == "Teacher" or role == "Operator") :
+                    if (loan > 1) :
+                        cond = "No"
+                #the admin can loan as many as he likes 
+                #so no checking for him
+
+                #check if the book that he actually requested is in the library
+                query6 = """SELECT available_copies
+                            FROM Lib_Owns_Book
+                            WHERE library_id = %s AND book_ISBN = %s;
+                """
+                params4 = (library_id, bookISBN)
+                cursor.execute(query6, params4)
+                copies = cursor.fetchall()
+                if (len(copies) == 0) :
+                    #book not in library
+                    cond = "Book not in library"
+                if (copies[0][0] == 0) : 
+                    cond = "No"
+                
+                #we checked all the conditions, if everythigng is fine
+                #the cond will still have the values "Yes" 
+
+                #get the credentials of the users
+                query7 = """SELECT user_id, username, first_name, last_name 
+                            FROM Users
+                            WHERE user_id = %s;
+                """
+                params5 = (user_id,)
+                cursor.execute(query7, params5)
+                credentials = cursor.fetchall()
+
+                conditions_and_credentianls.append({
+                    "isbn" : bookISBN,
+                    "user_id" : user_id,
+                    "username" : credentials[0][1],
+                    "first_name" : credentials[0][2],
+                    "last_name" : credentials[0][3],
+                    "conditions" : cond,
+                    "available_copies" : copies,
+                })
+            
+            #now we will return to the user the ISBN, User_id,
+            #username, first name, last name, if the conditions are met
+            # and the available copies of the book requested
+            return jsonify(conditions_and_credentianls)
+
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+
+@app.route('/api/proccess_requests', methods = ['POST'])
+def manage_requests():
+    try:
+        result = request.get_json()
+        action = result['action']
+        user_id = result['user_id']
+        book_ISBN = result['book_ISBN']
+        condition = result['condition']
+        if (condition != "Yes" and action == "accept") :
+            return json.dumps({'message' : "The conditions are not met"})
+
+        with mysql.connection.cursor() as cursor:
+            #for both actions we are going to delete the request
+            #but for the accept we have to add the loan to the user
+            if (action == "accept") :
+                #make a loan for the user
+                #we need the dates first though
+
+                current_date = datetime.datetime.today()
+                new_date = current_date + timedelta(weeks=1)
+                formatted_date = new_date.strftime('%Y-%m-%d')
+
+                query = "INSERT INTO Loan (book_ISBN, user_id, return_date, status) VALUES (9789609474085, 128, '2023-06-01', 'Active');"
+                #params = (book_ISBN, user_id, '2023-06-05',)
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                #reduce the available copies of the book by 1
+                query2 = "SELECT users_library_id from Users WHERE user_id = %s;"
+                params2 = (user_id,)
+                cursor.execute(query2, params2)
+                data2 = cursor.fetchall()
+                library_id = data2[0][0]
+
+                query3 = "SELECT available_copies FROM Lib_Owns_Book WHERE book_ISBN = %s AND library_id = %s;"
+                params3 = (book_ISBN, library_id)
+                cursor.execute(query3, params3)
+                data3 = cursor.fetchall()
+                available_copies = data3[0][0] - 1
+
+                query4 = "UPDATE Lib_Owns_Book SET available_copies = %s WHERE book_ISBN = %s AND library_id = %s;"
+                params4 = (available_copies, book_ISBN, library_id,)
+                cursor.execute(query4, params4)
+                mysql.connection.commit()
+
+            #now we delete the request
+            query5 = "DELETE FROM Request WHERE book_ISBN = %s AND user_id = %s;"
+            params5 = (book_ISBN, user_id)
+            cursor.execute(query5, params5)
+            mysql.connection.commit()
+
+            return json.dumps({'redirect_url': '/req_manager'})
+    
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
 @app.route('/logout')
 def logout():
     session.pop('user', None)
