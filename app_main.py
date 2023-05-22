@@ -1925,12 +1925,12 @@ def get_dealayed_loan_search():
                 FROM Users
                 INNER JOIN Loan ON Users.user_id = Loan.user_id
                 WHERE Loan.return_date IS NOT NULL
-                AND Loan.status = 'Active' OR 'Late ACTIVE'
+                AND (Loan.status = "Active" OR Loan.status = "Late Active")
                 AND DATEDIFF(CURDATE(), Loan.return_date) > 0
-                AND (Users.first_name LIKE %s OR %s = '')
-                AND (Users.last_name LIKE %s OR %s = '')
+                AND (Users.first_name LIKE %s)
+                AND (Users.last_name LIKE %s)
             """
-            params = (f"%{first_name}%", first_name, f"%{last_name}%", last_name)
+            params = (f"%{first_name}%", f"%{last_name}%")
 
             if delay_days:
                 query += " AND (DATEDIFF(CURDATE(), Loan.return_date) > %s OR %s = '')"
