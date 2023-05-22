@@ -1722,7 +1722,41 @@ def get_operators_loan_count():
         return "Unauthorized", 401
 
 #query6
+@app.route('/top_category_pairs', methods=['GET'])
+def get_top_category_pairs():
+    if session.get('role') == 'Admin':
+        return render_template('top_category_pairs.html')
+    else:
+        return "Unauthorized", 401
+    
+@app.route('/api/top_category_pairs', methods=['GET'])
+def top_category_pairs():
+   with mysql.connection.cursor() as cursor: 
+    try:
+        query = '''
+            SELECT T1.category AS category1, T2.category AS category2, COUNT(*) AS borrow_count
+            FROM (
+                SELECT B1.ISBN AS ISBN1, B2.ISBN AS ISBN2, BI1.category_id AS category_id1, BI2.category_id AS category_id2
+                FROM Book B1
+                INNER JOIN Belongs_in BI1 ON B1.ISBN = BI1.book_ISBN
+                INNER JOIN Book B2 ON B1.ISBN < B2.ISBN
+                INNER JOIN Belongs_in BI2 ON B2.ISBN = BI2.book_ISBN
+                INNER JOIN Loan L ON B1.ISBN = L.book_ISBN OR B2.ISBN = L.book_ISBN
+                WHERE BI1.category_id < BI2.category_id
+            ) AS Borrowings
+            INNER JOIN Thematic_Category T1 ON Borrowings.category_id1 = T1.category_id
+            INNER JOIN Thematic_Category T2 ON Borrowings.category_id2 = T2.category_id
+            GROUP BY category1, category2
+            ORDER BY borrow_count DESC
+            LIMIT 3;
+        '''
+        cursor.execute(query)
+        results = cursor.fetchall()
 
+        return render_template('top_category_pairs.html', results=results)
+
+    except Exception as e:
+        return str(e)
 
 #query7
 #select all the authors which have written more than 5 books less tan the first author 
