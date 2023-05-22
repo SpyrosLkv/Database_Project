@@ -2487,6 +2487,97 @@ def manage_requests():
     except Exception as e:
         return json.dumps({'error' : str(e)})
     
+@app.route('/delete_req_res')
+def deletion():
+    return render_template('req_res_delete.html')
+
+@app.route('/api/get_myrequest')
+def Get_myrequests():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT book_ISBN from Request WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            response = []
+
+            for requests in data:
+                response.append({
+                    "isbn" : requests[0],
+                    "user_id" : str(session['user'])
+                })
+            return jsonify(response)
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/api/proccess_requests2', methods = ['POST'])
+def delete_myrequests():
+    try:
+        with mysql.connection.cursor() as cursor:
+            result = request.get_json()
+            action = result['action']
+            user_id = result['user_id']
+            book_ISBN = result['book_ISBN']
+
+            if (action  != "delete") :
+                return json.dumps({'error' : 'Something went wrong'})
+            
+            query = "DELETE FROM Request WHERE book_ISBN = %s AND user_id = %s;"
+            params = (book_ISBN, user_id)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+
+            return json.dumps({'redirect_url' : '/delete_req_res'})
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+
+@app.route('/api/get_myreservations')
+def Get_myreservations():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT book_ISBN, expiration_date, status from Reservation WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            response = []
+
+            for requests in data:
+                response.append({
+                    "isbn" : requests[0],
+                    "expiration_date" : requests[1],
+                    "status" : requests[2],
+                    "user_id" : str(session['user'])
+                })
+            return jsonify(response)
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/api/proccess_reservations2', methods = ['POST'])
+def delete_myreservations():
+    try:
+        with mysql.connection.cursor() as cursor:
+            result = request.get_json()
+            action = result['action']
+            user_id = result['user_id']
+            book_ISBN = result['book_ISBN']
+            print("hello")
+
+            if (action  != "delete") :
+                return json.dumps({'error' : 'Something went wrong'})
+            
+            query = "DELETE FROM Reservation WHERE book_ISBN = %s AND user_id = %s;"
+            params = (book_ISBN, user_id)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+
+            return json.dumps({'redirect_url' : '/delete_req_res'})
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
 @app.route('/logout')
 def logout():
     session.pop('user', None)
