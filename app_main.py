@@ -1229,7 +1229,7 @@ def show_myloans():
 def get_loans():
     try:
         with mysql.connection.cursor() as cursor:
-            query = "SELECT book_ISBN, return_date, status from Loan where user_id = %s and (status = 'Active' or status = 'Late Active');"
+            query = "SELECT book_ISBN, status from Loan where user_id = %s and (status = 'Active' or status = 'Late Active');"
             user_id = str(session['user'])
             params = (user_id,)
             cursor.execute(query, params)
@@ -1246,8 +1246,7 @@ def get_loans():
             for loans in data:
                 response1.append({
                     "isbn" : loans[0],
-                    "return_date" : loans[1],
-                    "status" : loans[2]
+                    "status" : loans[1]
                 })
 
             for regestrations in data2:
@@ -1404,14 +1403,9 @@ def instant_loans():
                 if (data5[0][0] == 0) :
                     return json.dumps({'message' : "Not enough copies"})
                 
-                #we have to get the current date and add 1 week to set the return date
-                current_date = datetime.now().date()
-                new_date = current_date + timedelta(weeks=1)
-                formatted_date = new_date.strftime('%Y-%m-%d')
-
                 #if we reach, all set and we can finally input the loan to the database
-                query6 = "INSERT INTO Loan (book_ISBN, user_id, return_date, status) VALUES (%s, %s, %s, 'Active');"
-                params3 = (bookISBN, user_id, formatted_date,)
+                query6 = "INSERT INTO Loan (book_ISBN, user_id, status) VALUES (%s, %s, 'Active');"
+                params3 = (bookISBN, user_id,)
                 cursor.execute(query6, params3)
                 mysql.connection.commit()
 
@@ -1421,6 +1415,10 @@ def instant_loans():
                 params4 = (new_available_copies, bookISBN, data4[0][0])
                 cursor.execute(query7, params4)
                 mysql.connection.commit()
+
+                return json.dumps({'message' : "Loan was registered successfully"})
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
 
                 return json.dumps({'message' : "Loan was registered successfully"})
     except Exception as e:
@@ -1513,8 +1511,8 @@ def satisfy_reservations():
                 new_date = current_date + timedelta(weeks=1)
                 formatted_date = new_date.strftime('%Y-%m-%d')
 
-                query3 = "INSERT INTO Loan (book_ISBN, user_id, return_date, status) VALUES (%s, %s, %s, 'Active');"
-                params3 = (book_ISBN, user_id, formatted_date,)
+                query3 = "INSERT INTO Loan (book_ISBN, user_id, status) VALUES (%s, %s,'Active');"
+                params3 = (book_ISBN, user_id,)
                 cursor.execute(query3, params3)
                 mysql.connection.commit()
 
@@ -2110,7 +2108,7 @@ def book_return():
         if bookISBN and user_id:
             with mysql.connection.cursor() as cursor:
                 #get the status of the loan
-                query = "SELECT status, return_date from Loan WHERE user_id = %s AND book_ISBN = %s;"
+                query = "SELECT status, loan_date from Loan WHERE user_id = %s AND book_ISBN = %s;"
                 params = (user_id, bookISBN)
                 cursor.execute(query, params)
                 data = cursor.fetchall()
@@ -2124,15 +2122,17 @@ def book_return():
                 current_date = datetime.datetime.strptime(current_date, "%Y-%m-%d").date()
 
 
-                if  ((data[0][0] == "Late Active") or (data[0][1] < current_date)) :
-                    query2 = "UPDATE Loan SET status = 'Late Returned' WHERE user_id = %s AND book_ISBN = %s;"
-                    cursor.execute(query2, params)
+                if  ((data[0][0] == "Late Active") or ((data[0][1] + datetime.timedelta(weeks=1)) >= current_date)) :
+                    query2 = "UPDATE Loan SET status = 'Late Returned', return_date = %s WHERE user_id = %s AND book_ISBN = %s;"
+                    params10 = (current_date, user_id, bookISBN)
+                    cursor.execute(query2, params10)
                     mysql.connection.commit()
 
                 #if it is active like normal, then change it to returned 
                 elif (data[0][0] == 'Active') :
-                    query3 = "UPDATE Loan SET status = 'Returned' WHERE user_id = %s AND book_ISBN = %s;"
-                    cursor.execute(query3, params)
+                    query3 = "UPDATE Loan SET status = 'Returned', return_date = %s WHERE user_id = %s AND book_ISBN = %s;"
+                    params11 = (current_date, user_id, bookISBN)
+                    cursor.execute(query3, params11)
                     mysql.connection.commit()
 
                 else :
@@ -2246,7 +2246,7 @@ def backup_database(host, user, password, database, output_dir):
 def get_active_loans():
     return render_template('active_loans.html')
 
-@app.route('/api/active_loans', methods = ['GET'])
+@@app.route('/api/active_loans', methods = ['GET'])
 def active_loans():
     try:
         with mysql.connection.cursor() as cursor:
@@ -2258,7 +2258,7 @@ def active_loans():
             data = cursor.fetchall()
             library_id = data[0][0]
 
-            query2 = """SELECT DISTINCT l.book_ISBN, l.user_id, u.username, u.first_name, u.last_name, l.return_date
+            query2 = """SELECT DISTINCT l.book_ISBN, l.user_id, u.username, u.first_name, u.last_name
                         FROM Loan l 
                         INNER JOIN Users u ON l.user_id = u.user_id
                         WHERE u.users_library_id = %s AND l.status = 'Active';
@@ -2275,12 +2275,12 @@ def active_loans():
                     "username" : loans[2],
                     "first_name" : loans[3],
                     "last_name" : loans[4],
-                    "return_date" : loans[5]
                 })
             return jsonify(response)
             
     except Exception as e:
         return json.dumps({'error': str(e)})
+    
 #restore functionality, don't mess...
 @app.route('/restore_database')
 def get_restore():
@@ -2456,9 +2456,9 @@ def manage_requests():
                 new_date = current_date + timedelta(weeks=1)
                 formatted_date = new_date.strftime('%Y-%m-%d')
 
-                query = "INSERT INTO Loan (book_ISBN, user_id, return_date, status) VALUES (9789609474085, 128, '2023-06-01', 'Active');"
-                #params = (book_ISBN, user_id, '2023-06-05',)
-                cursor.execute(query)
+                qquery = "INSERT INTO Loan (book_ISBN, user_id, status) VALUES (%s, %s, 'Active');"
+                params = (book_ISBN, user_id,)
+                cursor.execute(query, params)
                 mysql.connection.commit()
 
                 #reduce the available copies of the book by 1
@@ -2487,6 +2487,97 @@ def manage_requests():
 
             return json.dumps({'redirect_url': '/req_manager'})
     
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/delete_req_res')
+def deletion():
+    return render_template('req_res_delete.html')
+
+@app.route('/api/get_myrequest')
+def Get_myrequests():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT book_ISBN from Request WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            response = []
+
+            for requests in data:
+                response.append({
+                    "isbn" : requests[0],
+                    "user_id" : str(session['user'])
+                })
+            return jsonify(response)
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/api/proccess_requests2', methods = ['POST'])
+def delete_myrequests():
+    try:
+        with mysql.connection.cursor() as cursor:
+            result = request.get_json()
+            action = result['action']
+            user_id = result['user_id']
+            book_ISBN = result['book_ISBN']
+
+            if (action  != "delete") :
+                return json.dumps({'error' : 'Something went wrong'})
+            
+            query = "DELETE FROM Request WHERE book_ISBN = %s AND user_id = %s;"
+            params = (book_ISBN, user_id)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+
+            return json.dumps({'redirect_url' : '/delete_req_res'})
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+
+@app.route('/api/get_myreservations')
+def Get_myreservations():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT book_ISBN, expiration_date, status from Reservation WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            response = []
+
+            for requests in data:
+                response.append({
+                    "isbn" : requests[0],
+                    "expiration_date" : requests[1],
+                    "status" : requests[2],
+                    "user_id" : str(session['user'])
+                })
+            return jsonify(response)
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/api/proccess_reservations2', methods = ['POST'])
+def delete_myreservations():
+    try:
+        with mysql.connection.cursor() as cursor:
+            result = request.get_json()
+            action = result['action']
+            user_id = result['user_id']
+            book_ISBN = result['book_ISBN']
+            print("hello")
+
+            if (action  != "delete") :
+                return json.dumps({'error' : 'Something went wrong'})
+            
+            query = "DELETE FROM Reservation WHERE book_ISBN = %s AND user_id = %s;"
+            params = (book_ISBN, user_id)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+
+            return json.dumps({'redirect_url' : '/delete_req_res'})
+        
     except Exception as e:
         return json.dumps({'error' : str(e)})
     

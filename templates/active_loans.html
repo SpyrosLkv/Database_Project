@@ -39,10 +39,6 @@
                 lastNameCell.textContent = loan.last_name;
                 row.appendChild(lastNameCell);
 
-                const returnDateCell = document.createElement('td');
-                returnDateCell.textContent = loan.return_date;
-                row.appendChild(returnDateCell);
-
                 table.appendChild(row);
 
             });
@@ -61,7 +57,6 @@
                 <th>Username</th>
                 <th>First Name</th>
                 <th>Last Name</th>
-                <th>Return Date</th>
             </tr>
         </table>
     </body>
