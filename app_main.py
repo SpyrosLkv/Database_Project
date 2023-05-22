@@ -1420,9 +1420,7 @@ def instant_loans():
     except Exception as e:
         return json.dumps({'error' : str(e)})
 
-                return json.dumps({'message' : "Loan was registered successfully"})
-    except Exception as e:
-        return json.dumps({'error' : str(e)})
+
     
 @app.route('/get_myrequests')
 def get_myrequests():
@@ -2246,7 +2244,7 @@ def backup_database(host, user, password, database, output_dir):
 def get_active_loans():
     return render_template('active_loans.html')
 
-@@app.route('/api/active_loans', methods = ['GET'])
+@app.route('/api/active_loans', methods = ['GET'])
 def active_loans():
     try:
         with mysql.connection.cursor() as cursor:
@@ -2456,7 +2454,7 @@ def manage_requests():
                 new_date = current_date + timedelta(weeks=1)
                 formatted_date = new_date.strftime('%Y-%m-%d')
 
-                qquery = "INSERT INTO Loan (book_ISBN, user_id, status) VALUES (%s, %s, 'Active');"
+                query = "INSERT INTO Loan (book_ISBN, user_id, status) VALUES (%s, %s, 'Active');"
                 params = (book_ISBN, user_id,)
                 cursor.execute(query, params)
                 mysql.connection.commit()
