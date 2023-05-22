@@ -2241,7 +2241,7 @@ def backup_database(host, user, password, database, output_dir):
 def get_active_loans():
     return render_template('active_loans.html')
 
-@app.route('/api/active_loans', methods = ['GET'])
+@@app.route('/api/active_loans', methods = ['GET'])
 def active_loans():
     try:
         with mysql.connection.cursor() as cursor:
@@ -2253,7 +2253,7 @@ def active_loans():
             data = cursor.fetchall()
             library_id = data[0][0]
 
-            query2 = """SELECT DISTINCT l.book_ISBN, l.user_id, u.username, u.first_name, u.last_name, l.return_date
+            query2 = """SELECT DISTINCT l.book_ISBN, l.user_id, u.username, u.first_name, u.last_name
                         FROM Loan l 
                         INNER JOIN Users u ON l.user_id = u.user_id
                         WHERE u.users_library_id = %s AND l.status = 'Active';
@@ -2270,12 +2270,12 @@ def active_loans():
                     "username" : loans[2],
                     "first_name" : loans[3],
                     "last_name" : loans[4],
-                    "return_date" : loans[5]
                 })
             return jsonify(response)
             
     except Exception as e:
         return json.dumps({'error': str(e)})
+    
 #restore functionality, don't mess...
 @app.route('/restore_database')
 def get_restore():
