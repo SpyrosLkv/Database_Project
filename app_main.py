@@ -465,6 +465,49 @@ def bookSearchkey():
     except Exception as e:
         return render_template('error.html', error = str(e))
 
+
+@app.route('/api/book_search_author', methods = ['POST'])
+def bookSearchauthor():
+    try:
+        last_name = request.form['inputAuthor']
+        if last_name:
+            with mysql.connection.cursor() as cursor:
+                string1 = "'%"
+                string2 = "%'"
+                merged_string = string1 + str(last_name) + string2
+                query = "SELECT users_library_id FROM Users WHERE user_id = "+str(session['user'])+";"
+                cursor.execute(query)
+                library_id = int(cursor.fetchall()[0][0])
+                query = "SELECT b.ISBN, b.title, b.publisher, b.no_of_pages, b.summary, b.image, b.language FROM Authors a INNER JOIN Wrote w ON a.author_id = w.author_id INNER JOIN Book b ON w.book_ISBN = b.ISBN INNER JOIN Lib_Owns_Book lb ON b.ISBN = lb.book_ISBN WHERE a.last_name LIKE {} AND lb.library_id=".format(merged_string)+str(library_id)+";"
+                cursor.execute(query)
+                results = cursor.fetchall()
+                if (len(results) == 0):
+                    return json.dumps({'message' : 'No books found relative to the searched word'})
+                else:
+                    books = []
+                    for row in results:
+                        image_data = None
+                        if row[5] is not None:  # Check if photo is not NULL
+                            image_bytes = base64.b64decode(row[5])
+                            image_data = base64.b64encode(image_bytes).decode('utf-8')
+                        book = {
+                            'isbn': row[0],
+                            'title': row[1],
+                            'publisher': row[2],
+                            'no_of_pages': row[3],
+                            'language': row[6],
+                            'image_data': image_data
+                            
+                        }
+                        books.append(book)
+
+                    return jsonify({'results': books})
+        else:
+            return json.dumps({'html': '<span> Enter the required fields</span>'})
+
+    except Exception as e:
+        return render_template('error.html', error = str(e))
+
 @app.route('/api/requestbook', methods=['POST'])
 def requestbook():
     try:

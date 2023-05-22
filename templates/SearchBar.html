@@ -91,7 +91,8 @@
             id="inputTitle" 
             class="form-control" 
             placeholder="Title" 
-            required autofocus>
+            required autofocus
+            />
 
         <button id="btnSubmit" class="btn btn-lg btn-primary btn-block" type="submit">Search</button>
     </form>
@@ -102,7 +103,21 @@
             id="inputKey" 
             class="form-control" 
             placeholder="Keyword" 
-            required autofocus>
+            required autofocus
+            />
+
+        <button id="btnSubmit" class="btn btn-lg btn-primary btn-block" type="submit">Search</button>
+    </form>
+    <form id="form-searchauthor" action="/api/book_search_author" method="post">
+        <label for="inputAuthor" class="sr-only">Search By Author</label>
+        <input 
+            name="inputAuthor" 
+            id="inputAuthor" 
+            class="form-control" 
+            placeholder="Last Name" 
+            required 
+            autofocus
+            />
 
         <button id="btnSubmit" class="btn btn-lg btn-primary btn-block" type="submit">Search</button>
     </form>
@@ -172,7 +187,35 @@
             }
         });
 
+        const form2 = document.querySelector('#form-searchauthor');
+        form2.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form2);
+            const body = new URLSearchParams(formData).toString();
 
+            try{
+                const res = await fetch("/api/book_search_author", {
+                    method: "POST",
+                    body: body,
+                    headers:{
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                });
+
+                const data = await res.json();
+                const listContainer = document.querySelector('#list_of_books');
+                listContainer.innerHTML="";
+
+                data.results.forEach((row) => {
+                    const bodyBox = createBookBox(row);
+                    listContainer.appendChild(bodyBox);
+                });
+
+            } catch (error) {
+                console.error(error);
+                document.querySelector('#error-message').textContent = 'an error occured';
+            }
+        });
 
         function createBookBox(row) {
             const bookBox = document.createElement('div');
