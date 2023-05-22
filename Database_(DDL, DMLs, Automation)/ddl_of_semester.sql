@@ -308,6 +308,30 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Reviews` (
 ENGINE = InnoDB;
 
 
+
+-- -----------------------------------------------------
+-- Table `semester_project`.`Pending_Reviews`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `semester_project`.`Pending_Reviews` (
+  `book_ISBN` BIGINT(13) NOT NULL,
+  `user_id` INT NOT NULL,
+  `likert_rating` TINYINT NOT NULL,
+  `review` TEXT NULL,
+  PRIMARY KEY (`book_ISBN`, `user_id`),
+  INDEX `fk_Book_has_Users_Users1_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_Book_has_Users_Book_idx` (`book_ISBN` ASC) VISIBLE,
+  CONSTRAINT `fk_Rev_Book_ISBN`
+    FOREIGN KEY (`book_ISBN`)
+    REFERENCES `semester_project`.`Book` (`ISBN`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_Rev_User_Id`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `semester_project`.`Users` (`user_id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
 -- -----------------------------------------------------
 -- Table `semester_project`.`School_Library`
 -- -----------------------------------------------------
