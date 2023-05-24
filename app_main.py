@@ -1761,12 +1761,14 @@ def get_operators_loan_count():
 
         with mysql.connection.cursor() as cursor:
             query = """
-                SELECT Users.user_id, Users.first_name, Users.last_name
-                FROM Loan
-                INNER JOIN Users ON Loan.user_id = Users.user_id
-                WHERE Users.user_role = 'operator' AND YEAR(Loan.loan_date) = %s
-                GROUP BY Users.user_id
-                HAVING COUNT(*) > 20;
+            SELECT LOB.library_id, U.first_name AS operator_first_name, U.last_name AS operator_last_name
+            FROM Lib_Owns_Book LOB
+            INNER JOIN Loan L ON LOB.book_ISBN = L.book_ISBN
+            INNER JOIN Users U ON LOB.library_id = U.users_library_id
+            WHERE YEAR(L.loan_date) = %s
+                AND U.user_role = 'Operator'
+            GROUP BY LOB.library_id, U.first_name, U.last_name
+            HAVING COUNT(*) > 20;
             """
             cursor.execute(query, (year,))
             result = cursor.fetchall()
@@ -1798,20 +1800,9 @@ def top_category_pairs():
    with mysql.connection.cursor() as cursor: 
     try:
         query = '''
-            SELECT T1.category AS category1, T2.category AS category2, COUNT(*) AS borrow_count
-            FROM (
-                SELECT B1.ISBN AS ISBN1, B2.ISBN AS ISBN2, BI1.category_id AS category_id1, BI2.category_id AS category_id2
-                FROM Book B1
-                INNER JOIN Belongs_in BI1 ON B1.ISBN = BI1.book_ISBN
-                INNER JOIN Book B2 ON B1.ISBN < B2.ISBN
-                INNER JOIN Belongs_in BI2 ON B2.ISBN = BI2.book_ISBN
-                INNER JOIN Loan L ON B1.ISBN = L.book_ISBN OR B2.ISBN = L.book_ISBN
-                WHERE BI1.category_id < BI2.category_id
-            ) AS Borrowings
-            INNER JOIN Thematic_Category T1 ON Borrowings.category_id1 = T1.category_id
-            INNER JOIN Thematic_Category T2 ON Borrowings.category_id2 = T2.category_id
-            GROUP BY category1, category2
-            ORDER BY borrow_count DESC
+            SELECT category1, category2, borrow_count
+            FROM top_categories
+            ORDER BY borrow_count DESC 
             LIMIT 3;
         '''
         cursor.execute(query)
@@ -2793,7 +2784,153 @@ def change_book_api():
             return json.dumps({'errorshow': 'Not all required fields were filled'})
     except Exception as e:
         return json.dumps({'error': str(e)})   
+    
+@app.route('/add_pending_review')
+def add_review():
+    return render_template('add_pending_review.html')
 
+@app.route('/api/add_pending_reviews', methods = ['POST'])
+def add_pending_review():
+    try:
+        book_ISBN = request.form.get('inputISBN')
+        user_id = str(session['user'])
+        likert_rating = request.form.get('inputLikert_rating')
+        review = request.form.get('inputReview')
+        if book_ISBN and likert_rating and review:
+            with mysql.connection.cursor() as cursor:
+                #check if the book is in the library of the user
+                query = "SELECT users_library_id FROM Users WHERE user_id = %s;"
+                params = (user_id,)
+                cursor.execute(query, params)
+                data = cursor.fetchall()
+                library_id = data[0][0]
+
+                query2 = """SELECT COUNT(*)
+                            FROM Lib_Owns_Book 
+                            WHERE library_id = %s AND book_ISBN = %s;
+                """
+                params2 = (library_id, book_ISBN)
+                cursor.execute(query2, params2)
+                data2 = cursor.fetchall()
+                count2 = data2[0][0]
+                if (count2 == 0) :
+                    return json.dumps({'message' : "Book not in library"})
+                
+                #see if there is already a pending review from this user for
+                #for the specific book
+                query3 = """SELECT COUNT(*) 
+                            FROM Pending_Reviews
+                            WHERE user_id = %s AND book_ISBN = %s;
+                """
+                params3 = (user_id, book_ISBN)
+                cursor.execute(query3, params3)
+                data3 = cursor.fetchall()
+                count3 = data3[0][0]
+                if (count3 >= 1) :
+                    return json.dumps({'message' : "Already pending"})
+                
+                #see if there is already a review from this user
+                #for the specific book
+                query4 = """SELECT COUNT(*) 
+                            FROM Reviews
+                            WHERE user_id = %s AND book_ISBN = %s;
+                """
+                params4 = (user_id, book_ISBN)
+                cursor.execute(query4, params4)
+                data4 = cursor.fetchall()
+                count4 = data4[0][0]
+                if (count4 >= 1) :
+                    return json.dumps({'message' : "Already reviewed"})
+                
+                #check if the likert rating is ok
+                mylikert_rating = float(likert_rating)
+                if (mylikert_rating < 1 or mylikert_rating > 5):
+                    return json.dumps({'message' : "wrong likert rating"})
+                
+                #all the checks passed
+                #we can now insert the review to the pending
+                query5 = """INSERT INTO Pending_Reviews (book_ISBN, user_id, likert_rating, review)
+                            VALUES (%s, %s, %s, %s);
+                """
+                params5 = (book_ISBN, user_id, likert_rating, review)
+                cursor.execute(query5, params5)
+                mysql.connection.commit()
+                return json.dumps({'message' : "Review registered"})
+        return json.dumps({'error' : "Unexpected error occured"})
+
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+
+@app.route('/manage_pending_review')
+def manager_pending():
+    return render_template('manage_pending_reviews.html')
+
+@app.route('/api/get_all_pending_reviews', methods = ['GET'])
+def get_all_pending_reviews():
+    try:
+        with mysql.connection.cursor() as cursor:
+            #first we need to know at which library the operator works
+            query = "SELECT users_library_id FROM Users WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            library_id  = data[0][0]
+
+            #get all the users from the this library that have a pending review
+            #no distinct for the select because we want every pending review separately
+            query2 = """SELECT r.user_id, r.book_ISBN, r.likert_rating, r.review
+                        from Pending_Reviews r
+                        INNER JOIN Users u ON u.user_id = r.user_id
+                        WHERE u.users_library_id = %s;
+            """
+            params2 = (library_id,)
+            cursor.execute(query2, params2)
+            data2 = cursor.fetchall()
+            response = []
+
+            for pending_review in data2:
+                response.append({
+                    "isbn" : pending_review[1],
+                    "user_id" : pending_review[0],
+                    "likert_rating" : pending_review[2],
+                    "review" : pending_review[3]
+                    
+                })
+            return jsonify(response)
+
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/api/proccess_pending_reviews', methods = ['POST'])
+def proccess_pending_reviews():
+    try:
+        result = request.get_json()
+        action = result['action']
+        user_id = result['user_id']
+        book_ISBN = result['book_ISBN']
+        likert_rating = result['likert_rating']
+        review = result['review']
+
+        with mysql.connection.cursor() as cursor:
+            #for both actions we are gonna delete from pending
+            #for accept we are gonna insert it to reviews
+
+            if (action == "accept") :
+                query = "INSERT INTO Reviews(book_ISBN, user_id, likert_rating, review) VALUES (%s, %s, %s, %s);"
+                params = (book_ISBN, user_id, likert_rating, review)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+            
+            query2 = "DELETE FROM Pending_Reviews WHERE book_ISBN = %s AND user_id = %s;"
+            params2 = (book_ISBN, user_id)
+            cursor.execute(query2, params2)
+            mysql.connection.commit()
+
+            return json.dumps({'redirect_url': '/manage_pending_review'})
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
 @app.route('/logout')
 def logout():
     session.pop('user', None)
