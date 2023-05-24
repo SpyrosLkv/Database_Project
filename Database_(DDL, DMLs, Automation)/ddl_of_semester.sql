@@ -549,13 +549,13 @@ BEGIN
   IF OLD.`return_date` IS NOT NULL THEN
     SET NEW.`return_date` = OLD.`return_date`;
   END IF;
-  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NULL AND TIMESTAMPDIFF(DAY, OLD.`loan_date`, CURRENT_DATE()) > 14 THEN
+  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NULL AND TIMESTAMPDIFF(DAY, OLD.`loan_date`, CURRENT_DATE()) > 7 THEN
     SET NEW.`status` = "Late Active";
   END IF;
-  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NOT NULL AND TIMESTAMPDIFF(DAY, NEW.`loan_date`, NEW.`return_date`) > 14 THEN
+  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NOT NULL AND TIMESTAMPDIFF(DAY, NEW.`loan_date`, NEW.`return_date`) > 7 THEN
     SET NEW.`status` = "Late Returned";
   END IF;
-  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NOT NULL AND TIMESTAMPDIFF(DAY, NEW.`loan_date`, NEW.`return_date`) <= 14 THEN
+  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NOT NULL AND TIMESTAMPDIFF(DAY, NEW.`loan_date`, NEW.`return_date`) <= 7 THEN
     SET NEW.`status` = "Returned";
   END IF;
 END $
