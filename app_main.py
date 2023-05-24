@@ -1128,6 +1128,11 @@ def return_users():
         print(last_name)
         if last_name:
             with mysql.connection.cursor() as cursor:
+                # my_id = int(session['user'])
+                # query = "SELECT users_library_id FROM Users WHERE user_id = "+str(my_id)+";"
+                # cursor.execute(query)
+                # library_id = int(cursor.fetchall()[0][0])
+                # query = "SELECT * FROM Users WHERE last_name = %s and users_library_id = "+str(my_id)+";"
                 query = "SELECT * FROM Users WHERE last_name = %s;"
                 params = (last_name,)
                 cursor.execute(query,params)
