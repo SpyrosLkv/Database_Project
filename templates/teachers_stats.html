@@ -63,16 +63,10 @@
                 const response = await fetch('/api/teachers_stats');
                 const teacherStats = await response.json();
 
-                let html = '';
-                if (response.ok) {
-                    html = `
-                        <p>User ID: ${teacherStats.user_id}</p>
-                        <p>Name: ${teacherStats.first_name} ${teacherStats.last_name}</p>
-                        <p>Number of Books Borrowed: ${teacherStats.num_books_borrowed}</p>
-                    `;
-                } else {
-                    html = '<p>No statistics available.</p>';
-                }
+                let html = ''
+                teacherStats.forEach((teacher) => {
+                    html += `<p>user id: ${teacher.user_id}, teacher name: ${teacher.first_name} ${teacher.last_name} with loan-count : ${teacher.num_books_borrowed}</p>`;
+                });
 
                 resultsDiv.innerHTML = html;
             } catch (error) {
