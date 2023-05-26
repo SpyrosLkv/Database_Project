@@ -51,12 +51,14 @@
         topPairsBtn.addEventListener('click', async () => {
             try {
                 const response = await fetch('/api/top_category_pairs');
-                const pairs = await response.json();
-
+                const responseData = await response.text();
+                
+                console.log(responseData);
+                const pairs = JSON.parse(responseData);
                 let html = '';
-                pairs.forEach((pair, index) => {
-                    html += `<p>${index + 1}. ${pair.category1} and ${pair.category2}</p>`;
-                });
+                pairs.forEach((pair,index) => {
+                html += `<p>${index+1}.${pair.category1} and ${pair.category2}, Borrow Count: ${pair.borrow_count}</p>`;
+            });
 
                 resultsDiv.innerHTML = html;
             } catch (error) {

@@ -7,6 +7,7 @@ import os
 import mimetypes
 import base64
 import datetime
+import subprocess
 
 app = Flask(__name__)
 
@@ -1512,7 +1513,14 @@ def satisfy_reservations():
     
     except Exception as e:
         return json.dumps({'error' : str(e)})
- 
+@app.route('/query_my_database', methods = ['GET'])
+def query_my_database():
+    if session.get('role') == 'Admin':
+        return render_template ('Adminquerieshome.html')
+    elif session.get('role') == 'Operator':
+        return render_template('Operatorquerieshome.html')
+    else:
+        return "Unauthorized", 401
 # implementing specified queries for each role (12 in total). Each role's homepage redirects to own queries.
  
 # query1
@@ -1573,6 +1581,7 @@ def authors_stats():
 def get_authors_stats():
     if session.get('role') == 'Admin':
         category = request.args.get('category')
+        #this query is base-wide 
 
         with mysql.connection.cursor() as cursor:
             query = """
@@ -1597,6 +1606,36 @@ def get_authors_stats():
         return jsonify(authors)
     else:
         return "Unauthorized", 401
+    
+@app.route('/api/teachers_loan_stats', methods = ['GET'])   
+def get_teacher_loan_stats():
+    with mysql.connection.cursor() as cursor:
+
+        if session.get('role') == 'Admin':
+            category = request.args.get('category')
+
+            query = """
+                SELECT DISTINCT CONCAT(Users.first_name,' ',Users.last_name) AS teacher_name 
+                FROM Users
+                INNER JOIN Loan ON Users.user_id = Loan.user_id
+                INNER JOIN Book ON Book.ISBN = Loan.book_ISBN
+                INNER JOIN Belongs_in ON Book.ISBN = Belongs_in.book_ISBN 
+                INNER JOIN Thematic_Category ON Belongs_in.category_id = Thematic_Category.category_id
+                WHERE Thematic_Category.category = %s
+                AND Users.user_role = 'Teacher';
+            """
+            cursor.execute(query, (category,))
+            result = cursor.fetchall()
+
+            teachers = []
+            for row in result:
+                teachers.append({
+                    'teacher_name': row[0]
+                })
+
+            return jsonify(teachers)
+        else :
+            return "Unauthorized", 401
 
 # query3
 #find young teachers who have borrowed the most books and the number of books
@@ -1617,26 +1656,27 @@ def get_teachers_stats():
                 FROM Users
                 INNER JOIN Loan ON Users.user_id = Loan.user_id
                 WHERE Users.user_role = 'Teacher'
-                  AND TIMESTAMPDIFF(YEAR, Users.birth_date, CURDATE()) < 40
+                  AND TIMESTAMPDIFF(YEAR, CURDATE(),Users.birth_date ) < 40
                 GROUP BY Users.user_id, Users.first_name, Users.last_name
-                ORDER BY num_books_borrowed DESC
-                LIMIT 1;
+                ORDER BY num_books_borrowed DESC;
             """
             cursor.execute(query)
-            result = cursor.fetchone()
+            result = cursor.fetchall()
 
         # Process the query result and return as JSON
-        if result:
-            user_id, first_name, last_name, num_books_borrowed = result
-            teacher_stats = {
-                'user_id': user_id,
-                'first_name': first_name,
-                'last_name': last_name,
-                'num_books_borrowed': num_books_borrowed
-            }
+        
+            teacher_stats = []
+            for row in result:
+                user_id, first_name, last_name, num_books_borrowed = row
+        
+            
+                teacher_stats.append({
+                    'user_id': user_id,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'num_books_borrowed' : num_books_borrowed
+            })
             return jsonify(teacher_stats)
-        else:
-            return jsonify({}), 404  # No results found
     else:
         return "Unauthorized", 401
 
@@ -1654,13 +1694,17 @@ def authors_not_borrowed():
 def get_authors_not_borrowed():
     if session.get('role') == 'Admin':
         with mysql.connection.cursor() as cursor:
+
+##ATTENTION : FOLLOWING QUERY RESULTS IN AUTHORS WHO HAVE LOANED 0 BOOKS. LEFT JOIN query is OK for authors 
+#who have not loaned at least 1 book. 
+
             query = """
-                SELECT Authors.author_id, Authors.first_name, Authors.last_name
+               SELECT Authors.first_name, Authors.last_name, Authors.author_id
                 FROM Authors
                 WHERE Authors.author_id NOT IN (
-                    SELECT Wrote.author_id
+                    SELECT DISTINCT Wrote.author_id
                     FROM Wrote
-                    INNER JOIN Loan ON Loan.book_ISBN = Wrote.book_ISBN
+                    INNER JOIN Loan ON Wrote.book_ISBN = Loan.book_ISBN
                 );
             """
             cursor.execute(query)
@@ -1669,7 +1713,7 @@ def get_authors_not_borrowed():
         # Process the query result and return as JSON
         authors = []
         for row in result:
-            author_id, first_name, last_name = row
+            author_id,first_name, last_name = row
             authors.append({
                 'author_id': author_id,
                 'first_name': first_name,
@@ -1682,6 +1726,7 @@ def get_authors_not_borrowed():
 
 
 #query5
+#this is a big one
 @app.route('/operators_loan_count', methods=['GET'])
 def operators_loan_count():
     if session.get('role') == 'Admin':
@@ -1697,12 +1742,28 @@ def get_operators_loan_count():
 
         with mysql.connection.cursor() as cursor:
             query = """
-                SELECT Users.user_id, Users.first_name, Users.last_name
-                FROM Loan
-                INNER JOIN Users ON Loan.user_id = Users.user_id
-                WHERE Users.user_role = 'operator' AND YEAR(Loan.loan_date) = %s
-                GROUP BY Users.user_id
-                HAVING COUNT(*) > 20;
+        SELECT SL.library_id, SL.user_id, SL.operator_first_name, SL.operator_last_name
+        FROM (
+            SELECT LOB.library_id, U.user_id, U.first_name AS operator_first_name, U.last_name AS operator_last_name, COUNT(*) AS loan_count
+            FROM Lib_Owns_Book LOB
+            INNER JOIN Loan L ON LOB.book_ISBN = L.book_ISBN
+            INNER JOIN Users U ON LOB.library_id = U.users_library_id
+            WHERE YEAR(L.loan_date) = %s
+                AND U.user_role = 'Operator'
+            GROUP BY LOB.library_id, U.first_name, U.last_name
+            HAVING loan_count > 20
+        ) AS SL
+        WHERE SL.loan_count IN (
+            SELECT COUNT(*) AS loan_count
+            FROM Lib_Owns_Book LOB
+            INNER JOIN Loan L ON LOB.book_ISBN = L.book_ISBN
+            INNER JOIN Users U ON LOB.library_id = U.users_library_id
+            WHERE YEAR(L.loan_date) = %s
+                AND U.user_role = 'Operator'
+            GROUP BY LOB.library_id
+            HAVING COUNT(*) > 20
+        );
+
             """
             cursor.execute(query, (year,))
             result = cursor.fetchall()
@@ -1710,8 +1771,9 @@ def get_operators_loan_count():
         # Process the query result and return as JSON
         operators = []
         for row in result:
-            user_id, first_name, last_name = row
+            library_id, user_id, first_name, last_name = row
             operators.append({
+                'library_id': library_id,
                 'user_id': user_id,
                 'first_name': first_name,
                 'last_name': last_name
@@ -1734,28 +1796,26 @@ def top_category_pairs():
    with mysql.connection.cursor() as cursor: 
     try:
         query = '''
-            SELECT T1.category AS category1, T2.category AS category2, COUNT(*) AS borrow_count
-            FROM (
-                SELECT B1.ISBN AS ISBN1, B2.ISBN AS ISBN2, BI1.category_id AS category_id1, BI2.category_id AS category_id2
-                FROM Book B1
-                INNER JOIN Belongs_in BI1 ON B1.ISBN = BI1.book_ISBN
-                INNER JOIN Book B2 ON B1.ISBN < B2.ISBN
-                INNER JOIN Belongs_in BI2 ON B2.ISBN = BI2.book_ISBN
-                INNER JOIN Loan L ON B1.ISBN = L.book_ISBN OR B2.ISBN = L.book_ISBN
-                WHERE BI1.category_id < BI2.category_id
-            ) AS Borrowings
-            INNER JOIN Thematic_Category T1 ON Borrowings.category_id1 = T1.category_id
-            INNER JOIN Thematic_Category T2 ON Borrowings.category_id2 = T2.category_id
-            GROUP BY category1, category2
-            ORDER BY borrow_count DESC
+            SELECT category1, category2, borrow_count
+            FROM top_categories
+            ORDER BY borrow_count DESC 
             LIMIT 3;
         '''
         cursor.execute(query)
         results = cursor.fetchall()
 
-        return render_template('top_category_pairs.html', results=results)
+        categories = []
+        for row in results:
+            category1, category2, borrow_count = row
+            categories.append({
+            'category1': category1,
+            'category2': category2,
+            'borrow_count': borrow_count
+        })
+        return jsonify(categories)
 
     except Exception as e:
+        app.logger.error(str(e))
         return str(e)
 
 #query7
@@ -1797,7 +1857,7 @@ def get_authors_less_books():
 
 #query8
 #this is a parametric query and appends lines to the query with 'AND' based on how many fields the search is based on
-
+#used GROUP_CONCAT to group together books that have many categories, authors 
 @app.route('/book_search_operator', methods=['GET'])
 def book_search_operator():
     if session.get('role') == 'Operator':
@@ -1815,17 +1875,23 @@ def get_book_search_operator():
         copies = request.args.get('copies')
 
         with mysql.connection.cursor() as cursor:
+            query =  "SELECT users_library_id FROM Users WHERE user_id = "+str(session['user'])+";"
+            cursor.execute(query)
+            library_id = int(cursor.fetchall()[0][0])
+
             query = """
-                SELECT Book.title, Authors.first_name, Authors.last_name, Thematic_Category.category, LOB.total_copies
+                SELECT Book.title, GROUP_CONCAT(DISTINCT Authors.first_name SEPARATOR ', ') AS author_first_names, 
+                GROUP_CONCAT(DISTINCT Authors.last_name SEPARATOR ', ') AS author_last_names, 
+                GROUP_CONCAT(DISTINCT Thematic_Category.category SEPARATOR ', ') AS categories, LOB.total_copies
                 FROM Book 
                 INNER JOIN Wrote ON Book.ISBN = Wrote.book_ISBN
                 INNER JOIN Authors ON Wrote.author_id = Authors.author_id
                 INNER JOIN Belongs_in ON Book.ISBN = Belongs_in.book_ISBN
                 INNER JOIN Thematic_Category ON Belongs_in.category_id = Thematic_Category.category_id
                 INNER JOIN Lib_Owns_Book LOB ON Book.ISBN = LOB.book_ISBN
-                WHERE 1=1
+                WHERE LOB.library_id = %s
             """
-            params = []
+            params = [library_id]
 
             if title:
                 query += "AND Book.title LIKE %s "
@@ -1836,12 +1902,14 @@ def get_book_search_operator():
                 params.append(f"%{category}%")
 
             if name:
-                query += "AND CONCAT(Authors.first_name, ' ', Authors.last_name) LIKE %s "
-                params.append(f"%{name}%")
+                query += "AND (Authors.first_name LIKE %s OR Authors.last_name LIKE %s) "
+                params.extend([f"%{name}%", f"%{name}%"])
 
             if copies:
                 query += "AND LOB.total_copies >= %s "
                 params.append(copies)
+
+            query += "GROUP BY Book.ISBN"
 
             cursor.execute(query, params)
             result = cursor.fetchall()
@@ -1882,16 +1950,16 @@ def get_dealayed_loan_search():
                 FROM Users
                 INNER JOIN Loan ON Users.user_id = Loan.user_id
                 WHERE Loan.return_date IS NOT NULL
-                AND Loan.status = 'Active' OR 'Late ACTIVE'
+                AND (Loan.status = "Active" OR Loan.status = "Late Active")
                 AND DATEDIFF(CURDATE(), Loan.return_date) > 0
-                AND (Users.first_name LIKE %s OR %s = '')
-                AND (Users.last_name LIKE %s OR %s = '')
+                AND (Users.first_name LIKE %s)
+                AND (Users.last_name LIKE %s)
             """
-            params = (f"%{first_name}%", first_name, f"%{last_name}%", last_name)
+            params = (f"%{first_name}%", f"%{last_name}%")
 
             if delay_days:
                 query += " AND (DATEDIFF(CURDATE(), Loan.return_date) > %s OR %s = '')"
-                params += (delay_days, delay_days)
+                params += (delay_days,delay_days)
 
             cursor.execute(query, params)
             result = cursor.fetchall()

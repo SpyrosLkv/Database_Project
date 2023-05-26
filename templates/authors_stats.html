@@ -51,27 +51,34 @@
                 <label for="category" class="form-label">Category:</label>
                 <input type="text" class="form-control" id="category" name="category" required>
             </div>
-            <button type="submit" class="btn btn-primary">Search</button>
+            <input type="submit" id="authors_stats" class="btn btn-primary" value="Get Authors">
+            <input type="submit" id="teacher_loan_stats" class="btn btn-primary" value="Get teachers">
         </form>
         <div id="results" class="results-container"></div>
+        <div id="results1" class="results-container"></div>
     </div>
 
     <script>
-        const form = document.getElementById('stats-form');
+        const form = document.getElementById('authors_stats');
         const resultsDiv = document.getElementById('results');
 
-        form.addEventListener('submit', async (e) => {
+        form.addEventListener('click', async (e) => {
             e.preventDefault();
             const category = document.getElementById('category').value;
 
             try {
-                const response = await fetch(`/api/authors_stats?category=${category}`);
+                response = await fetch(`/api/authors_stats?category=${category}`);
                 const authors = await response.json();
 
                 let html = '';
                 authors.forEach((author) => {
                     html += `<p>${author.author_name}</p>`;
+
+                
                 });
+                if (html === '') {
+                    html = 'None found';
+                }
 
                 resultsDiv.innerHTML = html;
             } catch (error) {
@@ -79,7 +86,33 @@
                 resultsDiv.innerHTML = 'Error retrieving statistics.';
             }
         });
+
+        const form1 = document.getElementById('teacher_loan_stats');
+        const resultsDiv1 = document.getElementById('results1');
+
+        form1.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const category = document.getElementById('category').value;
+
+            try {
+                response = await fetch(`/api/teachers_loan_stats?category=${category}`);
+                const teachers = await response.json();
+                
+                let html = '';
+                teachers.forEach((teacher) => {
+                    html += `<p>${teacher.teacher_name}</p>`;
+                });
+                if (html === '') {
+                    html = 'None found';
+                }
+                resultsDiv1.innerHTML = html;
+            } catch (error) {
+                console.error(error);
+                resultsDiv1.innerHTML = 'Error retrieving statistics.';
+            }
+        });
     </script>
+
 </body>
 </html>
 
