@@ -10,6 +10,9 @@
       crossorigin="anonymous"
     />
     <style>
+      a {
+        text-decoration: none;
+      }
       button {
         background-color: #0d6efd;
         color: white;
@@ -63,7 +66,7 @@
           class="border-bottom flex-wrap mb-4 py-3 d-flex justify-content-center"
         >
           <a
-            href="/Operatorhome"
+            href="/userhome"
             class="text-dark text-decoration-none mb-3 mb-md-0 d-flex align-items-center me-md-auto"
           >
             <span class="fs-4">Python Flask App</span>
@@ -71,7 +74,7 @@
 
           <ul class="nav nav-pills">
             <li class="nav-item">
-              <a href="/Operatorhome" class="nav-link">Home</a>
+              <a href="/userhome" class="nav-link">Home</a>
             </li>
             <li class="nav-item">
               <a href="/logout" class="nav-link active">Logout</a>
@@ -255,9 +258,14 @@
         <a href = "/get_myrequests">
           <button>Show my requests</button>
         </a>
+<<<<<<< HEAD
         <a href = "/query_my_database">
           <button>Query my database</button>
         </a>
+=======
+        <a href = "/delete_req_res">
+          <button>Delete request or reservation</button>
+>>>>>>> f03f994ce45426bac1597f9aff31cd592445334f
         </a>
       </div>
 
@@ -281,8 +289,8 @@
         <a href="/book_management">
           <button>Manage Library</button>
         </a>
-        <a href="/loans_and_reservations">
-          <button>Manage Loans</button>
+        <a href="/req_manager">
+          <button>Manage request</button>
         </a>
         <a href="/late_returns">
           <button>Late Returns</button>
@@ -298,6 +306,12 @@
         </a>
         <a href = "/active_loans">
           <button>Get active loans</button>
+        </a>
+        <a href = "/change_existing_book">
+          <button>Change Existing Book</button>
+        </a>
+        <a href = "/manage_pending_review">
+          <button>Manage pending reviews</button>
         </a>
       </div>
 

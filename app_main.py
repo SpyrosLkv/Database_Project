@@ -69,6 +69,18 @@ def signUp():
 
         if first_name and last_name and _email and username and _password:
             with mysql.connection.cursor() as cursor:
+                if user_role == 'Operator':
+                    query = "select * from School_Library where name = %s;"
+                    params = (library_name,)
+                    cursor.execute(query,params)
+                    data = cursor.fetchall()
+                    library_id = int(data[0][0])
+                    query = "select user_id from Users where users_library_id ="+str(library_id)+" and user_role= 'Operator';"
+                    cursor.execute(query)
+                    operator = cursor.fetchall()
+                    if len(operator) != 0:
+                        return json.dumps({'errorshow': 'this library already has an operator'})
+
                 query = "select username from Users where username = %s;"
                 params = (username,)
                 cursor.execute(query,params)
@@ -95,7 +107,7 @@ def signUp():
 
                     return json.dumps({'message': 'User created successfully !', 'redirect_url': '/'})
                 else:
-                    return json.dumps({'error': "the username already exists"})
+                    return json.dumps({'errorshow': "the username already exists"})
             
         else:
             return json.dumps({'html': '<span>Enter the required fields</span>'})
@@ -414,6 +426,7 @@ def bookSearch():
                             'title': row[1],
                             'publisher': row[2],
                             'no_of_pages': row[3],
+                            'summary': row[4],
                             'language': row[6],
                             'image_data': image_data
                         }
@@ -452,6 +465,51 @@ def bookSearchkey():
                             'title': row[1],
                             'publisher': row[2],
                             'no_of_pages': row[3],
+                            'summary': row[4],
+                            'language': row[6],
+                            'image_data': image_data
+                            
+                        }
+                        books.append(book)
+
+                    return jsonify({'results': books})
+        else:
+            return json.dumps({'html': '<span> Enter the required fields</span>'})
+
+    except Exception as e:
+        return render_template('error.html', error = str(e))
+
+
+@app.route('/api/book_search_author', methods = ['POST'])
+def bookSearchauthor():
+    try:
+        last_name = request.form['inputAuthor']
+        if last_name:
+            with mysql.connection.cursor() as cursor:
+                string1 = "'%"
+                string2 = "%'"
+                merged_string = string1 + str(last_name) + string2
+                query = "SELECT users_library_id FROM Users WHERE user_id = "+str(session['user'])+";"
+                cursor.execute(query)
+                library_id = int(cursor.fetchall()[0][0])
+                query = "SELECT b.ISBN, b.title, b.publisher, b.no_of_pages, b.summary, b.image, b.language FROM Authors a INNER JOIN Wrote w ON a.author_id = w.author_id INNER JOIN Book b ON w.book_ISBN = b.ISBN INNER JOIN Lib_Owns_Book lb ON b.ISBN = lb.book_ISBN WHERE a.last_name LIKE {} AND lb.library_id=".format(merged_string)+str(library_id)+";"
+                cursor.execute(query)
+                results = cursor.fetchall()
+                if (len(results) == 0):
+                    return json.dumps({'message' : 'No books found relative to the searched word'})
+                else:
+                    books = []
+                    for row in results:
+                        image_data = None
+                        if row[5] is not None:  # Check if photo is not NULL
+                            image_bytes = base64.b64decode(row[5])
+                            image_data = base64.b64encode(image_bytes).decode('utf-8')
+                        book = {
+                            'isbn': row[0],
+                            'title': row[1],
+                            'publisher': row[2],
+                            'no_of_pages': row[3],
+                            'summary': row[4],
                             'language': row[6],
                             'image_data': image_data
                             
@@ -1070,6 +1128,11 @@ def return_users():
         print(last_name)
         if last_name:
             with mysql.connection.cursor() as cursor:
+                # my_id = int(session['user'])
+                # query = "SELECT users_library_id FROM Users WHERE user_id = "+str(my_id)+";"
+                # cursor.execute(query)
+                # library_id = int(cursor.fetchall()[0][0])
+                # query = "SELECT * FROM Users WHERE last_name = %s and users_library_id = "+str(my_id)+";"
                 query = "SELECT * FROM Users WHERE last_name = %s;"
                 params = (last_name,)
                 cursor.execute(query,params)
@@ -1148,6 +1211,10 @@ def delete_user():
             cursor.execute(query)
             mysql.connection.commit()
 
+            query = "DELETE FROM Pending_Reviews WHERE user_id ="+str(user_id)+";"
+            cursor.execute(query)
+            mysql.connection.commit()
+
             query = "DELETE FROM Reviews WHERE user_id ="+str(user_id)+";"
             cursor.execute(query)
             mysql.connection.commit()
@@ -1183,7 +1250,7 @@ def show_myloans():
 def get_loans():
     try:
         with mysql.connection.cursor() as cursor:
-            query = "SELECT book_ISBN, return_date, status from Loan where user_id = %s and (status = 'Active' or status = 'Late Active');"
+            query = "SELECT book_ISBN, status from Loan where user_id = %s and (status = 'Active' or status = 'Late Active');"
             user_id = str(session['user'])
             params = (user_id,)
             cursor.execute(query, params)
@@ -1200,8 +1267,7 @@ def get_loans():
             for loans in data:
                 response1.append({
                     "isbn" : loans[0],
-                    "return_date" : loans[1],
-                    "status" : loans[2]
+                    "status" : loans[1]
                 })
 
             for regestrations in data2:
@@ -1358,14 +1424,9 @@ def instant_loans():
                 if (data5[0][0] == 0) :
                     return json.dumps({'message' : "Not enough copies"})
                 
-                #we have to get the current date and add 1 week to set the return date
-                current_date = datetime.now().date()
-                new_date = current_date + timedelta(weeks=1)
-                formatted_date = new_date.strftime('%Y-%m-%d')
-
                 #if we reach, all set and we can finally input the loan to the database
-                query6 = "INSERT INTO Loan (book_ISBN, user_id, return_date, status) VALUES (%s, %s, %s, 'Active');"
-                params3 = (bookISBN, user_id, formatted_date,)
+                query6 = "INSERT INTO Loan (book_ISBN, user_id, status) VALUES (%s, %s, 'Active');"
+                params3 = (bookISBN, user_id,)
                 cursor.execute(query6, params3)
                 mysql.connection.commit()
 
@@ -1379,6 +1440,8 @@ def instant_loans():
                 return json.dumps({'message' : "Loan was registered successfully"})
     except Exception as e:
         return json.dumps({'error' : str(e)})
+
+
     
 @app.route('/get_myrequests')
 def get_myrequests():
@@ -1467,8 +1530,8 @@ def satisfy_reservations():
                 new_date = current_date + timedelta(weeks=1)
                 formatted_date = new_date.strftime('%Y-%m-%d')
 
-                query3 = "INSERT INTO Loan (book_ISBN, user_id, return_date, status) VALUES (%s, %s, %s, 'Active');"
-                params3 = (book_ISBN, user_id, formatted_date,)
+                query3 = "INSERT INTO Loan (book_ISBN, user_id, status) VALUES (%s, %s,'Active');"
+                params3 = (book_ISBN, user_id,)
                 cursor.execute(query3, params3)
                 mysql.connection.commit()
 
@@ -1742,15 +1805,20 @@ def get_operators_loan_count():
 
         with mysql.connection.cursor() as cursor:
             query = """
+<<<<<<< HEAD
         SELECT SL.library_id, SL.user_id, SL.operator_first_name, SL.operator_last_name
         FROM (
             SELECT LOB.library_id, U.user_id, U.first_name AS operator_first_name, U.last_name AS operator_last_name, COUNT(*) AS loan_count
+=======
+            SELECT LOB.library_id, U.first_name AS operator_first_name, U.last_name AS operator_last_name
+>>>>>>> f03f994ce45426bac1597f9aff31cd592445334f
             FROM Lib_Owns_Book LOB
             INNER JOIN Loan L ON LOB.book_ISBN = L.book_ISBN
             INNER JOIN Users U ON LOB.library_id = U.users_library_id
             WHERE YEAR(L.loan_date) = %s
                 AND U.user_role = 'Operator'
             GROUP BY LOB.library_id, U.first_name, U.last_name
+<<<<<<< HEAD
             HAVING loan_count > 20
         ) AS SL
         WHERE SL.loan_count IN (
@@ -1764,6 +1832,9 @@ def get_operators_loan_count():
             HAVING COUNT(*) > 20
         );
 
+=======
+            HAVING COUNT(*) > 20;
+>>>>>>> f03f994ce45426bac1597f9aff31cd592445334f
             """
             cursor.execute(query, (year,))
             result = cursor.fetchall()
@@ -2131,7 +2202,7 @@ def book_return():
         if bookISBN and user_id:
             with mysql.connection.cursor() as cursor:
                 #get the status of the loan
-                query = "SELECT status, return_date from Loan WHERE user_id = %s AND book_ISBN = %s;"
+                query = "SELECT status, loan_date from Loan WHERE user_id = %s AND book_ISBN = %s;"
                 params = (user_id, bookISBN)
                 cursor.execute(query, params)
                 data = cursor.fetchall()
@@ -2145,15 +2216,17 @@ def book_return():
                 current_date = datetime.datetime.strptime(current_date, "%Y-%m-%d").date()
 
 
-                if  ((data[0][0] == "Late Active") or (data[0][1] < current_date)) :
-                    query2 = "UPDATE Loan SET status = 'Late Returned' WHERE user_id = %s AND book_ISBN = %s;"
-                    cursor.execute(query2, params)
+                if  ((data[0][0] == "Late Active") or ((data[0][1] + datetime.timedelta(weeks=1)) >= current_date)) :
+                    query2 = "UPDATE Loan SET status = 'Late Returned', return_date = %s WHERE user_id = %s AND book_ISBN = %s;"
+                    params10 = (current_date, user_id, bookISBN)
+                    cursor.execute(query2, params10)
                     mysql.connection.commit()
 
                 #if it is active like normal, then change it to returned 
                 elif (data[0][0] == 'Active') :
-                    query3 = "UPDATE Loan SET status = 'Returned' WHERE user_id = %s AND book_ISBN = %s;"
-                    cursor.execute(query3, params)
+                    query3 = "UPDATE Loan SET status = 'Returned', return_date = %s WHERE user_id = %s AND book_ISBN = %s;"
+                    params11 = (current_date, user_id, bookISBN)
+                    cursor.execute(query3, params11)
                     mysql.connection.commit()
 
                 else :
@@ -2279,7 +2352,7 @@ def active_loans():
             data = cursor.fetchall()
             library_id = data[0][0]
 
-            query2 = """SELECT DISTINCT l.book_ISBN, l.user_id, u.username, u.first_name, u.last_name, l.return_date
+            query2 = """SELECT DISTINCT l.book_ISBN, l.user_id, u.username, u.first_name, u.last_name
                         FROM Loan l 
                         INNER JOIN Users u ON l.user_id = u.user_id
                         WHERE u.users_library_id = %s AND l.status = 'Active';
@@ -2296,12 +2369,12 @@ def active_loans():
                     "username" : loans[2],
                     "first_name" : loans[3],
                     "last_name" : loans[4],
-                    "return_date" : loans[5]
                 })
             return jsonify(response)
             
     except Exception as e:
         return json.dumps({'error': str(e)})
+    
 #restore functionality, don't mess...
 @app.route('/restore_database')
 def get_restore():
@@ -2341,6 +2414,606 @@ def restore_database(host, user, password, database, backup_file):
         print("Error occurred during database restore:")
         print(e)
         return False
+    
+@app.route('/req_manager')
+def req_manager():
+    return render_template('manage_requests.html')
+
+@app.route('/api/get_all_requests')
+def get_all_req():
+    try:
+        with mysql.connection.cursor() as cursor:
+            #first we need to know at which library the operator works
+            query = "SELECT users_library_id FROM Users WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            library_id  = data[0][0]
+
+            #get all the users from the this library that have done a request
+            #no distinct for the select because we want every request separately
+            query2 = """SELECT r.user_id, r.book_ISBN
+                        from Request r
+                        INNER JOIN Users u ON u.user_id = r.user_id
+                        WHERE u.users_library_id = %s;
+            """
+            params2 = (library_id,)
+            cursor.execute(query2, params2)
+            data2 = cursor.fetchall()
+
+            #now we are going to check for each user from above
+            #that he satisfies the conditions to be lent a book
+            conditions_and_credentianls = []
+            for user in data2:
+                user_id = user[0]
+                bookISBN = user[1]
+                cond = "Yes"
+                #starting with yes and change it to no if 
+                #don't satisfy the conditions
+
+                #get the role of the user form user_id 
+                query3 = "SELECT user_role from Users where user_id = %s;"
+                params3 = (user_id,)
+                cursor.execute(query3, params3)
+                roles = cursor.fetchall()
+                role = roles[0][0]
+
+                #get how many late returns has the user made
+                query4 = "SELECT COUNT(*) from Loan where user_id = %s AND status = 'Late Returned';"
+                cursor.execute(query4, params3)
+                late_returns = cursor.fetchall()
+                late_return = late_returns[0][0]
+
+                #get how many active Loans the user has
+                query5 = "SELECT COUNT(*) from Loan WHERE user_id = %s AND (status = 'Active' OR status = 'Late Active');"
+                cursor.execute(query5, params3)
+                loans = cursor.fetchall()
+                loan = loans[0][0]
+
+                #check the late returns
+                if (late_return >= 1) :
+                    cond = "No"
+
+                #check conditions depending on role
+                if (role == "Student"):
+                    if (loan > 2) :
+                        cond = "No"
+                if (role == "Teacher" or role == "Operator") :
+                    if (loan > 1) :
+                        cond = "No"
+                #the admin can loan as many as he likes 
+                #so no checking for him
+
+                #check if the book that he actually requested is in the library
+                query6 = """SELECT available_copies
+                            FROM Lib_Owns_Book
+                            WHERE library_id = %s AND book_ISBN = %s;
+                """
+                params4 = (library_id, bookISBN)
+                cursor.execute(query6, params4)
+                copies = cursor.fetchall()
+                if (len(copies) == 0) :
+                    #book not in library
+                    cond = "Book not in library"
+                if (copies[0][0] == 0) : 
+                    cond = "No"
+                
+                #we checked all the conditions, if everythigng is fine
+                #the cond will still have the values "Yes" 
+
+                #get the credentials of the users
+                query7 = """SELECT user_id, username, first_name, last_name 
+                            FROM Users
+                            WHERE user_id = %s;
+                """
+                params5 = (user_id,)
+                cursor.execute(query7, params5)
+                credentials = cursor.fetchall()
+
+                conditions_and_credentianls.append({
+                    "isbn" : bookISBN,
+                    "user_id" : user_id,
+                    "username" : credentials[0][1],
+                    "first_name" : credentials[0][2],
+                    "last_name" : credentials[0][3],
+                    "conditions" : cond,
+                    "available_copies" : copies,
+                })
+            
+            #now we will return to the user the ISBN, User_id,
+            #username, first name, last name, if the conditions are met
+            # and the available copies of the book requested
+            return jsonify(conditions_and_credentianls)
+
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+
+@app.route('/api/proccess_requests', methods = ['POST'])
+def manage_requests():
+    try:
+        result = request.get_json()
+        action = result['action']
+        user_id = result['user_id']
+        book_ISBN = result['book_ISBN']
+        condition = result['condition']
+        if (condition != "Yes" and action == "accept") :
+            return json.dumps({'message' : "The conditions are not met"})
+
+        with mysql.connection.cursor() as cursor:
+            #for both actions we are going to delete the request
+            #but for the accept we have to add the loan to the user
+            if (action == "accept") :
+                #make a loan for the user
+                #we need the dates first though
+
+                current_date = datetime.datetime.today()
+                new_date = current_date + timedelta(weeks=1)
+                formatted_date = new_date.strftime('%Y-%m-%d')
+
+                query = "INSERT INTO Loan (book_ISBN, user_id, status) VALUES (%s, %s, 'Active');"
+                params = (book_ISBN, user_id,)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+
+                #reduce the available copies of the book by 1
+                query2 = "SELECT users_library_id from Users WHERE user_id = %s;"
+                params2 = (user_id,)
+                cursor.execute(query2, params2)
+                data2 = cursor.fetchall()
+                library_id = data2[0][0]
+
+                query3 = "SELECT available_copies FROM Lib_Owns_Book WHERE book_ISBN = %s AND library_id = %s;"
+                params3 = (book_ISBN, library_id)
+                cursor.execute(query3, params3)
+                data3 = cursor.fetchall()
+                available_copies = data3[0][0] - 1
+
+                query4 = "UPDATE Lib_Owns_Book SET available_copies = %s WHERE book_ISBN = %s AND library_id = %s;"
+                params4 = (available_copies, book_ISBN, library_id,)
+                cursor.execute(query4, params4)
+                mysql.connection.commit()
+
+            #now we delete the request
+            query5 = "DELETE FROM Request WHERE book_ISBN = %s AND user_id = %s;"
+            params5 = (book_ISBN, user_id)
+            cursor.execute(query5, params5)
+            mysql.connection.commit()
+
+            return json.dumps({'redirect_url': '/req_manager'})
+    
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/delete_req_res')
+def deletion():
+    return render_template('req_res_delete.html')
+
+@app.route('/api/get_myrequest')
+def Get_myrequests():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT book_ISBN from Request WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            response = []
+
+            for requests in data:
+                response.append({
+                    "isbn" : requests[0],
+                    "user_id" : str(session['user'])
+                })
+            return jsonify(response)
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/api/proccess_requests2', methods = ['POST'])
+def delete_myrequests():
+    try:
+        with mysql.connection.cursor() as cursor:
+            result = request.get_json()
+            action = result['action']
+            user_id = result['user_id']
+            book_ISBN = result['book_ISBN']
+
+            if (action  != "delete") :
+                return json.dumps({'error' : 'Something went wrong'})
+            
+            query = "DELETE FROM Request WHERE book_ISBN = %s AND user_id = %s;"
+            params = (book_ISBN, user_id)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+
+            return json.dumps({'redirect_url' : '/delete_req_res'})
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+
+@app.route('/api/get_myreservations')
+def Get_myreservations():
+    try:
+        with mysql.connection.cursor() as cursor:
+            query = "SELECT book_ISBN, expiration_date, status from Reservation WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            response = []
+
+            for requests in data:
+                response.append({
+                    "isbn" : requests[0],
+                    "expiration_date" : requests[1],
+                    "status" : requests[2],
+                    "user_id" : str(session['user'])
+                })
+            return jsonify(response)
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/api/proccess_reservations2', methods = ['POST'])
+def delete_myreservations():
+    try:
+        with mysql.connection.cursor() as cursor:
+            result = request.get_json()
+            action = result['action']
+            user_id = result['user_id']
+            book_ISBN = result['book_ISBN']
+            print("hello")
+
+            if (action  != "delete") :
+                return json.dumps({'error' : 'Something went wrong'})
+            
+            query = "DELETE FROM Reservation WHERE book_ISBN = %s AND user_id = %s;"
+            params = (book_ISBN, user_id)
+            cursor.execute(query, params)
+            mysql.connection.commit()
+
+            return json.dumps({'redirect_url' : '/delete_req_res'})
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+
+@app.route('/change_existing_book')
+def change_existing_book_page():
+    return render_template("alter_book.html")
+
+@app.route('/api/deletebook', methods=['POST'])
+def deletebook():
+    try:
+        ISBN = int(request.form['inputISBN1'])
+        if ISBN:
+            with mysql.connection.cursor() as cursor:
+                query = "SELECT ISBN FROM Book WHERE ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                oldbook = cursor.fetchall()
+                if len(oldbook) == 0:
+                    return json.dumps({'errorshow': 'Invalid ISBN'})
+                
+                query = "DELETE FROM Loan WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Belongs_in WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Keywords_in_book WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Lib_Owns_Book WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Pending_Reviews WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Request WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Reservation WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Reviews WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Wrote WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Book WHERE ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+                return json.dumps({'redirect_url': '/userhome'})
+        else:
+            return json.dumps({'errorshow': 'Not all required fields were filled'})
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+
+@app.route('/api/changebook', methods=['POST'])
+def change_book_api():
+    try:
+        print(type(request.form['inputISBN']))
+        ISBN = int(request.form['inputISBN'])
+        title = request.form['inputTitle']
+        publisher = request.form['inputPublisher']
+        print("hello1")
+        pages = int(request.form['inputPages'])
+        summary = request.form['inputSummary']
+        image = request.files['inputImage']
+        language = request.form['inputLanguage']
+        keywords = request.form['inputKeywords']
+        authors = request.form['inputAuthors']
+        categories = request.form['inputThematic']
+        print("hello")
+        if ISBN and title and publisher and pages and summary and image and language and keywords and authors and categories:
+
+            file_type, _ = mimetypes.guess_type(image.filename)
+            allowed_types = ['image/jpeg', 'image/jpg', 'image/png']
+            if file_type not in allowed_types:
+                return json.dumps({'errorshow': 'Invalid file type. Only JPEG, JPG, and PNG files are allowed'})
+
+            max_size = 250 * 1024 
+            if len(image.read()) > max_size:
+                return json.dumps({'errorshow': 'File too large'})
+
+            image.seek(0)
+
+            file_bytes = image.read()
+
+            keywords = keywords.split(",")
+            authors = authors.split(",")
+            categories = categories.split(",")
+            with mysql.connection.cursor() as cursor:
+                query = "SELECT ISBN FROM Book WHERE ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                oldbook = cursor.fetchall()
+                if len(oldbook) == 0:
+                    return json.dumps({'errorshow': 'Invalid ISBN'})
+                
+                query = "UPDATE Book SET title =%s, publisher =%s, no_of_pages ="+str(pages)+",summary=%s, image=%s, language=%s WHERE ISBN = "+str(ISBN)+";"
+                params = (title,publisher,summary,base64.b64encode(file_bytes),language)
+                cursor.execute(query,params)
+                mysql.connection.commit()
+
+                query = "DELETE FROM Keywords_in_book WHERE book_ISBN ="+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+                query = "DELETE FROM Wrote WHERE book_ISBN = "+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+                query = "DELETE FROM Belongs_in WHERE book_ISBN = "+str(ISBN)+";"
+                cursor.execute(query)
+                mysql.connection.commit()
+
+                for keyword in keywords:
+                    query = "select keyword_id from Keywords where keyword = %s;"
+                    params = (keyword,)
+                    cursor.execute(query,params)
+                    data = cursor.fetchall()
+                    if len(data) == 0:
+                        query = "INSERT INTO Keywords (keyword) VALUES (%s);"
+                        params = (keyword,)
+                        cursor.execute(query,params)
+                        mysql.connection.commit()
+                        query = "select keyword_id from Keywords where keyword = %s;"
+                        cursor.execute(query,params)
+                        data = cursor.fetchall()
+                        keyword_id = int(data[0][0])
+                        query = "INSERT INTO Keywords_in_book (keyword_id,book_ISBN) VALUES ("+str(keyword_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                    else:
+                        keyword_id = int(data[0][0])
+                        query = "INSERT INTO Keywords_in_book (keyword_id,book_ISBN) VALUES ("+str(keyword_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                for author in authors:
+                    first_name = author.split(" ")[0]
+                    last_name = author.split(" ")[1]
+                    query = "select author_id from Authors where first_name = %s and last_name = %s;"
+                    params = (first_name,last_name,)
+                    cursor.execute(query,params)
+                    data = cursor.fetchall()
+                    if len(data) == 0:
+                        query = "INSERT INTO Authors (first_name,last_name) VALUES (%s,%s);"
+                        params = (first_name,last_name,)
+                        cursor.execute(query,params)
+                        mysql.connection.commit()
+                        query = "select author_id from Authors where first_name = %s and last_name = %s;"
+                        cursor.execute(query,params)
+                        data = cursor.fetchall()
+                        author_id = int(data[0][0])
+                        query = "INSERT INTO Wrote (author_id,book_ISBN) VALUES ("+str(author_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                    else:
+                        author_id = int(data[0][0])
+                        query = "INSERT INTO Wrote (author_id,book_ISBN) VALUES ("+str(author_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                for category in categories:
+                    query = "select category_id from Thematic_Category where category = %s;"
+                    params = (category,)
+                    cursor.execute(query,params)
+                    data = cursor.fetchall()
+                    if len(data) == 0:
+                        query = "INSERT INTO Thematic_Category (category) VALUES (%s);"
+                        params = (category,)
+                        cursor.execute(query,params)
+                        mysql.connection.commit()
+                        query = "select category_id from Thematic_Category where category = %s;"
+                        cursor.execute(query,params)
+                        data = cursor.fetchall()
+                        category_id = int(data[0][0])
+                        query = "INSERT INTO Belongs_in (category_id,book_ISBN) VALUES ("+str(category_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                    else:
+                        category_id = int(data[0][0])
+                        query = "INSERT INTO Belongs_in (category_id,book_ISBN) VALUES ("+str(category_id)+","+str(ISBN)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
+                return json.dumps({'redirect_url': '/userhome'})
+
+
+        else:
+            return json.dumps({'errorshow': 'Not all required fields were filled'})
+    except Exception as e:
+        return json.dumps({'error': str(e)})   
+    
+@app.route('/add_pending_review')
+def add_review():
+    return render_template('add_pending_review.html')
+
+@app.route('/api/add_pending_reviews', methods = ['POST'])
+def add_pending_review():
+    try:
+        book_ISBN = request.form.get('inputISBN')
+        user_id = str(session['user'])
+        likert_rating = request.form.get('inputLikert_rating')
+        review = request.form.get('inputReview')
+        if book_ISBN and likert_rating and review:
+            with mysql.connection.cursor() as cursor:
+                #check if the book is in the library of the user
+                query = "SELECT users_library_id FROM Users WHERE user_id = %s;"
+                params = (user_id,)
+                cursor.execute(query, params)
+                data = cursor.fetchall()
+                library_id = data[0][0]
+
+                query2 = """SELECT COUNT(*)
+                            FROM Lib_Owns_Book 
+                            WHERE library_id = %s AND book_ISBN = %s;
+                """
+                params2 = (library_id, book_ISBN)
+                cursor.execute(query2, params2)
+                data2 = cursor.fetchall()
+                count2 = data2[0][0]
+                if (count2 == 0) :
+                    return json.dumps({'message' : "Book not in library"})
+                
+                #see if there is already a pending review from this user for
+                #for the specific book
+                query3 = """SELECT COUNT(*) 
+                            FROM Pending_Reviews
+                            WHERE user_id = %s AND book_ISBN = %s;
+                """
+                params3 = (user_id, book_ISBN)
+                cursor.execute(query3, params3)
+                data3 = cursor.fetchall()
+                count3 = data3[0][0]
+                if (count3 >= 1) :
+                    return json.dumps({'message' : "Already pending"})
+                
+                #see if there is already a review from this user
+                #for the specific book
+                query4 = """SELECT COUNT(*) 
+                            FROM Reviews
+                            WHERE user_id = %s AND book_ISBN = %s;
+                """
+                params4 = (user_id, book_ISBN)
+                cursor.execute(query4, params4)
+                data4 = cursor.fetchall()
+                count4 = data4[0][0]
+                if (count4 >= 1) :
+                    return json.dumps({'message' : "Already reviewed"})
+                
+                #check if the likert rating is ok
+                mylikert_rating = float(likert_rating)
+                if (mylikert_rating < 1 or mylikert_rating > 5):
+                    return json.dumps({'message' : "wrong likert rating"})
+                
+                #all the checks passed
+                #we can now insert the review to the pending
+                query5 = """INSERT INTO Pending_Reviews (book_ISBN, user_id, likert_rating, review)
+                            VALUES (%s, %s, %s, %s);
+                """
+                params5 = (book_ISBN, user_id, likert_rating, review)
+                cursor.execute(query5, params5)
+                mysql.connection.commit()
+                return json.dumps({'message' : "Review registered"})
+        return json.dumps({'error' : "Unexpected error occured"})
+
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+
+@app.route('/manage_pending_review')
+def manager_pending():
+    return render_template('manage_pending_reviews.html')
+
+@app.route('/api/get_all_pending_reviews', methods = ['GET'])
+def get_all_pending_reviews():
+    try:
+        with mysql.connection.cursor() as cursor:
+            #first we need to know at which library the operator works
+            query = "SELECT users_library_id FROM Users WHERE user_id = %s;"
+            params = (str(session['user']),)
+            cursor.execute(query, params)
+            data = cursor.fetchall()
+            library_id  = data[0][0]
+
+            #get all the users from the this library that have a pending review
+            #no distinct for the select because we want every pending review separately
+            query2 = """SELECT r.user_id, r.book_ISBN, r.likert_rating, r.review
+                        from Pending_Reviews r
+                        INNER JOIN Users u ON u.user_id = r.user_id
+                        WHERE u.users_library_id = %s;
+            """
+            params2 = (library_id,)
+            cursor.execute(query2, params2)
+            data2 = cursor.fetchall()
+            response = []
+
+            for pending_review in data2:
+                response.append({
+                    "isbn" : pending_review[1],
+                    "user_id" : pending_review[0],
+                    "likert_rating" : pending_review[2],
+                    "review" : pending_review[3]
+                    
+                })
+            return jsonify(response)
+
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
+    
+@app.route('/api/proccess_pending_reviews', methods = ['POST'])
+def proccess_pending_reviews():
+    try:
+        result = request.get_json()
+        action = result['action']
+        user_id = result['user_id']
+        book_ISBN = result['book_ISBN']
+        likert_rating = result['likert_rating']
+        review = result['review']
+
+        with mysql.connection.cursor() as cursor:
+            #for both actions we are gonna delete from pending
+            #for accept we are gonna insert it to reviews
+
+            if (action == "accept") :
+                query = "INSERT INTO Reviews(book_ISBN, user_id, likert_rating, review) VALUES (%s, %s, %s, %s);"
+                params = (book_ISBN, user_id, likert_rating, review)
+                cursor.execute(query, params)
+                mysql.connection.commit()
+            
+            query2 = "DELETE FROM Pending_Reviews WHERE book_ISBN = %s AND user_id = %s;"
+            params2 = (book_ISBN, user_id)
+            cursor.execute(query2, params2)
+            mysql.connection.commit()
+
+            return json.dumps({'redirect_url': '/manage_pending_review'})
+        
+    except Exception as e:
+        return json.dumps({'error' : str(e)})
     
 @app.route('/logout')
 def logout():

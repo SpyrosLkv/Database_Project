@@ -45,7 +45,6 @@
         <table id = "content-table" class = "content-table">
             <tr>
                 <th>ISBN</th>
-                <th>Return Date</th>
                 <th>Status</th>
             </tr>
         </table>
@@ -77,10 +76,6 @@
                 const isbnCell = document.createElement('td');
                 isbnCell.textContent = loan.isbn;
                 row.appendChild(isbnCell);
-
-                const return_dateCell = document.createElement('td');
-                return_dateCell.textContent = loan.return_date;
-                row.appendChild(return_dateCell);
 
                 const statusCell = document.createElement('td');
                 statusCell.textContent = loan.status;

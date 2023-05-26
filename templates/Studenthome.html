@@ -10,6 +10,9 @@
       crossorigin="anonymous"
     />
     <style>
+      a {
+        text-decoration: none;
+      }
       button {
         background-color: #0d6efd;
         color: white;
@@ -43,7 +46,7 @@
           class="border-bottom flex-wrap mb-4 py-3 d-flex justify-content-center"
         >
           <a
-            href="/Studenthome"
+            href="/userhome"
             class="text-dark text-decoration-none mb-3 mb-md-0 d-flex align-items-center me-md-auto"
           >
             <span class="fs-4">Python Flask App</span>
@@ -51,7 +54,7 @@
 
           <ul class="nav nav-pills">
             <li class="nav-item">
-              <a href="/Studenthome" class="nav-link">Home</a>
+              <a href="/userhome" class="nav-link">Home</a>
             </li>
             <li class="nav-item">
               <a href="/logout" class="nav-link active">Logout</a>
@@ -225,6 +228,12 @@
         </a>
         <a href="/get_myrequests">
           <button>Show my requests</button>
+        </a>
+        <a href = "/delete_req_res">
+          <button>Delete request or reservation</button>
+        </a>
+        <a href = "/add_pending_review">
+          <button>Add a review to a book</button>
         </a>
       </div>
 

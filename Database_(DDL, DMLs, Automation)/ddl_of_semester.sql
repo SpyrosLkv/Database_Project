@@ -308,6 +308,30 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Reviews` (
 ENGINE = InnoDB;
 
 
+
+-- -----------------------------------------------------
+-- Table `semester_project`.`Pending_Reviews`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `semester_project`.`Pending_Reviews` (
+  `book_ISBN` BIGINT(13) NOT NULL,
+  `user_id` INT NOT NULL,
+  `likert_rating` TINYINT NOT NULL,
+  `review` TEXT NULL,
+  PRIMARY KEY (`book_ISBN`, `user_id`),
+  INDEX `fk_Book_has_Users_Users1_idx` (`user_id` ASC) VISIBLE,
+  INDEX `fk_Book_has_Users_Book_idx` (`book_ISBN` ASC) VISIBLE,
+  CONSTRAINT `fk_Pen_Rev_Book_ISBN`
+    FOREIGN KEY (`book_ISBN`)
+    REFERENCES `semester_project`.`Book` (`ISBN`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_Pen_Rev_User_Id`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `semester_project`.`Users` (`user_id`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
 -- -----------------------------------------------------
 -- Table `semester_project`.`School_Library`
 -- -----------------------------------------------------
@@ -418,6 +442,25 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Wrote` (
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
+-- -----------------------------------
+-- Views for complex queries
+-- ----------------------------------
+
+CREATE VIEW top_categories AS
+SELECT T1.category AS category1, T2.category AS category2, COUNT(*) AS borrow_count
+FROM (
+    SELECT B1.ISBN AS ISBN1, B2.ISBN AS ISBN2, BI1.category_id AS category_id1, BI2.category_id AS category_id2
+    FROM Book B1
+    INNER JOIN Belongs_in BI1 ON B1.ISBN = BI1.book_ISBN
+    INNER JOIN Book B2 ON B1.ISBN < B2.ISBN
+    INNER JOIN Belongs_in BI2 ON B2.ISBN = BI2.book_ISBN
+    INNER JOIN Loan L ON B1.ISBN = L.book_ISBN OR B2.ISBN = L.book_ISBN
+    WHERE BI1.category_id < BI2.category_id
+) AS Borrowings
+INNER JOIN Thematic_Category T1 ON Borrowings.category_id1 = T1.category_id
+INNER JOIN Thematic_Category T2 ON Borrowings.category_id2 = T2.category_id
+GROUP BY category1, category2;
+
 
 -- ----------------------------------------
 -- Trigger for default value of available copies
@@ -469,10 +512,8 @@ BEGIN
   SET avail_copies = ( 
     SELECT lob.`available_copies` 
     FROM `semester_project`.`Lib_Owns_Book` lob 
-    INNER JOIN `semester_project`.`School_Library` s
-    ON s.`library_id` = lob.`library_id`
     INNER JOIN `semester_project`.`Users` u
-    ON s.`library_id` = u.`users_library_id`
+    ON lob.`library_id` = u.`users_library_id`
     WHERE u.`user_id` = NEW.`user_id` and lob.`book_ISBN` = NEW.`book_ISBN`
   );
   IF FOUND_ROWS() = 0 THEN
@@ -508,13 +549,13 @@ BEGIN
   IF OLD.`return_date` IS NOT NULL THEN
     SET NEW.`return_date` = OLD.`return_date`;
   END IF;
-  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NULL AND TIMESTAMPDIFF(DAY, OLD.`loan_date`, CURRENT_DATE()) > 14 THEN
+  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NULL AND TIMESTAMPDIFF(DAY, OLD.`loan_date`, CURRENT_DATE()) > 7 THEN
     SET NEW.`status` = "Late Active";
   END IF;
-  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NOT NULL AND TIMESTAMPDIFF(DAY, NEW.`loan_date`, NEW.`return_date`) > 14 THEN
+  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NOT NULL AND TIMESTAMPDIFF(DAY, NEW.`loan_date`, NEW.`return_date`) > 7 THEN
     SET NEW.`status` = "Late Returned";
   END IF;
-  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NOT NULL AND TIMESTAMPDIFF(DAY, NEW.`loan_date`, NEW.`return_date`) <= 14 THEN
+  IF OLD.`return_date` IS NULL AND NEW.`return_date` IS NOT NULL AND TIMESTAMPDIFF(DAY, NEW.`loan_date`, NEW.`return_date`) <= 7 THEN
     SET NEW.`status` = "Returned";
   END IF;
 END $

@@ -117,13 +117,19 @@
               required
             />
             <label for="inputUser_Role" class="sr-only"> Role</label>
-            <input
+            <!-- <input
               name="inputUser_Role"
               id="inputUser_Role"
               class="form-control"
               placeholder="'Student','Teacher','Operator','Admin'"
               required
-            />
+            /> -->
+            <select id="inputUser_Role" class="search-dropdown" name="inputUser_Role">
+              <option>Student</option>
+              <option>Teacher</option>
+              <option>Operator</option>
+              <option>Admin</option>
+            </select>
             <label for="inputPhone" class="sr-only"> Phone Number</label>
             <input
               name="inputPhone"
@@ -184,8 +190,8 @@
           console.log(result);
           window.location.href = result.redirect_url;
         } else {
-          if (result.error == "the username already exists")
-            document.querySelector('#error-message').textContent = result.error;
+          if (result.errorshow)
+            document.querySelector('#error-message').textContent = result.errorshow;
           else if (reuslt.error){
             document.querySelector('#error-message').textContent = 'an error occurred';
           }
