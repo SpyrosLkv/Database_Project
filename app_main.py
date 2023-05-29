@@ -2005,6 +2005,8 @@ def get_book_search_operator():
             result = cursor.fetchall()
 
         '''  
+        Σε περίπτωση που θέλαμε για όλο το σύστημα της βιβλιοθήκης search:
+
         query = """
                 SELECT Book.title, GROUP_CONCAT(DISTINCT Authors.first_name SEPARATOR ', ') AS author_first_names, 
                 GROUP_CONCAT(DISTINCT Authors.last_name SEPARATOR ', ') AS author_last_names, 
@@ -2085,16 +2087,29 @@ def get_dealayed_loan_search():
 
         with mysql.connection.cursor() as cursor:
             query = """
-            SELECT Users.first_name, Users.last_name, DATEDIFF(CURDATE(), Loan.return_date) AS delay_days
+            SELECT Users.first_name, Users.last_name, DATEDIFF(CURDATE(), Loan.loan_date)-7 AS delay_days
             FROM Users
             INNER JOIN Loan ON Users.user_id = Loan.user_id
-            WHERE Loan.return_date IS NOT NULL
-            AND (Loan.status = "Active" OR Loan.status = "Late Active")
-            AND DATEDIFF(CURDATE(), Loan.return_date) > 0
+            WHERE Loan.return_date IS NULL
+            
+            AND DATEDIFF(CURDATE(), Loan.loan_date ) > 7
             AND (Users.first_name LIKE %s)
             AND (Users.last_name LIKE %s)
-            AND (DATEDIFF(CURDATE(), Loan.return_date) > %s OR %s = '')
+            AND (DATEDIFF(CURDATE(), Loan.loan_date) > %s + 7 OR %s = '')
+
             """
+
+            '''  
+            SELECT Users.first_name, Users.last_name, DATEDIFF(CURDATE(), Loan.loan_date)-7 AS delay_days
+            FROM Users
+            INNER JOIN Loan ON Users.user_id = Loan.user_id
+            WHERE Loan.return_date IS NULL
+            
+            AND DATEDIFF(CURDATE(), Loan.loan_date ) > 7
+            AND (Users.first_name LIKE '%%')
+            AND (Users.last_name LIKE '%%')
+            AND (DATEDIFF(CURDATE(), Loan.loan_date) > 1 + 7 OR 1 = '');
+            '''
 
             params = (f"%{first_name}%", f"%{last_name}%", delay_days, delay_days)
 
