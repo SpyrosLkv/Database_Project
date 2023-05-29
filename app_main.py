@@ -1798,7 +1798,7 @@ def get_authors_not_borrowed():
 #who have not loaned at least 1 book. 
 
             query = """
-               SELECT Authors.first_name, Authors.last_name, Authors.author_id
+               SELECT Authors.first_name, Authors.last_name
                 FROM Authors
                 WHERE Authors.author_id NOT IN (
                     SELECT DISTINCT Wrote.author_id
@@ -1812,9 +1812,8 @@ def get_authors_not_borrowed():
         # Process the query result and return as JSON
         authors = []
         for row in result:
-            author_id,first_name, last_name = row
+            first_name, last_name = row
             authors.append({
-                'author_id': author_id,
                 'first_name': first_name,
                 'last_name': last_name
             })
@@ -1842,37 +1841,29 @@ def get_operators_loan_count():
         with mysql.connection.cursor() as cursor:
             query = """
 
-        SELECT SL.library_id, SL.user_id, SL.operator_first_name, SL.operator_last_name
-        FROM (
-            SELECT LOB.library_id, U.user_id, U.first_name AS operator_first_name, U.last_name AS operator_last_name, COUNT(*) AS loan_count
-            FROM Lib_Owns_Book LOB
-            INNER JOIN Loan L ON LOB.book_ISBN = L.book_ISBN
-            INNER JOIN Users U ON LOB.library_id = U.users_library_id
-            WHERE YEAR(L.loan_date) = %s
-                AND U.user_role = 'Operator'
-            GROUP BY LOB.library_id, U.first_name, U.last_name
-            HAVING loan_count > 20
-        ) AS SL
-        WHERE SL.loan_count IN (
-            SELECT COUNT(*) AS loan_count
-            FROM Lib_Owns_Book LOB
-            INNER JOIN Loan L ON LOB.book_ISBN = L.book_ISBN
-            INNER JOIN Users U ON LOB.library_id = U.users_library_id
-            WHERE YEAR(L.loan_date) = %s
-                AND U.user_role = 'Operator'
-            GROUP BY LOB.library_id
-            HAVING COUNT(*) > 20
-        );
+            SELECT u.users_library_id, u.user_id, u.first_name, u.last_name              
+                FROM Users u
+                INNER JOIN (                              
+                    SELECT U.users_library_id, COUNT(*) AS loan_count                 
+                    FROM Loan L                  
+                    INNER JOIN Users U ON U.user_id = L.user_id                 
+                    WHERE YEAR(L.loan_date) = %s
+                    GROUP BY U.users_library_id                 
+                    HAVING loan_count > 20
+                ) AS SL ON u.users_library_id = SL.users_library_id             
+                WHERE u.user_role = 'Operator';
             """
+
+  
             cursor.execute(query, (year,))
             result = cursor.fetchall()
 
         # Process the query result and return as JSON
         operators = []
         for row in result:
-            library_id, user_id, first_name, last_name = row
+            users_library_id, user_id, first_name, last_name = row
             operators.append({
-                'library_id': library_id,
+                'library_id': users_library_id,
                 'user_id': user_id,
                 'first_name': first_name,
                 'last_name': last_name
