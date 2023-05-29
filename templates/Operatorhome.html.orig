@@ -258,9 +258,14 @@
         <a href = "/get_myrequests">
           <button>Show my requests</button>
         </a>
+<<<<<<< HEAD
         <a href = "/query_my_database">
           <button>Query my database</button>
         </a>
+=======
+        <a href = "/delete_req_res">
+          <button>Delete request or reservation</button>
+>>>>>>> f03f994ce45426bac1597f9aff31cd592445334f
         </a>
       </div>
 

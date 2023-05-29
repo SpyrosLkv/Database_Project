@@ -1577,19 +1577,11 @@ def satisfy_reservations():
     except Exception as e:
         return json.dumps({'error' : str(e)})
 @app.route('/query_my_database', methods = ['GET'])
-#first query the database to get the user's username, then get its role and redirect to queryhomepage.
 def query_my_database():
-    with mysql.connection.cursor() as cursor:
-            user_id = session.get('user')
-            query = "SELECT username FROM Users WHERE user_id = %s"
-            cursor.execute(query, (user_id,))
-            result = cursor.fetchone()
-            username = result[0] if result else None
-    
     if session.get('role') == 'Admin':
-        return render_template ('Adminquerieshome.html',username = username)
+        return render_template ('Adminquerieshome.html')
     elif session.get('role') == 'Operator':
-        return render_template('Operatorquerieshome.html', username = username)
+        return render_template('Operatorquerieshome.html')
     else:
         return "Unauthorized", 401
 # implementing specified queries for each role (12 in total). Each role's homepage redirects to own queries.
@@ -1813,15 +1805,20 @@ def get_operators_loan_count():
 
         with mysql.connection.cursor() as cursor:
             query = """
+<<<<<<< HEAD
         SELECT SL.library_id, SL.user_id, SL.operator_first_name, SL.operator_last_name
         FROM (
             SELECT LOB.library_id, U.user_id, U.first_name AS operator_first_name, U.last_name AS operator_last_name, COUNT(*) AS loan_count
+=======
+            SELECT LOB.library_id, U.first_name AS operator_first_name, U.last_name AS operator_last_name
+>>>>>>> f03f994ce45426bac1597f9aff31cd592445334f
             FROM Lib_Owns_Book LOB
             INNER JOIN Loan L ON LOB.book_ISBN = L.book_ISBN
             INNER JOIN Users U ON LOB.library_id = U.users_library_id
             WHERE YEAR(L.loan_date) = %s
                 AND U.user_role = 'Operator'
             GROUP BY LOB.library_id, U.first_name, U.last_name
+<<<<<<< HEAD
             HAVING loan_count > 20
         ) AS SL
         WHERE SL.loan_count IN (
@@ -1835,6 +1832,9 @@ def get_operators_loan_count():
             HAVING COUNT(*) > 20
         );
 
+=======
+            HAVING COUNT(*) > 20;
+>>>>>>> f03f994ce45426bac1597f9aff31cd592445334f
             """
             cursor.execute(query, (year,))
             result = cursor.fetchall()
