@@ -1886,9 +1886,9 @@ def top_category_pairs():
    with mysql.connection.cursor() as cursor: 
     try:
         query = '''
-            SELECT category1, category2, borrow_count
+            SELECT category1, category2, pair_count
             FROM top_categories
-            ORDER BY borrow_count DESC 
+            ORDER BY pair_count DESC 
             LIMIT 3;
         '''
         cursor.execute(query)
