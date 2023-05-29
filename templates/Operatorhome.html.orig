@@ -10,12 +10,28 @@
       crossorigin="anonymous"
     />
     <style>
+      a {
+        text-decoration: none;
+      }
       button {
         background-color: #0d6efd;
         color: white;
         border-radius: 10px; /* Adjust the value to change the roundness */
         padding: 10px 20px;
 
+      }
+      .bigimportantbutton{
+        background-color: #0d6efd;
+        /* display: block; */
+        color: white;
+        font-size: 24px;
+        border-radius: 10px; /* Adjust the value to change the roundness */
+        padding: 15px 30px;
+        margin: 0 auto;
+      }
+      .importantbutton_container{
+        display: flex;
+        justify-content: center;
       }
       .div1 {
         background-color: #eaafff;
@@ -42,16 +58,15 @@
       }
     </style>
   </head>
-  
+
   <body>
-    
     <div class="container">
       <div class="header">
         <nav
           class="border-bottom flex-wrap mb-4 py-3 d-flex justify-content-center"
         >
           <a
-            href="/Adminhome"
+            href="/userhome"
             class="text-dark text-decoration-none mb-3 mb-md-0 d-flex align-items-center me-md-auto"
           >
             <span class="fs-4">Python Flask App</span>
@@ -59,7 +74,7 @@
 
           <ul class="nav nav-pills">
             <li class="nav-item">
-              <a href="/Adminhome" class="nav-link">Home</a>
+              <a href="/userhome" class="nav-link">Home</a>
             </li>
             <li class="nav-item">
               <a href="/logout" class="nav-link active">Logout</a>
@@ -67,16 +82,11 @@
           </ul>
         </nav>
       </div>
-      
-     </div>
-<div class="bg-light rounded-3 mb-4 p-5">
-  <div class="container-fluid py-5">
-    <h1 class="text-center fw-bold display-5">What would you like to know, {{username}}?</h1>
-  </div>
-</div>
-
+      <div class="bg-light rounded-3 mb-4 p-5">
+        <div class="container-fluid py-5">
+          <h1 class="text-center fw-bold display-5">Welcome Home!</h1>
+        </div>
       </div>
-      
       <div class="twocolumns">
         <div class="leftarray">
           <button id="show_table" onclick="toggleTable()">Show My Info</button>
@@ -109,7 +119,7 @@
                 </tr>
                 <tr>
                     <td>Role:</td>
-                    <td>Admin</td>
+                    <td>Operator</td>
                 </tr>
             </tbody>
           </table>
@@ -218,61 +228,110 @@
             }     
         });
       </script>
+      <br>
+      <br>
+      <div class="div1">
+        <div>
+          <h1 class="text-center">Your Account</h1>
+        </div>
+        <a href="/book_search">
+          <button>Books</button>
+        </a>
+        <a href="/past_loans">
+          <button>My past Loans and Reservations</button>
+        </a>
+        <a href="/card_condition">
+          <button>My Card Status</button>
+        </a>
+        <a href="/change_attributes">
+          <button>Change My Attributes</button>
+        </a>
+        <a href="/get_phones">
+          <button>Get my phones</button>
+        </a>
+        <a href="/change_phones">
+          <button>Change my Phones</button>
+        </a>
+        <a href = "/show_myloans_reg">
+          <button>Show my Loans and Reservations</button>
+        </a>
+        <a href = "/get_myrequests">
+          <button>Show my requests</button>
+        </a>
+<<<<<<< HEAD
+        <a href = "/query_my_database">
+          <button>Query my database</button>
+        </a>
+=======
+        <a href = "/delete_req_res">
+          <button>Delete request or reservation</button>
+>>>>>>> f03f994ce45426bac1597f9aff31cd592445334f
+        </a>
+      </div>
 
-<br><br>
-<div class="div1">
-  <div>
-    <h1 class="text-center">Your Account</h1>
-  </div>
-  <a href="/book_search">
-    <button>Books</button>
-  </a>
-
-  <a href="/get_phones">
-    <button>Get my phones</button>
-  </a>
-  
-  <a href = "/show_myloans_reg">
-    <button>Show my Loans and Reservations</button>
-  </a>
-  <a href = "/get_myrequests">
-    <button>Show my requests</button>
-  </a>
-  <a href="/library_stats">
-    <button>Library Statistics</button>
-  </a>
-  <a href="/authors_stats">
-    <button>Authors Statistics</button>
-  </a>
-  <a href="/teachers_stats">
-    <button>Teachers Statistics</button>
-  </a>
-  <a href="/top_category_pairs">
-    <button>Top Category Pairs</button>
-  </a>
-  <a href="/authors_not_borrowed">
-    <button>Authors Not Borrowed</button>
-  </a>
-  <a href="/operators_loan_count">
-    <button>Operators Loan Count</button>
-  </a>
-  <a href="/authors_less_books">
-    <button>Authors which have 5 (or more) less books loaned than the top author</button>
-  </a>
-</div>
-<br><br>
+      <br><br>
 
 
-<footer class="footer">
-    <a href="/change_password">
-      Change my password
-    </a>
-    <br>
-    <a href="/contact_library">
-      Contact my Library
-    </a>
-    <p>&copy; NTUA 2023</p>
-  </footer>
-</div>
-</body>
+      <div class="div2">
+        <div>
+          <h1 class="text-center">Manage Your Library</h1>
+        </div>
+        
+        <a href="/pending_registrations">
+          <button>Show Pending Registrations</button>
+        </a>
+        <a href="/pending_cards">
+          <button>Pending Cards</button>
+        </a>
+        <a href="/manage_users">
+          <button>Manage Users</button>
+        </a>
+        <a href="/book_management">
+          <button>Manage Library</button>
+        </a>
+        <a href="/req_manager">
+          <button>Manage request</button>
+        </a>
+        <a href="/late_returns">
+          <button>Late Returns</button>
+        </a>
+        <a href="/satisfy_reservations">
+          <button>Satisfy Reservations</button>
+        </a>
+        <a href="/forced_loans">
+          <button>Instant Loans</button>
+        </a>
+        <a href = "/return_book">
+          <button>Return book of a student</button>
+        </a>
+        <a href = "/active_loans">
+          <button>Get active loans</button>
+        </a>
+        <a href = "/change_existing_book">
+          <button>Change Existing Book</button>
+        </a>
+        <a href = "/manage_pending_review">
+          <button>Manage pending reviews</button>
+        </a>
+      </div>
+
+      <br><br>
+
+      <div class="importantbutton_container">
+        <a href="/newbook">
+          <button class="bigimportantbutton">NEW BOOK!!!</button>
+        </a>
+      </div>
+      <footer class="footer">
+        <a href="/change_password">
+          Change my password
+        </a>
+        <br>
+        <a href="/contact_library">
+          Contact my Library
+        </a>
+        <p>&copy; NTUA 2023</p>
+      </footer>
+    </div>
+  </body>
 </html>

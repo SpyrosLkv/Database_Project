@@ -1128,13 +1128,12 @@ def return_users():
         print(last_name)
         if last_name:
             with mysql.connection.cursor() as cursor:
-                my_id = int(session['user'])
-                print(my_id)
-                query = "SELECT users_library_id FROM Users WHERE user_id = "+str(my_id)+";"
-                cursor.execute(query)
-                library_id = int(cursor.fetchall()[0][0])
-                query = "SELECT * FROM Users WHERE last_name = %s and users_library_id = "+str(library_id)+";"
-                # query = "SELECT * FROM Users WHERE last_name = %s;"
+                # my_id = int(session['user'])
+                # query = "SELECT users_library_id FROM Users WHERE user_id = "+str(my_id)+";"
+                # cursor.execute(query)
+                # library_id = int(cursor.fetchall()[0][0])
+                # query = "SELECT * FROM Users WHERE last_name = %s and users_library_id = "+str(my_id)+";"
+                query = "SELECT * FROM Users WHERE last_name = %s;"
                 params = (last_name,)
                 cursor.execute(query,params)
                 results = cursor.fetchall()
@@ -1578,19 +1577,11 @@ def satisfy_reservations():
     except Exception as e:
         return json.dumps({'error' : str(e)})
 @app.route('/query_my_database', methods = ['GET'])
-#first query the database to get the user's username, then get its role and redirect to queryhomepage.
 def query_my_database():
-    with mysql.connection.cursor() as cursor:
-            user_id = session.get('user')
-            query = "SELECT username FROM Users WHERE user_id = %s"
-            cursor.execute(query, (user_id,))
-            result = cursor.fetchone()
-            username = result[0] if result else None
-    
     if session.get('role') == 'Admin':
-        return render_template ('Adminquerieshome.html',username = username)
+        return render_template ('Adminquerieshome.html')
     elif session.get('role') == 'Operator':
-        return render_template('Operatorquerieshome.html', username = username)
+        return render_template('Operatorquerieshome.html')
     else:
         return "Unauthorized", 401
 # implementing specified queries for each role (12 in total). Each role's homepage redirects to own queries.
@@ -1814,16 +1805,20 @@ def get_operators_loan_count():
 
         with mysql.connection.cursor() as cursor:
             query = """
-
+<<<<<<< HEAD
         SELECT SL.library_id, SL.user_id, SL.operator_first_name, SL.operator_last_name
         FROM (
             SELECT LOB.library_id, U.user_id, U.first_name AS operator_first_name, U.last_name AS operator_last_name, COUNT(*) AS loan_count
+=======
+            SELECT LOB.library_id, U.first_name AS operator_first_name, U.last_name AS operator_last_name
+>>>>>>> f03f994ce45426bac1597f9aff31cd592445334f
             FROM Lib_Owns_Book LOB
             INNER JOIN Loan L ON LOB.book_ISBN = L.book_ISBN
             INNER JOIN Users U ON LOB.library_id = U.users_library_id
             WHERE YEAR(L.loan_date) = %s
                 AND U.user_role = 'Operator'
             GROUP BY LOB.library_id, U.first_name, U.last_name
+<<<<<<< HEAD
             HAVING loan_count > 20
         ) AS SL
         WHERE SL.loan_count IN (
@@ -1836,6 +1831,10 @@ def get_operators_loan_count():
             GROUP BY LOB.library_id
             HAVING COUNT(*) > 20
         );
+
+=======
+            HAVING COUNT(*) > 20;
+>>>>>>> f03f994ce45426bac1597f9aff31cd592445334f
             """
             cursor.execute(query, (year,))
             result = cursor.fetchall()
@@ -1986,55 +1985,6 @@ def get_book_search_operator():
             cursor.execute(query, params)
             result = cursor.fetchall()
 
-        '''  
-        query = """
-                SELECT Book.title, GROUP_CONCAT(DISTINCT Authors.first_name SEPARATOR ', ') AS author_first_names, 
-                GROUP_CONCAT(DISTINCT Authors.last_name SEPARATOR ', ') AS author_last_names, 
-                GROUP_CONCAT(DISTINCT Thematic_Category.category SEPARATOR ', ') AS categories
-                FROM Book 
-                INNER JOIN Wrote ON Book.ISBN = Wrote.book_ISBN
-                INNER JOIN Authors ON Wrote.author_id = Authors.author_id
-                INNER JOIN Belongs_in ON Book.ISBN = Belongs_in.book_ISBN
-                INNER JOIN Thematic_Category ON Belongs_in.category_id = Thematic_Category.category_id
-                WHERE 
-            """
-            i = 0
-            params = []
-            if title:
-                query += "Book.title LIKE %s "
-                params.append(f"%{title}%")
-                i = i + 1
-
-            if category:
-                if i > 0 :
-                    query += "AND Thematic_Category.category LIKE %s "
-                else:
-                    query += " Thematic_Category.category LIKE %s "
-                i = i + 1
-                params.append(f"%{category}%")
-
-            if name:
-                if i > 0:
-                    query += "AND (Authors.first_name LIKE %s OR Authors.last_name LIKE %s) "
-                else:
-                    query += " (Authors.first_name LIKE %s OR Authors.last_name LIKE %s) "
-                i = i + 1
-                params.extend([f"%{name}%", f"%{name}%"])
-
-            if copies:
-                if i > 0:
-                    query += "AND LOB.total_copies >= %s "
-                else:
-                    query += " LOB.total_copies >= %s "
-                    i = i + 1
-                params.append(copies)
-
-            query += "GROUP BY Book.ISBN"
-
-            cursor.execute(query, params)
-            result = cursor.fetchall()
-        '''
-
         # Process the query result and return as JSON
         books = []
         for row in result:
@@ -2067,22 +2017,23 @@ def get_dealayed_loan_search():
 
         with mysql.connection.cursor() as cursor:
             query = """
-            SELECT Users.first_name, Users.last_name, DATEDIFF(CURDATE(), Loan.return_date) AS delay_days
-            FROM Users
-            INNER JOIN Loan ON Users.user_id = Loan.user_id
-            WHERE Loan.return_date IS NOT NULL
-            AND (Loan.status = "Active" OR Loan.status = "Late Active")
-            AND DATEDIFF(CURDATE(), Loan.return_date) > 0
-            AND (Users.first_name LIKE %s)
-            AND (Users.last_name LIKE %s)
-            AND (DATEDIFF(CURDATE(), Loan.return_date) > %s OR %s = '')
+                SELECT Users.first_name, Users.last_name, DATEDIFF(CURDATE(), Loan.return_date) AS delay_days
+                FROM Users
+                INNER JOIN Loan ON Users.user_id = Loan.user_id
+                WHERE Loan.return_date IS NOT NULL
+                AND (Loan.status = "Active" OR Loan.status = "Late Active")
+                AND DATEDIFF(CURDATE(), Loan.return_date) > 0
+                AND (Users.first_name LIKE %s)
+                AND (Users.last_name LIKE %s)
             """
+            params = (f"%{first_name}%", f"%{last_name}%")
 
-            params = (f"%{first_name}%", f"%{last_name}%", delay_days, delay_days)
+            if delay_days:
+                query += " AND (DATEDIFF(CURDATE(), Loan.return_date) > %s OR %s = '')"
+                params += (delay_days,delay_days)
 
             cursor.execute(query, params)
             result = cursor.fetchall()
-
 
         # Process the query result and return as JSON
         loans = []
@@ -2353,7 +2304,7 @@ def perform_backup():
     user = 'root'
     password = 'toyot2002'
     database = 'semester_project'
-    output_dir = './backup'
+    output_dir = '~/backup'
 
     success = backup_database(host, user, password, database, output_dir)
     if success:
@@ -2436,7 +2387,7 @@ def restore():
         user = 'root'
         password = 'your_password'
         database = 'semester_project'
-        backup_file = './backup'
+        backup_file = '/path/to/your/backup.sql'
 
         if restore_database(host, user, password, database, backup_file):
             return "Database restore completed successfully."

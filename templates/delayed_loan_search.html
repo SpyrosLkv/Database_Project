@@ -32,7 +32,6 @@
                 >
                     <span class="fs-4">Python Flask App</span>
                 </a>
-
                 <ul class="nav nav-pills">
                     <li class="nav-item">
                     <a href="/userhome" class="nav-link">Home</a>
@@ -60,34 +59,49 @@
             </div>
             <button type="submit" class="btn btn-primary">Search</button>
         </form>
-        <div id="results" class="results-container"></div>
+        <div id="results" class="results-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Days overdue</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body"></tbody>
+            </table>
+        </div>
     </div>
-
+    
     <script>
         const form = document.getElementById('loan-search-form');
-        const resultsDiv = document.getElementById('results');
-
+        const resultsBody = document.getElementById('results-body');
+    
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const firstName = document.getElementById('first-name').value;
             const lastName = document.getElementById('last-name').value;
             const delayDays = document.getElementById('delay-days').value;
-
+    
             try {
                 const response = await fetch(`/api/delayed_loan_search?first_name=${firstName}&last_name=${lastName}&delay_days=${delayDays}`);
                 const loans = await response.json();
-
+    
                 let html = '';
                 loans.forEach((loan) => {
-                    html += `<p>${loan.first_name} ${loan.last_name} - Delay Days: ${loan.delay_days}</p>`;
+                    html += `
+                        <tr>
+                            <td>${loan.first_name} ${loan.last_name}</td>
+                            <td>${loan.delay_days}</td>
+                        </tr>`;
                 });
-
-                resultsDiv.innerHTML = html;
+    
+                resultsBody.innerHTML = html;
             } catch (error) {
                 console.error(error);
-                resultsDiv.innerHTML = 'Error retrieving loan information.';
+                resultsBody.innerHTML = '<tr><td colspan="2">Error retrieving loan information.</td></tr>';
             }
         });
     </script>
-</body>
-</html>
+    </body>
+    </html>
+    
