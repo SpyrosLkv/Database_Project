@@ -2147,22 +2147,64 @@ def get_loan_rating_search():
         category = request.args.get('category')
 
         with mysql.connection.cursor() as cursor:
-            query = """
-                SELECT Users.user_id, Thematic_Category.category, AVG(Reviews.likert_rating) AS average_rating
-                FROM Users
-                INNER JOIN Loan ON Users.user_id = Loan.user_id
-                INNER JOIN Belongs_in ON Loan.book_ISBN = Belongs_in.book_ISBN
-                INNER JOIN Thematic_Category ON Belongs_in.category_id = Thematic_Category.category_id
-                INNER JOIN Reviews ON Reviews.book_ISBN = Loan.book_ISBN
-                WHERE(Users.user_id = %s OR %s = '')
-                AND (Thematic_Category.category = %s OR %s = ' ')
-                GROUP BY Users.user_id, Thematic_Category.category;
-            """
-            cursor.execute(query, (user_id, user_id, category, category))
-            result = cursor.fetchall()
+            if user_id and category:
+                query = """
+                    SELECT Users.user_id, Thematic_Category.category, AVG(Reviews.likert_rating) AS average_rating
+                    FROM Users
+                    INNER JOIN Reviews ON Users.user_id = Reviews.user_id
+                    INNER JOIN Belongs_in ON Reviews.book_ISBN = Belongs_in.book_ISBN
+                    INNER JOIN Thematic_Category ON Belongs_in.category_id = Thematic_Category.category_id
+                    WHERE(Users.user_id = %s OR %s = '')
+                    AND (Thematic_Category.category = %s OR %s = ' ')
+                    GROUP BY Users.user_id, Thematic_Category.category;
+                """
+                cursor.execute(query, (user_id, user_id, category, category))
+                result = cursor.fetchall()
+            elif user_id:
+                query = """
+                    SELECT Users.user_id, Thematic_Category.category, AVG(Reviews.likert_rating) AS average_rating
+                    FROM Users
+                    INNER JOIN Reviews ON  Users.user_id = Reviews.user_id
+                    INNER JOIN Belongs_in ON Reviews.book_ISBN = Belongs_in.book_ISBN
+                    INNER JOIN Thematic_Category ON Belongs_in.category_id = Thematic_Category.category_id
+                    WHERE(Users.user_id = %s OR %s = '')
+                    AND (Thematic_Category.category = %s OR %s = ' ')
+                    GROUP BY Users.user_id, Thematic_Category.category
+                """
+                cursor.execute(query, (user_id, user_id, category, category))
+                result = list(cursor.fetchall())
+                query = """ 
+                    SELECT Users.user_id, AVG(Reviews.likert_rating) AS average_rating
+                    FROM Users
+                    INNER JOIN Reviews ON Reviews.user_id = Users.user_id
+                    WHERE Users.user_id = %s 
+                    GROUP BY Users.user_id
+                
+                """
+                cursor.execute(query, (user_id,))
+                temp = cursor.fetchall()[0]
+                result2 = (temp[0], 'Overall', temp[1])
+                result.append(result2)
+            elif category:
+                query = """
+                    SELECT Thematic_Category.category, AVG(Reviews.likert_rating) AS average_rating
+                    FROM Belongs_in 
+                    INNER JOIN Thematic_Category ON Belongs_in.category_id = Thematic_Category.category_id
+                    INNER JOIN Reviews ON Reviews.book_ISBN = Belongs_in.book_ISBN
+                    WHERE Thematic_Category.category = %s
+                    GROUP BY Thematic_Category.category
+                """
+                cursor.execute(query, (category,))
+                result = ['All']
+                result1 = cursor.fetchall()[0]
+                print(result1)
+                result.extend(result1)
+                result = [result]
+                
 
         # Process the query result and return as JSON
         ratings = []
+        print(result)
         for row in result:
             ratings.append({
                 'user_id': row[0],
