@@ -18,32 +18,38 @@
             padding: 20px;
             margin-top: 20px;
         }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #0d6efd;
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <body>
-        <div class="container">
-            <div class="header">
-                <nav
-                    class="border-bottom flex-wrap mb-4 py-3 d-flex justify-content-center"
-                >
-                    <a
-                        href="/userhome"
-                        class="text-dark text-decoration-none mb-3 mb-md-0 d-flex align-items-center me-md-auto"
-                    >
-                        <span class="fs-4">Python Flask App</span>
-                    </a>
-    
-                    <ul class="nav nav-pills">
-                        <li class="nav-item">
+    <div class="container">
+        <div class="header">
+            <nav class="border-bottom flex-wrap mb-4 py-3 d-flex justify-content-center">
+                <a href="/userhome" class="text-dark text-decoration-none mb-3 mb-md-0 d-flex align-items-center me-md-auto">
+                    <span class="fs-4">Python Flask App</span>
+                </a>
+                <ul class="nav nav-pills">
+                    <li class="nav-item">
                         <a href="/userhome" class="nav-link">Home</a>
-                        </li>
-                        <li class="nav-item">
+                    </li>
+                    <li class="nav-item">
                         <a href="/logout" class="nav-link active">Logout</a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     <div class="container">
         <h1 class="text-center">Teachers Statistics</h1>
         <form id="stats-form" class="text-center">
@@ -51,23 +57,27 @@
         </form>
         <div id="results" class="results-container"></div>
     </div>
-
+    
     <script>
         const form = document.getElementById('stats-form');
         const resultsDiv = document.getElementById('results');
-
+    
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-
+    
             try {
                 const response = await fetch('/api/teachers_stats');
                 const teacherStats = await response.json();
-
-                let html = ''
+    
+                let html = '<table>';
+                html += '<tr><th>User ID</th><th>Teacher Name</th><th>Loan Count</th></tr>';
+    
                 teacherStats.forEach((teacher) => {
-                    html += `<p>user id: ${teacher.user_id}, teacher name: ${teacher.first_name} ${teacher.last_name} with loan-count : ${teacher.num_books_borrowed}</p>`;
+                    html += `<tr><td>${teacher.user_id}</td><td>${teacher.first_name} ${teacher.last_name}</td><td>${teacher.num_books_borrowed}</td></tr>`;
                 });
-
+    
+                html += '</table>';
+    
                 resultsDiv.innerHTML = html;
             } catch (error) {
                 console.error(error);
@@ -75,4 +85,6 @@
             }
         });
     </script>
-</body
+    </body>
+    </html>
+      

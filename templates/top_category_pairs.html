@@ -18,6 +18,19 @@
             padding: 20px;
             margin-top: 20px;
         }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #0d6efd;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -43,31 +56,32 @@
             <div id="results" class="results-container"></div>
         </div>
     </div>
-
     <script>
         const topPairsBtn = document.getElementById('top-pairs-btn');
         const resultsDiv = document.getElementById('results');
-
+    
         topPairsBtn.addEventListener('click', async () => {
             try {
                 const response = await fetch('/api/top_category_pairs');
-                const responseData = await response.text();
-                
-                console.log(responseData);
-                const pairs = JSON.parse(responseData);
-                let html = '';
-                pairs.forEach((pair,index) => {
-                html += `<p>${index+1}.${pair.category1} and ${pair.category2}, Borrow Count: ${pair.borrow_count}</p>`;
-            });
-
+                const pairs = await response.json();
+    
+                let html = '<table>';
+                html += '<tr><th>Category Pair</th><th>Borrow Count</th></tr>';
+    
+                pairs.forEach((pair, index) => {
+                    html += `<tr><td>${pair.category1} and ${pair.category2}</td><td>${pair.borrow_count}</td></tr>`;
+                });
+    
+                html += '</table>';
+    
                 resultsDiv.innerHTML = html;
             } catch (error) {
                 console.error(error);
                 resultsDiv.innerHTML = 'Error retrieving top category pairs.';
             }
         });
-    </script>
-</body>
-</html>
+    </script> 
+    </body>
+    </html>
 
 

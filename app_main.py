@@ -2017,23 +2017,22 @@ def get_dealayed_loan_search():
 
         with mysql.connection.cursor() as cursor:
             query = """
-                SELECT Users.first_name, Users.last_name, DATEDIFF(CURDATE(), Loan.return_date) AS delay_days
-                FROM Users
-                INNER JOIN Loan ON Users.user_id = Loan.user_id
-                WHERE Loan.return_date IS NOT NULL
-                AND (Loan.status = "Active" OR Loan.status = "Late Active")
-                AND DATEDIFF(CURDATE(), Loan.return_date) > 0
-                AND (Users.first_name LIKE %s)
-                AND (Users.last_name LIKE %s)
+            SELECT Users.first_name, Users.last_name, DATEDIFF(CURDATE(), Loan.return_date) AS delay_days
+            FROM Users
+            INNER JOIN Loan ON Users.user_id = Loan.user_id
+            WHERE Loan.return_date IS NOT NULL
+            AND (Loan.status = "Active" OR Loan.status = "Late Active")
+            AND DATEDIFF(CURDATE(), Loan.return_date) > 0
+            AND (Users.first_name LIKE %s)
+            AND (Users.last_name LIKE %s)
+            AND (DATEDIFF(CURDATE(), Loan.return_date) > %s OR %s = '')
             """
-            params = (f"%{first_name}%", f"%{last_name}%")
 
-            if delay_days:
-                query += " AND (DATEDIFF(CURDATE(), Loan.return_date) > %s OR %s = '')"
-                params += (delay_days,delay_days)
+            params = (f"%{first_name}%", f"%{last_name}%", delay_days, delay_days)
 
             cursor.execute(query, params)
             result = cursor.fetchall()
+
 
         # Process the query result and return as JSON
         loans = []
@@ -2304,7 +2303,7 @@ def perform_backup():
     user = 'root'
     password = 'toyot2002'
     database = 'semester_project'
-    output_dir = '~/backup'
+    output_dir = './backup'
 
     success = backup_database(host, user, password, database, output_dir)
     if success:
@@ -2387,7 +2386,7 @@ def restore():
         user = 'root'
         password = 'your_password'
         database = 'semester_project'
-        backup_file = '/path/to/your/backup.sql'
+        backup_file = './backup'
 
         if restore_database(host, user, password, database, backup_file):
             return "Database restore completed successfully."
