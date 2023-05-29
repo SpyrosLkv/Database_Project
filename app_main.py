@@ -1806,36 +1806,14 @@ def get_operators_loan_count():
 
         with mysql.connection.cursor() as cursor:
             query = """
-<<<<<<< HEAD
-        SELECT SL.library_id, SL.user_id, SL.operator_first_name, SL.operator_last_name
-        FROM (
-            SELECT LOB.library_id, U.user_id, U.first_name AS operator_first_name, U.last_name AS operator_last_name, COUNT(*) AS loan_count
-=======
             SELECT LOB.library_id, U.first_name AS operator_first_name, U.last_name AS operator_last_name
->>>>>>> f03f994ce45426bac1597f9aff31cd592445334f
             FROM Lib_Owns_Book LOB
             INNER JOIN Loan L ON LOB.book_ISBN = L.book_ISBN
             INNER JOIN Users U ON LOB.library_id = U.users_library_id
             WHERE YEAR(L.loan_date) = %s
                 AND U.user_role = 'Operator'
             GROUP BY LOB.library_id, U.first_name, U.last_name
-<<<<<<< HEAD
-            HAVING loan_count > 20
-        ) AS SL
-        WHERE SL.loan_count IN (
-            SELECT COUNT(*) AS loan_count
-            FROM Lib_Owns_Book LOB
-            INNER JOIN Loan L ON LOB.book_ISBN = L.book_ISBN
-            INNER JOIN Users U ON LOB.library_id = U.users_library_id
-            WHERE YEAR(L.loan_date) = %s
-                AND U.user_role = 'Operator'
-            GROUP BY LOB.library_id
-            HAVING COUNT(*) > 20
-        );
-
-=======
             HAVING COUNT(*) > 20;
->>>>>>> f03f994ce45426bac1597f9aff31cd592445334f
             """
             cursor.execute(query, (year,))
             result = cursor.fetchall()
@@ -1985,6 +1963,55 @@ def get_book_search_operator():
 
             cursor.execute(query, params)
             result = cursor.fetchall()
+
+        '''  
+        query = """
+                SELECT Book.title, GROUP_CONCAT(DISTINCT Authors.first_name SEPARATOR ', ') AS author_first_names, 
+                GROUP_CONCAT(DISTINCT Authors.last_name SEPARATOR ', ') AS author_last_names, 
+                GROUP_CONCAT(DISTINCT Thematic_Category.category SEPARATOR ', ') AS categories
+                FROM Book 
+                INNER JOIN Wrote ON Book.ISBN = Wrote.book_ISBN
+                INNER JOIN Authors ON Wrote.author_id = Authors.author_id
+                INNER JOIN Belongs_in ON Book.ISBN = Belongs_in.book_ISBN
+                INNER JOIN Thematic_Category ON Belongs_in.category_id = Thematic_Category.category_id
+                WHERE 
+            """
+            i = 0
+            params = []
+            if title:
+                query += "Book.title LIKE %s "
+                params.append(f"%{title}%")
+                i = i + 1
+
+            if category:
+                if i > 0 :
+                    query += "AND Thematic_Category.category LIKE %s "
+                else:
+                    query += " Thematic_Category.category LIKE %s "
+                i = i + 1
+                params.append(f"%{category}%")
+
+            if name:
+                if i > 0:
+                    query += "AND (Authors.first_name LIKE %s OR Authors.last_name LIKE %s) "
+                else:
+                    query += " (Authors.first_name LIKE %s OR Authors.last_name LIKE %s) "
+                i = i + 1
+                params.extend([f"%{name}%", f"%{name}%"])
+
+            if copies:
+                if i > 0:
+                    query += "AND LOB.total_copies >= %s "
+                else:
+                    query += " LOB.total_copies >= %s "
+                    i = i + 1
+                params.append(copies)
+
+            query += "GROUP BY Book.ISBN"
+
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+        '''
 
         # Process the query result and return as JSON
         books = []
