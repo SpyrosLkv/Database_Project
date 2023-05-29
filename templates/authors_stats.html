@@ -60,7 +60,7 @@
             <button type="submit" id="authors_stats" class="btn btn-primary">Get Authors</button>
             <button type="submit" id="teacher_loan_stats" class="btn btn-primary">Get Teachers</button>
         </form>
-        <div id="results" class="results-container">Auhtors: </div>
+        <div id="results" class="results-container">Authors: </div>
         <div id="results1" class="results-container">Teachers: </div>
     </div>
     
@@ -68,8 +68,9 @@
         const form = document.getElementById('stats-form');
         const resultsDiv = document.getElementById('results');
         const resultsDiv1 = document.getElementById('results1');
-    
-        form.addEventListener('submit', async (e) => {
+        
+        const submitButton = document.getElementById('authors_stats');
+        submitButton.addEventListener('click', async (e) => {
             e.preventDefault();
             const category = document.getElementById('category').value;
     
@@ -93,7 +94,8 @@
             }
         });
     
-        form.addEventListener('submit', async (e) => {
+        const submitButton1 = document.getElementById('teacher_loan_stats');
+        submitButton1.addEventListener('click', async (e) => {
             e.preventDefault();
             const category = document.getElementById('category').value;
     
