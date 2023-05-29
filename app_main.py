@@ -1611,18 +1611,45 @@ def get_library_stats():
         month = request.args.get('month')
 
         with mysql.connection.cursor() as cursor:
-            query = """
-                SELECT School_Library.name, library_id, COUNT(*) AS TotalLoans
-                FROM Loan
-                INNER JOIN Users ON Loan.user_id = Users.user_id
-                INNER JOIN School_Library ON Users.users_library_id = School_Library.library_id
-                WHERE YEAR(Loan.loan_date) = %s
-                    AND MONTHNAME(Loan.loan_date) = %s
-                GROUP BY library_id;
-            """
-            params = (year, month)
-            cursor.execute(query, params)
-            result = cursor.fetchall()
+            if year and month:
+                query = """
+                    SELECT School_Library.name, library_id, COUNT(*) AS TotalLoans
+                    FROM Loan
+                    INNER JOIN Users ON Loan.user_id = Users.user_id
+                    INNER JOIN School_Library ON Users.users_library_id = School_Library.library_id
+                    WHERE YEAR(Loan.loan_date) = %s
+                        AND MONTHNAME(Loan.loan_date) = %s
+                    GROUP BY library_id;
+                """
+                params = (year, month)
+                cursor.execute(query, params)
+                result = cursor.fetchall()
+            elif year:
+                query = """
+                    SELECT School_Library.name, library_id, COUNT(*) AS TotalLoans
+                    FROM Loan
+                    INNER JOIN Users ON Loan.user_id = Users.user_id
+                    INNER JOIN School_Library ON Users.users_library_id = School_Library.library_id
+                    WHERE YEAR(Loan.loan_date) = %s
+                    GROUP BY library_id;
+                """
+                params = (year,)
+                cursor.execute(query, params)
+                result = cursor.fetchall()
+            elif month:
+                query = """
+                    SELECT School_Library.name, library_id, COUNT(*) AS TotalLoans
+                    FROM Loan
+                    INNER JOIN Users ON Loan.user_id = Users.user_id
+                    INNER JOIN School_Library ON Users.users_library_id = School_Library.library_id
+                    WHERE MONTHNAME(Loan.loan_date) = %s
+                    GROUP BY library_id;
+                """
+                params = (month,)
+                cursor.execute(query, params)
+                result = cursor.fetchall()
+            else:
+                return json.dumps({'message': 'fill in at least one input'})
 
         # Process the query result and return as JSON
         stats = []
