@@ -224,7 +224,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `semester_project`.`Reg_Phone_No` (
   `number` BIGINT(20) NOT NULL,
-  `registration_username` VARCHAR(45) NOT NULL,
+  `registration_username` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`number`, `registration_username`),
   INDEX `fk_Reg_ phone No_Registration1_idx` (`registration_username` ASC) VISIBLE,
   CONSTRAINT `fk_Reg_ phone No_Registration1`
