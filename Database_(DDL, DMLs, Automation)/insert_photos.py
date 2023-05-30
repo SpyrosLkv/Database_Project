@@ -2,7 +2,13 @@ import mysql.connector
 from mysql.connector import Error
 import base64
 import os
-
+'''   
+Για να φορτωθούν οι φωτογραφίες, το αρχείο πρέπει:
+    1) Ο φάκελος images να είναι στον ίδιο φάκελο με το αρχείο insert_photos.py
+    2) Στον ίδιο φάκελο να βρίσκεται το αρχείο all_the_isbn.txt
+    3) Να τρέξετε το python script ενώ το directory σας είναι ο φάκελος στον οποίο βρίσκονταιτα προαναφερθέντα αρχεία
+Οι προυποθέσεις αυτές πρέπει να τηρούνται για να μπορεί ο κώδικας να "δει" τα αρχεία στα σωστά  paths
+'''
 
 cnx = mysql.connector.connect(
     user='root',
