@@ -508,25 +508,22 @@ BEGIN
   DECLARE avail_copies INT;
   DECLARE lib_id INT;
 
-  SET avail_copies = ( 
-    SELECT lob.`available_copies` 
-    FROM `semester_project`.`Lib_Owns_Book` lob 
-    INNER JOIN `semester_project`.`Users` u
-    ON lob.`library_id` = u.`users_library_id`
-    WHERE u.`user_id` = NEW.`user_id` and lob.`book_ISBN` = NEW.`book_ISBN`
-  );
-  IF FOUND_ROWS() = 0 THEN
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Book does not exist in library of user';
-  END IF;
-  IF avail_copies = 0 THEN 
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot borrow unavailable book';
+  SELECT lob.`available_copies` INTO avail_copies
+  FROM `semester_project`.`Lib_Owns_Book` lob 
+  INNER JOIN `semester_project`.`Users` u ON lob.`library_id` = u.`users_library_id`
+  WHERE u.`user_id` = NEW.`user_id` and lob.`book_ISBN` = NEW.`book_ISBN`;
+
+  IF avail_copies IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Book does not exist in the library of the user';
+  ELSEIF avail_copies = 0 THEN 
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot borrow an unavailable book';
   END IF;
 
-  SET lib_id = (
-    SELECT `users_library_id`
-    FROM `semester_project`.`Users`
-    WHERE `user_id` = NEW.`user_id`
-  );
+
+  SELECT `users_library_id` INTO lib_id
+  FROM `semester_project`.`Users`
+  WHERE `user_id` = NEW.`user_id`;
+
   IF NEW.`return_date` IS NULL THEN
     UPDATE `semester_project`.`Lib_Owns_Book` SET `available_copies` = avail_copies-1 WHERE `book_ISBN` = NEW.`book_ISBN` and `library_id` = lib_id;
   END IF;

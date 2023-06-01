@@ -2322,7 +2322,7 @@ def book_return():
         if bookISBN and user_id:
             with mysql.connection.cursor() as cursor:
                 #get the status of the loan
-                query = "SELECT status, loan_date from Loan WHERE user_id = %s AND book_ISBN = %s;"
+                query = "SELECT status, loan_date from Loan WHERE user_id = %s AND book_ISBN = %s AND (status = 'Active' or status = 'Late Active');"
                 params = (user_id, bookISBN)
                 cursor.execute(query, params)
                 data = cursor.fetchall()
