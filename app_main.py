@@ -192,8 +192,8 @@ def get_user_data():
             query = "select * from Users where user_id = "+str(user_id)+";"
             cursor.execute(query)
             data = cursor.fetchall()
-            data = data[0]
-            return json.dumps({'username': str(data[1]), 'first_name' : str(data[3]), 'last_name' : str(data[4]), 'birth_date' : str(data[5]), 'email' : str(data[6])}) 
+            data2 = data[0]
+            return json.dumps({'username': str(data2[1]), 'first_name' : str(data2[3]), 'last_name' : str(data2[4]), 'birth_date' : str(data2[5]), 'email' : str(data2[6]), 'role' : str(data2[8])}) 
     except Exception as e:
         return json.dumps({'error': str(e)})
 
