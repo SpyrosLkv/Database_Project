@@ -109,7 +109,7 @@
                 </tr>
                 <tr>
                     <td>Role:</td>
-                    <td>Admin</td>
+                    <td id = "role"></td>
                 </tr>
             </tbody>
           </table>
@@ -179,16 +179,18 @@
             if (data.error){
                 console.log(error)
             } else{
-              const item1 = document.getElementById('username');
+                const item1 = document.getElementById('username');
                 const item2 = document.getElementById('firstname');
                 const item3 = document.getElementById('lastname');
                 const item4 = document.getElementById('birthdate');
                 const item5 = document.getElementById('email');
+                const item6 = document.getElementById('role');
                 item1.innerText = data.username;
                 item2.innerText = data.first_name;
                 item3.innerText = data.last_name;
                 item4.innerText = data.birth_date;
                 item5.innerText = data.email; 
+                item6.innerText = data.role;
             }     
         });
 
