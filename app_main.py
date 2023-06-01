@@ -1527,10 +1527,6 @@ def satisfy_reservations():
                 data = cursor.fetchall()
                 user_id = data[0][0]
 
-                current_date = datetime.now().date()
-                new_date = current_date + timedelta(weeks=1)
-                formatted_date = new_date.strftime('%Y-%m-%d')
-
                 query3 = "INSERT INTO Loan (book_ISBN, user_id, status) VALUES (%s, %s,'Active');"
                 params3 = (book_ISBN, user_id,)
                 cursor.execute(query3, params3)
