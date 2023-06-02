@@ -10,10 +10,10 @@ This is the repository for the semester project in the Databases subject of the 
 
 
 Er Diagram
-[ER Diagram](https://github.com/SpyrosLkv/Database_Project/blob/main/Diagrams/ER_diagram.png)
+![ER Diagram](https://github.com/SpyrosLkv/Database_Project/blob/main/Diagrams/ER_diagram.png)
 
 Relational Schema
-[Relational Schema](https://github.com/SpyrosLkv/Database_Project/blob/main/Diagrams/Relational_Schema.png)
+![Relational Schema](https://github.com/SpyrosLkv/Database_Project/blob/main/Diagrams/Relational_Schema.png)
 
 ## Installation Guide
 - Clone this repository using the command ` ` in a local working directory
