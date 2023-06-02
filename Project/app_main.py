@@ -758,18 +758,37 @@ def change_lib():
 def change_library():
     try:
         old_name = request.form.get("dropdown")
-        new_name = request.form["inputNewName"]
-        new_address = request.form["inputNewAddress"]
-        new_city = request.form["inputNewCity"]
-        new_email = request.form["inputNewEmail"]
+        new_name = request.form.get("inputNewName", "")
+        new_address = request.form.get("inputNewAddress", "")
+        new_city = request.form.get("inputNewCity", "")
+        new_email = request.form.get("inputNewEmail", "")
         new_principal = request.form.get("inputPrincipal", None)
-        phones = request.form["inputPhones"]
-        if old_name and new_address and new_city and new_email and new_name:
+        phones = request.form.get("inputPhones", "")
+        if old_name:
             with mysql.connection.cursor() as cursor:
-                query = "SELECT library_id FROM School_Library where name = %s;"
+                query = "SELECT * FROM School_Library where name = %s;"
                 params = (old_name,)
                 cursor.execute(query,params)
-                library_id = int(cursor.fetchall()[0][0])
+                data = cursor.fetchall()[0]
+                library_id = int(data[0])
+
+                if new_name == "":
+                    new_name = data[1]
+
+                if new_address == "":
+                    new_address = data[2]
+                
+                if new_city == "":
+                    new_city = data[3]
+                
+                if new_email == "":
+                    new_email = data[4]
+                
+                no_new_phones = False
+                if phones == "":
+                    no_new_phones = True
+
+                
 
                 query = "update School_Library set name = %s, address = %s, town = %s, email = %s where name = %s;"
                 params = (new_name,new_address,new_city,new_email,old_name,)
@@ -787,17 +806,18 @@ def change_library():
                     cursor.execute(query,params)
                     mysql.connection.commit()
 
-                query = "DELETE FROM School_Phone_No WHERE library_id = "+str(library_id)+";"
-                cursor.execute(query)
-                mysql.connection.commit()
-
-                phones = phones.split(',')
-
-                for phone in phones:
-                    phone = int(phone)
-                    query = "INSERT INTO School_Phone_No (phone_no,library_id) VALUES ("+str(phone)+","+str(library_id)+");"
+                if not no_new_phones:
+                    query = "DELETE FROM School_Phone_No WHERE library_id = "+str(library_id)+";"
                     cursor.execute(query)
                     mysql.connection.commit()
+
+                    phones = phones.split(',')
+
+                    for phone in phones:
+                        phone = int(phone)
+                        query = "INSERT INTO School_Phone_No (phone_no,library_id) VALUES ("+str(phone)+","+str(library_id)+");"
+                        cursor.execute(query)
+                        mysql.connection.commit()
 
                 return json.dumps({'redirect_url': '/manip_lib'})
         else:
