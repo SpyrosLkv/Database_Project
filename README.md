@@ -10,7 +10,7 @@ This is the repository for the semester project in the Databases subject of the 
 
 
 Er Diagram
-
+[ER Diagram]()
 
 Relational Schema
 
