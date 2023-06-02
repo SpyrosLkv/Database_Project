@@ -2027,7 +2027,44 @@ def get_book_search_operator():
                 else:
                     query += " Thematic_Category.category LIKE %s "
                 i = i + 1
-                params.append(f"%{category}%")
+          def perform_backup():
+    
+    host = 'localhost'
+    user = 'root'
+    password = 'toyot2002'
+    database = 'semester_project'
+    output_dir = './backup'
+
+    success = backup_database(host, user, password, database, output_dir)
+    if success:
+        return "Database backup completed successfully."
+    else:
+        return "Error occurred during database backup."
+    
+def backup_database(host, user, password, database, output_dir):
+    # Create the output directory if it doesn't exist
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Build the mysqldump command
+    command = [
+        'mysqldump',
+        f'--host={host}',
+        f'--user={user}',
+        f'--password={password}',
+        f'--databases {database}',
+        f'--result-file={output_dir}/{database}.sql',
+    ]
+
+    # Execute the mysqldump command
+    try:
+        subprocess.run(command, check=True)
+        print(f"Database backup completed. Output file: {output_dir}/{database}.sql")
+        return True
+    except subprocess.CalledProcessError as e:
+        print("Error occurred during database backup:")
+        print(e)
+        return False
+      params.append(f"%{category}%")
 
             if name:
                 if i > 0:
@@ -2419,42 +2456,57 @@ def backup():
 @app.route('/api/backup_database', methods=['GET'])
 
 def perform_backup():
+        
+    DB_HOST = 'localhost' 
+    DB_USER = 'root'
+    DB_USER_PASSWORD = 'toyot2002'
+    DB_NAME = 'semester_project'
+    BACKUP_PATH = './backup/dbbackup'
     
-    host = 'localhost'
-    user = 'root'
-    password = 'toyot2002'
-    database = 'semester_project'
-    output_dir = './backup'
-
-    success = backup_database(host, user, password, database, output_dir)
-    if success:
-        return "Database backup completed successfully."
-    else:
-        return "Error occurred during database backup."
+    # Getting current DateTime to create the separate backup folder like "20180817-123433".
+    DATETIME = time.strftime('%Y%m%d-%H%M%S')
+    TODAYBACKUPPATH = BACKUP_PATH + '/' + DATETIME
     
-def backup_database(host, user, password, database, output_dir):
-    # Create the output directory if it doesn't exist
-    os.makedirs(output_dir, exist_ok=True)
-
-    # Build the mysqldump command
-    command = [
-        'mysqldump',
-        f'--host={host}',
-        f'--user={user}',
-        f'--password={password}',
-        f'--databases {database}',
-        f'--result-file={output_dir}/{database}.sql',
-    ]
-
-    # Execute the mysqldump command
+    # Checking if backup folder already exists or not. If not exists will create it.
     try:
-        subprocess.run(command, check=True)
-        print(f"Database backup completed. Output file: {output_dir}/{database}.sql")
-        return True
-    except subprocess.CalledProcessError as e:
-        print("Error occurred during database backup:")
-        print(e)
-        return False
+        os.stat(TODAYBACKUPPATH)
+    except:
+        os.makedirs(TODAYBACKUPPATH,exist_ok=True)
+    
+    db = DB_NAME
+    print("Starting backup of database " + DB_NAME)
+    dumpcmd = "mysqldump -h " + DB_HOST + " -u " + DB_USER + " -p" + DB_USER_PASSWORD + " " + db + " > " + pipes.quote(TODAYBACKUPPATH) + "/" + db + ".sql"
+    os.system(dumpcmd)
+    
+    print ("")
+    print ("Backup script completed")
+    print ("Your backups have been created in '" + TODAYBACKUPPATH + "' directory")
+
+@app.route('/restore_from_backup')
+def show_backup_directories():
+    backup_path = './backup/dbbackup'
+    backup_directories = sorted(os.listdir(backup_path), reverse=True)
+    return render_template('restore.html', backup_directories=backup_directories)
+
+@app.route('/api/restore_from_backup', methods = ['POST'])
+def restore_database():
+    selected_directory = request.form['backup_directory']
+    backup_path = './backup/dbbackup'
+    backup_file_path = os.path.join(backup_path, selected_directory, 'semester_project.sql')
+    
+    # Perform the database restore operation
+    host = 'localhost'
+    username = 'root'
+    password = 'toyot2002'
+# Create the database if it doesn't exist
+    create_db_command = f'mysql -u {username} -p{password} -e "CREATE DATABASE IF NOT EXISTS semester_project_backup;"'
+    subprocess.call(create_db_command, shell=True)
+
+
+    command = f"mysql -h {host} -u {username} -p{password} semester_project_backup < {backup_file_path}"
+    os.system(command)
+    
+    return "Database restore completed successfully."
 
 @app.route('/active_loans')
 def get_active_loans():
