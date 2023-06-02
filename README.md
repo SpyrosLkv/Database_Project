@@ -18,7 +18,7 @@ Relational Schema
 ![Relational Schema](https://github.com/SpyrosLkv/Database_Project/blob/main/Diagrams/Relational_Schema.png)
 
 ## Installation Guide
-- Clone this repository using the command ` ` in a local working directory
+- Clone this repository using the command `git clone https://github.com/SpyrosLkv/Database_Project ` in a local working directory
 - Run, in terminal, the command  `pip3 install requirements.txt` in the local directory. This will ensure that any and all needed libraries are properly installed in the computer.
 - Locate and get into the directory named Setup in the local directory
 - Open the Mysql terminal and run the following commands `source ddl_of_semester.sql;`,  `dml_of_semester.sql`
