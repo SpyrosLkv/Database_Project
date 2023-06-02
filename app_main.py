@@ -1575,6 +1575,7 @@ def satisfy_reservations():
     
     except Exception as e:
         return json.dumps({'error' : str(e)})
+    
 @app.route('/query_my_database', methods = ['GET'])
 #first query the database to get the user's username, then get its role and redirect to queryhomepage.
 def query_my_database():
