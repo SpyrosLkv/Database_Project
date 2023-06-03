@@ -34,8 +34,12 @@ i = 0
 for isbn in isbn_list:
     
 
-    img_path = cwd + "/images/image"+str(i)+".png"
-    img_size = os.path.getsize(img_path)
+    img_path = cwd + "/images/image"+str(isbn)+".png"
+    try:
+        img_size = os.path.getsize(img_path)
+    except Exception as e:
+        i = i + 1
+        continue
     
     if img_size >= 262000:
         i+=1
