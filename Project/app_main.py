@@ -1351,23 +1351,27 @@ def get_loans_reg():
             mysql.connection.commit()
             second_data = cursor.fetchall()
 
-            response = []
+            response1 = []
+            response2 = []
 
             for loans in data:
-                response.append({
+                response1.append({
                     "isbn" : loans[0],
                     "return_date" : loans[1],
                     "status" : loans[2]
                 })
             
             for reg in second_data:
-                response.append({
+                response2.append({
                     "isbn2" : reg[0],
                     "expiration_date" : reg[1],
                     "status2" : reg[2]
                 })
             
-            return jsonify(response)
+            return jsonify({
+                "loans" : response1,
+                "registrations" : response2
+            })
     except Exception as e:
         return json.dumps({'error' : str(e)})
     

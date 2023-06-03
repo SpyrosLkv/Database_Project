@@ -49,7 +49,10 @@
             const table  = document.getElementById('content-table');
             const secondTable = document.getElementById('second-table');
 
-            data.forEach(loan => {
+            const loans = data.loans;
+            const registrations = data.registrations;
+
+            loans.forEach(loan => {
                 const row = document.createElement('tr');
 
                 const isbnCell = document.createElement('td');
@@ -65,7 +68,9 @@
                 row.appendChild(statusCell);
 
                 table.appendChild(row);
+            });
 
+            registrations.forEach(loan => {
                 const secondRow = document.createElement('tr');
 
                 const isbn2Cell = document.createElement('td');
