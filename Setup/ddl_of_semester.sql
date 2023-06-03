@@ -10,6 +10,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema semester_project
 -- -----------------------------------------------------
+DROP SCHEMA IF EXISTS `semester_project` ;
 
 -- -----------------------------------------------------
 -- Schema semester_project
@@ -154,6 +155,7 @@ CREATE TABLE IF NOT EXISTS `semester_project`.`Loan` (
   PRIMARY KEY (`loan_id`,`book_ISBN`, `user_id`),
   INDEX `fk_Book_has_Users_Users3_idx` (`user_id` ASC) VISIBLE,
   INDEX `fk_Book_has_Users_Book2_idx` (`book_ISBN` ASC) VISIBLE,
+  INDEX `return_date_idx` (`return_date` ASC) VISIBLE,
   CONSTRAINT `fk_Loan_Book_ISBN`
     FOREIGN KEY (`book_ISBN`)
     REFERENCES `semester_project`.`Book` (`ISBN`)
