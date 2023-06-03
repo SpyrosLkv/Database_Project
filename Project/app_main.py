@@ -2521,6 +2521,9 @@ def restore_database():
     host = 'localhost'
     username = 'root'
     password = 'toyot2002'
+    
+    drop_previous_backup = f'mysql -u {username} -p{password} -e "DROP DATABASE IF EXISTS semester_project_backup;"'
+    subprocess.call(drop_previous_backup, shell=True)
 # Create the database if it doesn't exist
     create_db_command = f'mysql -u {username} -p{password} -e "CREATE DATABASE IF NOT EXISTS semester_project_backup;"'
     subprocess.call(create_db_command, shell=True)
