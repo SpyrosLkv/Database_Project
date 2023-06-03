@@ -2836,7 +2836,7 @@ def delete_myrequests():
 def Get_myreservations():
     try:
         with mysql.connection.cursor() as cursor:
-            query = "SELECT book_ISBN, expiration_date, status from Reservation WHERE user_id = %s;"
+            query = "SELECT book_ISBN, expiration_date, status from Reservation WHERE user_id = %s and status = 'Active';"
             params = (str(session['user']),)
             cursor.execute(query, params)
             data = cursor.fetchall()
