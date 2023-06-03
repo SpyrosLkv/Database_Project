@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Manage Users</title>
+        <link rel="stylesheet" href="/static/table_template.css">
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+            crossorigin="anonymous"
+        />
+        <!-- if this doesn't apply try: ../static/table_template.css-->
+        
+        <!-- so that the button is the same color as the table-->
+        <style>
+            button {
+                background-color: #009879;
+                border-radius: 5px;
+                padding: 10px;
+                margin-bottom: 10px;
+                width: 100px;
+            }
+
+        </style>
+    </head>
+    
+    <body>
+        <div class="container">
+        <div class="header">
+            <nav
+                class="border-bottom flex-wrap mb-4 py-3 d-flex justify-content-center"
+            >
+                <a
+                href="/userhome"
+                class="text-dark text-decoration-none mb-3 mb-md-0 d-flex align-items-center me-md-auto"
+                >
+                <span class="fs-4">Python Flask App</span>
+                </a>
+
+                <ul class="nav nav-pills">
+                <li class="nav-item">
+                    <a href="/userhome" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/logout" class="nav-link active">Logout</a>
+                </li>
+                </ul>
+            </nav>
+        </div>
+        <style>
+            .container1 {
+                max-width: 400px;
+                margin: 0 auto;
+                padding: 20px;
+                text-align: center;
+            }
+        
+            h1 {
+                margin-bottom: 20px;
+            }
+        
+            .form-control {
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+        
+            
+        </style>
+        <div class="container1">
+            <h3>Search By Last Name</h1>
+            <form id="form-searchuser" action="/api/searchuser" method="post">
+                <input 
+                    name="inputLastName" 
+                    id="inputLastName" 
+                    class="form-control" 
+                    placeholder="Last Name" 
+                    required autofocus
+                >
+
+                <button id="btnSignIn" class="btn btn-lg btn-primary btn-block" type="submit" style="width: 100px;">Search</button>
+            </form>
+        </div>
+        
+        
+
+        <table id = 'content-table' class = 'content-table'>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Birth Date</th>
+                <th>Email</th>
+                <th>User Role</th>
+                <th>User Status</th>
+            </tr>
+        </table>
+        <footer class = "footer">
+            <p>&copy; NTUA 2023</p>
+        </footer>
+        <script>
+
+            const form = document.querySelector('#form-searchuser');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const body = new URLSearchParams(formData).toString();
+
+                try{
+                    const res = await fetch("/api/search_user", {
+                        method: "POST",
+                        body: body,
+                        headers:{
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                    });
+
+                    const data = await res.json();
+
+                    const table = document.querySelector('#content-table');
+
+                    data.results.forEach((user) => {
+                    const row = document.createElement('tr');
+    
+                    const idCell = document.createElement('td');
+                    idCell.textContent = user.id;
+                    row.appendChild(idCell);
+    
+                    const usernameCell = document.createElement('td');
+                    usernameCell.textContent = user.username;
+                    row.appendChild(usernameCell);
+    
+                    const first_nameCell = document.createElement('td');
+                    first_nameCell.textContent = user.first_name;
+                    row.appendChild(first_nameCell);
+    
+                    const last_nameCell = document.createElement('td');
+                    last_nameCell.textContent = user.last_name;
+                    row.appendChild(last_nameCell);
+    
+                    const birth_dateCell = document.createElement('td');
+                    birth_dateCell.textContent = user.birth_date;
+                    row.appendChild(birth_dateCell);
+
+                    const emailCell = document.createElement('td');
+                    emailCell.textContent = user.email;
+                    row.appendChild(emailCell);
+
+                    const user_roleCell = document.createElement('td');
+                    user_roleCell.textContent = user.user_role;
+                    row.appendChild(user_roleCell);
+    
+                    const user_statusCell = document.createElement('td');
+                    user_statusCell.textContent = user.user_status;
+                    row.appendChild(user_statusCell);
+                                    
+                    // create the activate and deactivate buttons
+                    const activateButton = document.createElement('button');
+                    activateButton.textContent = 'Activate';
+                    activateButton.addEventListener('click', (event) => {
+                      event.preventDefault()
+                      // Handle the activate action
+                      fetch(`/api/process_(de)activation`,{
+                          method: 'POST',
+                          headers:{
+                              'Content-Type': 'application/json'
+                          },
+                          body: JSON.stringify({
+                              action: 'activate',
+                              username: user.username
+                          })
+                      })
+                      .then((res)=>res.json())
+                      .then((data)=>{
+                        if (data.message == 'Success'){
+                          alert('User activated successfully');
+                          location.reload();
+                        }
+                        else if(data.message == 'Wrong action passed') {
+                            alert('Something went wrong with programming')
+                            location.reload();
+                        }
+                        else if(data.error) {
+                            alert('Error occured while activating user')
+                            console.log(data)
+                        }
+                        else {
+                          console.log(data)
+                        }
+                      })
+                    });
+                    row.appendChild(activateButton);
+    
+                    const deactivateButton = document.createElement('button');
+                    deactivateButton.textContent = 'Deactivate';
+                    deactivateButton.addEventListener('click', (event) => {
+                      event.preventDefault();
+                      //Handle the deactivate action
+                      fetch(`/api/process_(de)activation`,{
+                          method: 'POST',
+                          headers:{
+                              'Content-Type': 'application/json'
+                          },
+                          body: JSON.stringify({
+                              action: 'deactivate',
+                              username: user.username
+                          })
+                      })
+                      .then((res)=>res.json())
+                      .then((data)=>{
+                        if (data.message == 'Success2'){
+                          alert('User deactivated successfully');
+                          location.reload();
+                        }
+                        else if(data.message == 'Wrong action passed') {
+                            alert('Something went wrong with programming')
+                            location.reload();
+                        }
+                        else if(data.error) {
+                            alert('Error occured while deactivating user')
+                            console.log(data)
+                        }
+                        else {
+                          console.log(data)
+                        }
+                      })
+                    });
+                    row.appendChild(deactivateButton);
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.addEventListener('click', (event) => {
+                      event.preventDefault()
+                      // Handle the activate action
+                      fetch(`/api/process_deletion_of_user`,{
+                          method: 'POST',
+                          headers:{
+                              'Content-Type': 'application/json'
+                          },
+                          body: JSON.stringify({
+                              action: 'delete',
+                              username: user.username
+                          })
+                      })
+                      .then((res)=>res.json())
+                      .then((data)=>{
+                        if (data.message == 'Success'){
+                          alert('User deleted successfully');
+                          location.reload();
+                        }
+                        else if(data.error) {
+                            alert('Error occured while activating user')
+                            console.log(data)
+                        }
+                        else {
+                          console.log(data)
+                        }
+                      })
+                    });
+                    row.appendChild(deleteButton);
+
+                
+    
+                    table.appendChild(row);
+                });
+
+            } catch (error) {
+                    console.error(error);
+                    document.querySelector('#error-message').textContent = 'an error occured';
+                }
+            });
+            
+
+        </script>
+    </div>
+    </body>
+</html>

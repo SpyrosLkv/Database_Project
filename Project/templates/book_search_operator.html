@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Search</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        button {
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 10px;
+            padding: 10px 20px;
+            margin-top: 10px;
+        }
+        .results-container {
+            background-color: #c5e8ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <nav
+                class="border-bottom flex-wrap mb-4 py-3 d-flex justify-content-center"
+            >
+                <a
+                    href="/userhome"
+                    class="text-dark text-decoration-none mb-3 mb-md-0 d-flex align-items-center me-md-auto"
+                >
+                    <span class="fs-4">Python Flask App</span>
+                </a>
+
+                <ul class="nav nav-pills">
+                    <li class="nav-item">
+                    <a href="/userhome" class="nav-link">Home</a>
+                    </li>
+                    <li class="nav-item">
+                    <a href="/logout" class="nav-link active">Logout</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    <div class="container">
+        <h1 class="text-center">Book Search</h1>
+        <form id="search-form" class="text-center">
+            <div class="mb-3">
+                <label for="search-title" class="form-label">Title:</label>
+                <input type="text" class="form-control" id="search-title" name="search-title">
+            </div>
+            <div class="mb-3">
+                <label for="search-category" class="form-label">Category:</label>
+                <input type="text" class="form-control" id="search-category" name="search-category">
+            </div>
+            <div class="mb-3">
+                <label for="search-name" class="form-label">Author Name:</label>
+                <input type="text" class="form-control" id="search-name" name="search-name">
+            </div>
+            <div class="mb-3">
+                <label for="search-copies" class="form-label">Minimum Copies:</label>
+                <input type="number" class="form-control" id="search-copies" name="search-copies">
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+        <div id="results" class="results-container"></div>
+    </div>
+
+    <script>
+        const searchForm = document.getElementById('search-form');
+        const resultsDiv = document.getElementById('results');
+
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('search-title').value;
+            const category = document.getElementById('search-category').value;
+            const name = document.getElementById('search-name').value;
+            const copies = document.getElementById('search-copies').value;
+
+            try {
+                const response = await fetch(`/api/book_search_operator?title=${title}&category=${category}&name=${name}&copies=${copies}`);
+                const books = await response.json();
+
+                let html = '';
+                books.forEach((book) => {
+                    html += `<p>Title: ${book.title}</p>`;
+                    html += `<p>Author: ${book.first_name} ${book.last_name}</p>`;
+                    html += `<p>Category: ${book.category}</p>`;
+                    html += `<p>Total Copies: ${book.total_copies}</p>`;
+                    html += `<hr>`;
+                });
+
+                resultsDiv.innerHTML = html;
+            } catch (error) {
+                console.error(error);
+                resultsDiv.innerHTML = 'Error retrieving book data.';
+            }
+        });
+    </script>
+</body>
+</html>

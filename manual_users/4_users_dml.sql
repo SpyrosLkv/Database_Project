@@ -1,6 +1,0 @@
--- Έχουν προστεθεί στο dml of semester
-
-INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('Student1','5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','jonh','smith','2007-5-17','Lucassmith187@gmail.com','Student','Active',1);
-INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('Teacher1','5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','john','smith','1980-5-17','Lucassmith187@gmail.com','Teacher','Active',1);
-INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('Operator1','5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','john','smith','1980-5-17','Lucassmith187@gmail.com','Operator','Active',1);
-INSERT INTO semester_project.Users (username,Password_Hashed,first_name,last_name,birth_date,email,user_role,user_status,users_library_id) VALUES ('Admin1','5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8','john','smith','1980-5-17','Lucassmith187@gmail.com','Admin','Active',1);
