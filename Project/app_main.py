@@ -1155,7 +1155,7 @@ def return_users():
                 query = "SELECT users_library_id FROM Users WHERE user_id = "+str(my_id)+";"
                 cursor.execute(query)
                 library_id = int(cursor.fetchall()[0][0])
-                query = "SELECT * FROM Users WHERE last_name = %s and users_library_id = "+str(library_id)+";"
+                query = "SELECT DISTINCT * FROM Users WHERE last_name = %s and (user_role = 'Student' or user_role = 'Teacher') and users_library_id = "+str(library_id)+";"
                 # query = "SELECT * FROM Users WHERE last_name = %s;"
                 params = (last_name,)
                 cursor.execute(query,params)
