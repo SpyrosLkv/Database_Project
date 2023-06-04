@@ -2678,10 +2678,10 @@ def get_all_req():
 
                 #check conditions depending on role
                 if (role == "Student"):
-                    if (loan > 2) :
+                    if (loan >= 2) :
                         cond = "No"
                 if (role == "Teacher" or role == "Operator") :
-                    if (loan > 1) :
+                    if (loan >= 1) :
                         cond = "No"
                 #the admin can loan as many as he likes 
                 #so no checking for him
