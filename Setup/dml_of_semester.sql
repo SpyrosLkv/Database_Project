@@ -3404,3 +3404,33 @@ INSERT INTO semester_project.Reservation(book_ISBN,user_id,reservation_date,expi
 INSERT INTO semester_project.Reservation(book_ISBN,user_id,reservation_date,expiration_date,status) VALUES (9789604183623,83,"2023-4-20","2023-4-27","Expired");
 INSERT INTO semester_project.Reservation(book_ISBN,user_id,reservation_date,expiration_date,status) VALUES (9789604183623,84,"2023-4-20","2023-4-27","Expired");
 INSERT INTO semester_project.Reservation(book_ISBN,user_id,reservation_date,expiration_date,status) VALUES (9789604183623,85,"2023-4-20","2023-4-27","Expired");
+
+/*Queries for making everything have results so that we don't have to add anything in the last minute
+ By thanassis */
+INSERT INTO semester_project.Reservation (book_ISBN, user_id, reservation_date, expiration_date, status) values (9789608923973, 127, '2023-04-09', '2023-04-16', 'Expired');
+INSERT INTO semester_project.Reservation (book_ISBN, user_id, reservation_date, expiration_date, status) values (9789607510112, 127, '2023-04-12', '2023-04-19', 'Honoured');
+INSERT INTO semester_project.Loan (book_ISBN, user_id, loan_date, return_date, status) values (9789605950453, 127, '2023-05-01', '2023-05-04', 'Returned');
+INSERT INTO semester_project.Loan (book_ISBN, user_id, loan_date, return_date, status) values (9789605246358, 127, '2023-05-03', '2023-05-06', 'Returned');
+
+INSERT INTO semester_project.User_Phone_No (number, user_id) values (6987699138, 127);
+INSERT INTO semester_project.User_Phone_No (number, user_id) values (6987144409, 127);
+INSERT INTO semester_project.User_Phone_No (number, user_id) values (2106044872, 127);
+INSERT INTO semester_project.User_Phone_No (number, user_id) values (2294089637, 127);
+
+INSERT INTO semester_project.Reservation (book_ISBN, user_id, reservation_date, expiration_date, status) values (9789605863050, 127, '2023-06-04', '2023-06-11', 'Active');
+INSERT INTO semester_project.Loan (book_ISBN, user_id, loan_date, status) values (9789604187201, 127, '2023-06-04', 'Active');
+INSERT INTO semester_project.Loan (book_ISBN, user_id, loan_date, status) values (9789603307617, 127, '2023-06-04', 'Active');
+
+INSERT INTO semester_project.Request(book_ISBN,user_id) values (9786185066192, 127);
+INSERT INTO semester_project.Request(book_ISBN, user_id) values (9789602663080, 127);
+INSERT INTO semester_project.Request(book_ISBN, user_id) values (9789609973533, 108);
+
+INSERT INTO semester_project.Loan (book_ISBN, user_id, loan_date, status) values (9789605127435, 128, '2023-05-19', 'Active');
+
+INSERT INTO semester_project.Pending_Registrations (username, password_hashed, first_name, last_name, birth_date, email, user_role, library_id) values ('Voukefalas', '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 'Giorgos', 'Adamopoulos', '2008-09-12', 'gadamopoulos@gmail.com', 'Student', 1);
+
+INSERT INTO semester_project.Card (user_id, card_no, status) values (127, 2, 'Pending');
+
+INSERT INTO semester_project.Pending_Reviews (book_ISBN, user_id, likert_rating, review) values (9789605127435, 127, 3, 'Amazing book for databases like this but the translation is bad');
+
+INSERT INTO semester_project.Pending_Reviews (book_ISBN, user_id, likert_rating, review) values (9786185066192, 128, 5, 'Perfect book to fell in love if you are fan of theoretical informatics');
