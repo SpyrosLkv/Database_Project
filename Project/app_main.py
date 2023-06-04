@@ -1888,7 +1888,7 @@ def get_operators_loan_count():
         with mysql.connection.cursor() as cursor:
             query = """
 
-            SELECT u.users_library_id, u.user_id, u.first_name, u.last_name              
+            SELECT u.users_library_id, u.user_id, u.first_name, u.last_name, SL.loan_count            
                 FROM Users u
                 INNER JOIN (                              
                     SELECT U.users_library_id, COUNT(*) AS loan_count                 
@@ -1908,12 +1908,13 @@ def get_operators_loan_count():
         # Process the query result and return as JSON
         operators = []
         for row in result:
-            users_library_id, user_id, first_name, last_name = row
+            users_library_id, user_id, first_name, last_name , loan_count= row
             operators.append({
                 'library_id': users_library_id,
                 'user_id': user_id,
                 'first_name': first_name,
-                'last_name': last_name
+                'last_name': last_name,
+                'loan_count': loan_count
             })
 
         return jsonify(operators)

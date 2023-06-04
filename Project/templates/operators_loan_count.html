@@ -72,7 +72,7 @@
                     if (operators.length > 0) {
                         html = '<ul>';
                         operators.forEach((operator) => {
-                            html += `<li>Library id: ${operator.library_id}    Operator: ${operator.first_name} ${operator.last_name}</li>`;
+                            html += `<li>Library id: ${operator.library_id}    Operator: ${operator.first_name} ${operator.last_name}   Number: ${operator.loan_count}</li>`;
                         });
                         html += '</ul>';
                     } else {
