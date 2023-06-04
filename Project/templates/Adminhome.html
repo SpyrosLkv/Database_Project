@@ -10,6 +10,19 @@
       crossorigin="anonymous"
     />
     <style>
+      .button-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
+      .custom-button {
+        width: 240px; /* Adjust the width as per your requirement */
+        height: 70px;
+        font-size: 20px;
+        text-align: center;
+        margin-bottom: 10px;
+        margin-right: 10px;
+      }
       a {
         text-decoration: none;
       }
@@ -222,54 +235,62 @@
         <div>
           <h1 class="text-center">Your Account</h1>
         </div>
-        <a href="/book_search">
-          <button>Books</button>
-        </a>
-        <a href="/past_loans">
-          <button>My past Loans and Reservations</button>
-        </a>
-        <a href="/card_condition">
-          <button>My Card Status</button>
-        </a>
-        <a href="/change_attributes">
-          <button>Change My Attributes</button>
-        </a>
-        <a href="/get_phones">
-          <button>Get my phones</button>
-        </a>
-        <a href="/change_phones">
-          <button>Change my Phones</button>
-        </a>
-        <a href = "/show_myloans_reg">
-          <button>Show my Loans and Reservations</button>
-        </a>
-        <a href = "/get_myrequests">
-          <button>Show my requests</button>
-        <a href = "/delete_req_res">
-          <button>Delete request or reservation</button>
-        </a>
+        <div class="button-container">
+          <a href="/book_search">
+            <button class='custom-button'>Books</button>
+          </a>
+          <a href="/past_loans">
+            <button class="custom-button">My past Loans and Reservations</button>
+          </a>
+          <a href="/card_condition">
+            <button class="custom-button">My Card Status</button>
+          </a>
+          <a href="/change_attributes">
+            <button class="custom-button">Change My Attributes</button>
+          </a>
+          <a href="/get_phones">
+            <button class="custom-button">Get my phones</button>
+          </a>
+        </div>
+        <div class="button-container">
+          <a href="/change_phones">
+            <button class="custom-button">Change my Phones</button>
+          </a>
+          <a href = "/show_myloans_reg">
+            <button class="custom-button">Show my Loans and Reservations</button>
+          </a>
+          <a href = "/get_myrequests">
+            <button class="custom-button">Show my requests</button>
+          </a>
+          <a href = "/delete_req_res">
+            <button class="custom-button">Delete request or reservation</button>
+          </a>
+          <a href = "/query_my_database">
+            <button class="custom-button">Query my database</button>
+          </a>
+        </div>
         
-        <a href = "/query_my_database">
-          <button>Query my database</button>
-        </a>
       </div>
       <br><br>
       <div class="div2">
         <div>
           <h1 class="text-center">Manage Library System</h1>
         </div>
-        <a href="/pending_operator_registrations">
-          <button>Operator-Admin Registrations</button>
-        </a>
-        <a href="/manip_lib">
-          <button>Add or Change Library</button>
-        </a>
-        <a href="/backup_database">
-          <button>Create Backup of Database</button>
-        </a>
-        <a href="/restore_from_backup">
-          <button>Restore Database from Backup</button>
-        </a>
+        <div class="button-container">
+          <a href="/pending_operator_registrations">
+            <button class="custom-button">Operator-Admin Registrations</button>
+          </a>
+          <a href="/manip_lib">
+            <button class="custom-button">Add or Change Library</button>
+          </a>
+          <a href="/backup_database">
+            <button class="custom-button">Create Backup of Database</button>
+          </a>
+          <a href="/restore_from_backup">
+            <button class="custom-button">Restore Database from Backup</button>
+          </a>
+        </div>
+        
       </div>
       
       <footer class="footer">
