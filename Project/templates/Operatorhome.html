@@ -22,37 +22,62 @@
         text-align: center;
         margin-bottom: 10px;
         margin-right: 10px;
+        font-family: "Palatino", serif;
       }
       a {
         text-decoration: none;
       }
       button {
-        background-color: #0d6efd;
+        background-color: #5941b7;
         color: white;
         border-radius: 10px; /* Adjust the value to change the roundness */
         padding: 10px 20px;
+        font-family: "Palatino", serif;
 
       }
+      #unique-link {
+        background-color: #5941b7;
+        color: white;
+        border-radius: 8px; /* Adjust the value to change the roundness */
+        padding: 8px 16px;
+        margin-right: 10px;
+        font-family: "Palatino", serif;
+      }
+      .custom-button.table1-button {
+        background-color: #5941b7;
+        color: white;
+        border-radius: 10px; /* Adjust the value to change the roundness */
+        padding: 10px 20px;
+        font-family: "Palatino", serif;
+      }
+      .custom-button.table2-button {
+        background-color: #836cde;
+        color: white;
+        border-radius: 10px; /* Adjust the value to change the roundness */
+        padding: 10px 20px;
+        font-family: "Palatino", serif;
+      }
       .bigimportantbutton{
-        background-color: #0d6efd;
+        background-color: #a881ea;
         /* display: block; */
         color: white;
         font-size: 24px;
         border-radius: 10px; /* Adjust the value to change the roundness */
         padding: 15px 30px;
         margin: 0 auto;
+        font-family: "Palatino", serif;
       }
       .importantbutton_container{
         display: flex;
         justify-content: center;
       }
       .div1 {
-        background-color: #eaafff;
+        background-color: #f8f8f8;
         border-radius: 10px;
         padding: 20px;
       }
       .div2 {
-        background-color: #c5e8ff;
+        background-color: #f8f8f8;
         border-radius: 10px;
         padding: 20px;
       }
@@ -87,17 +112,19 @@
 
           <ul class="nav nav-pills">
             <li class="nav-item">
-              <a href="/userhome" class="nav-link">Home</a>
+              <a href="/userhome" class="nav-link" id="unique-link">Home</a>
             </li>
             <li class="nav-item">
-              <a href="/logout" class="nav-link active">Logout</a>
+              <a href="/logout" class="nav-link active" id="unique-link">Logout</a>
             </li>
           </ul>
         </nav>
       </div>
       <div class="bg-light rounded-3 mb-4 p-5">
         <div class="container-fluid py-5">
-          <h1 class="text-center fw-bold display-5">Welcome Home!</h1>
+          <h1 class="text-center fw-bold display-5">
+            <em>Welcome Home!</em>
+          </h1>
         </div>
       </div>
       <div class="twocolumns">
@@ -249,41 +276,41 @@
         </div>
         <div class="button-container">
           <a href="/book_search">
-            <button class="custom-button">Books</button>
+            <button class="custom-button table1-button">Books</button>
           </a>
           <a href="/past_loans">
-            <button class="custom-button">My past Loans and Reservations</button>
+            <button class="custom-button table1-button">My past Loans and Reservations</button>
           </a>
           <a href="/card_condition">
-            <button class="custom-button">My Card Status</button>
+            <button class="custom-button table1-button">My Card Status</button>
           </a>
           <a href="/change_attributes">
-            <button class="custom-button">Change My Attributes</button>
+            <button class="custom-button table1-button">Change My Attributes</button>
           </a>
           <a href="/get_phones">
-            <button class="custom-button">Get my phones</button>
+            <button class="custom-button table1-button">Get my phones</button>
           </a>
         </div>
         <div class="button-container">
-          <a href="/change_phones">
+          <a href="/change_phones table1-button">
             <button class="custom-button">Change my Phones</button>
           </a>
           <a href = "/show_myloans_reg">
-            <button class="custom-button">Show my Loans and Reservations</button>
+            <button class="custom-button table1-button">Show my Loans and Reservations</button>
           </a>
           <a href = "/get_myrequests">
-            <button class="custom-button">Show my requests</button>
+            <button class="custom-button table1-button">Show my requests</button>
           </a>
           <a href = "/delete_req_res">
-            <button class="custom-button">Delete request or reservation</button>
+            <button class="custom-button table1-button">Delete request or reservation</button>
           </a>
           <a href = "/query_my_database">
-            <button class="custom-button">Query my database</button>
+            <button class="custom-button table1-button">Query my database</button>
           </a>
         </div>
         <div class="button-container">
           <a href = "/add_pending_review">
-            <button class="custom-button">Add a review to a book</button>
+            <button class="custom-button table1-button">Add a review to a book</button>
           </a>
         </div>
         
@@ -298,44 +325,44 @@
         </div>
         <div class="button-container">
           <a href="/pending_registrations">
-            <button class="custom-button">Show Pending Registrations</button>
+            <button class="custom-button table2-button">Show Pending Registrations</button>
           </a>
           <a href="/pending_cards">
-            <button class="custom-button">Pending Cards</button>
+            <button class="custom-button table2-button">Pending Cards</button>
           </a>
           <a href="/manage_users">
-            <button class="custom-button">Manage Users</button>
+            <button class="custom-button table2-button">Manage Users</button>
           </a>
           <a href="/book_management">
-            <button class="custom-button">Manage Library</button>
+            <button class="custom-button table2-button">Manage Library</button>
           </a>
           <a href="/req_manager">
-            <button class="custom-button">Manage request</button>
+            <button class="custom-button table2-button">Manage request</button>
           </a>
         </div>
         <div class="button-container">
           <a href="/late_returns">
-            <button class="custom-button">Late Returns</button>
+            <button class="custom-button table2-button">Late Returns</button>
           </a>
           <a href="/satisfy_reservations">
-            <button class="custom-button">Satisfy Reservations</button>
+            <button class="custom-button table2-button">Satisfy Reservations</button>
           </a>
           <a href="/forced_loans">
-            <button class="custom-button">Instant Loans</button>
+            <button class="custom-button table2-button">Instant Loans</button>
           </a>
           <a href = "/return_book">
-            <button class="custom-button">Return book of a student</button>
+            <button class="custom-button table2-button">Return book of a student</button>
           </a>
           <a href = "/active_loans">
-            <button class="custom-button">Get active loans</button>
+            <button class="custom-button table2-button">Get active loans</button>
           </a>
         </div>
         <div class="button-container">
           <a href = "/change_existing_book">
-            <button class="custom-button">Change Existing Book</button>
+            <button class="custom-button table2-button">Change Existing Book</button>
           </a>
           <a href = "/manage_pending_review">
-            <button class="custom-button">Manage pending reviews</button>
+            <button class="custom-button table2-button">Manage pending reviews</button>
           </a>
         </div>
         
