@@ -22,7 +22,8 @@ Relational Schema
 - Locate and get into the directory named Setup in the local directory
 - Run, in terminal, the command  `pip3 install -r requirements.txt` in the local directory. This will ensure that any and all needed libraries are properly installed in the computer.
 - Open the Mysql terminal and run the following commands `source ddl_of_semester.sql;`,  `dml_of_semester.sql`
-- Exit the Mysql Terminal and run, while still on the "Setup" directory the command `python3 ./insert_photos.py`
+- Exit the Mysql Terminal and change the config.conf file so that it has the correct host user and password for you database
+- While still on the "Setup" directory the command `python3 ./insert_photos.py`
 - Exit the Setup directory and locate the Project directory
 - While in there run the command `python3 ./app_main.py` and visit `http://127.0.0.1:5000` from browser
 
