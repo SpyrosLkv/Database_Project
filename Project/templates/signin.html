@@ -12,7 +12,22 @@
 		/>
 		<link href="../static/signup.css" rel="stylesheet" />
 	</head>
-
+	<style>
+		#unique-link {
+        background-color: #5941b7;
+        color: white;
+        border-radius: 8px; /* Adjust the value to change the roundness */
+        padding: 8px 16px;
+        margin-right: 10px;
+        font-family: "Palatino", serif;
+      }
+      #btnSignIn {
+        background-color:#5941b7; 
+        color: white;
+        border: none;
+        font-family: "Palatino", serif;
+      }
+	</style>
 	<body>
 		
 		<div class="container">
@@ -31,13 +46,13 @@
 
 					<ul class="nav nav-pills">
 						<li class="nav-item">
-							<a href="/" class="nav-link">Home</a>
+							<a href="/" class="nav-link" id="unique-link">Home</a>
 						</li>
 						<li class="nav-item">
-							<a href="/signup" class="nav-link">Signup</a>
+							<a href="/signup" class="nav-link" id="unique-link">Signup</a>
 						</li>
 						<li class="nav-item">
-							<a href="/signin" class="nav-link active" aria-current="page"
+							<a href="/signin" class="nav-link active" aria-current="page" id="unique-link"
 								>Sign In</a
 							>
 						</li>
