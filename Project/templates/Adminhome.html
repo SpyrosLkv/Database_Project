@@ -22,25 +22,69 @@
         text-align: center;
         margin-bottom: 10px;
         margin-right: 10px;
+        font-family: "Palatino", serif;
+        border: none;
       }
       a {
         text-decoration: none;
       }
       button {
-        background-color: #0d6efd;
+        background-color: #5941b7;
         color: white;
         border-radius: 10px; /* Adjust the value to change the roundness */
         padding: 10px 20px;
         font-family: "Palatino", serif;
+        border: none;
 
       }
+      #unique-link {
+        background-color: #5941b7;
+        color: white;
+        border-radius: 8px; /* Adjust the value to change the roundness */
+        padding: 8px 16px;
+        margin-right: 10px;
+        font-family: "Palatino", serif;
+        border: none;
+      }
+      .custom-button.table1-button {
+        background-color: #5941b7;
+        color: white;
+        border-radius: 10px; /* Adjust the value to change the roundness */
+        padding: 10px 20px;
+        font-family: "Palatino", serif;
+        border: none;
+      }
+      .custom-button.table2-button {
+        background-color: #836cde;
+        color: white;
+        border-radius: 10px; /* Adjust the value to change the roundness */
+        padding: 10px 20px;
+        font-family: "Palatino", serif;
+        border: none;
+      }
+      .bigimportantbutton{
+        background-color: #a881ea;
+        /* display: block; */
+        color: white;
+        font-size: 24px;
+        border-radius: 10px; /* Adjust the value to change the roundness */
+        padding: 15px 30px;
+        margin: 0 auto;
+        font-family: "Palatino", serif;
+        border: none;
+      }
+      .importantbutton_container{
+        display: flex;
+        justify-content: center;
+        border: none;
+      }
       .div1 {
-        background-color: #eaafff;
+        background-color: #f8f8f8;
         border-radius: 10px;
         padding: 20px;
       }
       .div2 {
-        background-color: #c5e8ff;
+        background-color: #f8f8f8;
         border-radius: 10px;
         padding: 20px;
       }
@@ -76,10 +120,10 @@
 
           <ul class="nav nav-pills">
             <li class="nav-item">
-              <a href="/userhome" class="nav-link">Home</a>
+              <a href="/userhome" class="nav-link" id="unique-link">Home</a>
             </li>
             <li class="nav-item">
-              <a href="/logout" class="nav-link active">Logout</a>
+              <a href="/logout" class="nav-link active" id="unique-link">Logout</a>
             </li>
           </ul>
         </nav>
@@ -283,16 +327,16 @@
         </div>
         <div class="button-container">
           <a href="/pending_operator_registrations">
-            <button class="custom-button">Operator-Admin Registrations</button>
+            <button class="custom-button table2-button">Operator-Admin Registrations</button>
           </a>
           <a href="/manip_lib">
-            <button class="custom-button">Add or Change Library</button>
+            <button class="custom-button table2-button">Add or Change Library</button>
           </a>
           <a href="/backup_database">
-            <button class="custom-button">Create Backup of Database</button>
+            <button class="custom-button table2-button">Create Backup of Database</button>
           </a>
           <a href="/restore_from_backup">
-            <button class="custom-button">Restore Database from Backup</button>
+            <button class="custom-button table2-button">Restore Database from Backup</button>
           </a>
         </div>
         
