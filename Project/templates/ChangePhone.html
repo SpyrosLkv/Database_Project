@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang = 'en'>
     <head>
+        <title>Python Flask Library App - Change Phones</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="/static/table_template.css">
         <link
@@ -69,6 +70,7 @@
         });
     </script>
     <body>
+    <div class = 'container'>
         <h1>Phone List</h1>
 
         <table id="content-table" class ="content-table">
@@ -77,16 +79,23 @@
                 <th>Phone Number</th>
             </tr>
         </table>
+        <form id="addForm">
+            <input type="text" name="number" placeholder="Number">
+            <button type="submit">Add Number</button>
+        </form>
+        
+        <form id="deleteForm">
+            <input type="text" name="number" placeholder="Number">
+            <button type="submit">Delete Number</button>
+        </form>
+        <br>
+        <footer class="footer">
+            <p>&copy; NTUA 2023</p>
+        </footer>  
+    </div>
+
     </body>
-    <form id="addForm">
-        <input type="text" name="number" placeholder="Number">
-        <button type="submit">Add Number</button>
-    </form>
     
-    <form id="deleteForm">
-        <input type="text" name="number" placeholder="Number">
-        <button type="submit">Delete Number</button>
-    </form>
     
     <script>
         // Function to handle the form submission for adding a number
@@ -161,9 +170,4 @@
         document.getElementById('deleteForm').addEventListener('submit', handleDeleteFormSubmit);
 
       </script>
-      <body>
-        <footer class="footer">
-            <p>&copy; NTUA 2023</p>
-        </footer>     
-     </body>
 </html>
