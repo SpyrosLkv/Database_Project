@@ -10,6 +10,26 @@
             crossorigin="anonymous"
           />
     </head>
+    <style>
+        button {
+            background-color: #5941b7;
+            color: white;
+            border-radius: 10px; /* Adjust the value to change the roundness */
+            padding: 10px 20px;
+            margin-right: 10px;
+            font-family: "Palatino", serif;
+            border: none;
+      }
+        #unique-link {
+            background-color: #5941b7;
+            color: white;
+            border-radius: 10px; /* Adjust the value to change the roundness */
+            padding: 8px 16px;
+            margin-right: 10px;
+            font-family: "Palatino", serif;
+            border: none;
+        }
+    </style>
     <body>
         <div class="container">
             <div class="header">
@@ -25,10 +45,10 @@
 
                     <ul class="nav nav-pills">
                         <li class="nav-item">
-                        <a href="/userhome" class="nav-link">Home</a>
+                        <a href="/userhome" class="nav-link" id="unique-link">Home</a>
                         </li>
                         <li class="nav-item">
-                        <a href="/logout" class="nav-link active">Logout</a>
+                        <a href="/logout" class="nav-link active" id="unique-link">Logout</a>
                         </li>
                     </ul>
                 </nav>
@@ -79,7 +99,7 @@
                             required
                         />  
                         <br>
-                        <button id="CreateLIv" class="btn btn-lg btn-primary btn-block" type="submit">Create</button>
+                        <button id="unique-link" class="btn btn-lg btn-primary btn-block" type="submit">Create</button>
                     </form>
             </div>
 

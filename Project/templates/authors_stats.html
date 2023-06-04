@@ -11,14 +11,26 @@
     />
     <style>
         button {
-            background-color: #0d6efd;
-            color: white;
-            border-radius: 10px;
-            padding: 10px 20px;
-            margin-top: 10px;
-        }
+        background-color: #5941b7;
+        color: white;
+        border-radius: 10px; /* Adjust the value to change the roundness */
+        padding: 10px 20px;
+        font-family: "Palatino", serif;
+        border: none;
+        margin-bottom: 10px;
+
+      }
+      #unique-link {
+        background-color: #5941b7;
+        color: white;
+        border-radius: 8px; /* Adjust the value to change the roundness */
+        padding: 8px 16px;
+        margin-right: 10px;
+        font-family: "Palatino", serif;
+        border: none;
+      }
         .results-container {
-            background-color: #c5e8ff;
+            background-color: #d3baff;
             border-radius: 10px;
             padding: 20px;
             margin-top: 20px;
@@ -34,10 +46,10 @@
                 </a>
                 <ul class="nav nav-pills">
                     <li class="nav-item">
-                        <a href="/userhome" class="nav-link">Home</a>
+                        <a href="/userhome" class="nav-link" id="unique-link">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a href="/logout" class="nav-link active">Logout</a>
+                        <a href="/logout" class="nav-link active" id="unique-link">Logout</a>
                     </li>
                 </ul>
             </nav>
@@ -62,8 +74,8 @@
                         <option value="Poetry">Poetry</option>
                 </select>
             </div>
-            <button type="submit" id="authors_stats" class="btn btn-primary">Get Authors</button>
-            <button type="submit" id="teacher_loan_stats" class="btn btn-primary">Get Teachers</button>
+            <button type="submit" id="authors_stats" class="button">Get Authors</button>
+            <button type="submit" id="teacher_loan_stats" class="button">Get Teachers</button>
         </form>
         <div id="results" class="results-container">Authors: </div>
         <div id="results1" class="results-container">Teachers: </div>
