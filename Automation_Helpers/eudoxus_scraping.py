@@ -71,7 +71,7 @@ for element in elements:
     img_src = img_element.get_attribute("src")
 
     image_url = img_src
-    local_filename = "C:/Users/codad/Desktop/GitHub/Database_Project/images/image"+str(i)+".png"
+    local_filename = "C:/Users/codad/Desktop/GitHub/Database_Project/images/image"+str(book[2])+".png"
     urllib.request.urlretrieve(image_url,local_filename)
     if len(book) != 4:
         driver.back()
