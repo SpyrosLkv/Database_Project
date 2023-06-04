@@ -15,6 +15,14 @@
         display: grid;
         place-items: center;
       }
+      #unique-link {
+        background-color: #5941b7;
+        color: white;
+        border-radius: 8px; /* Adjust the value to change the roundness */
+        padding: 8px 16px;
+        margin-right: 10px;
+        font-family: "Palatino", serif;
+      }
     </style>
     <body>
     <div class="container">
@@ -31,10 +39,10 @@
     
               <ul class="nav nav-pills">
                 <li class="nav-item">
-                  <a href="/userhome" class="nav-link">Home</a>
+                  <a href="/userhome" class="nav-link" id="unique-link">Home</a>
                 </li>
                 <li class="nav-item">
-                  <a href="/logout" class="nav-link active">Logout</a>
+                  <a href="/logout" class="nav-link active" id="unique-link">Logout</a>
                 </li>
               </ul>
             </nav>

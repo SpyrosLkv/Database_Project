@@ -10,15 +10,27 @@
       crossorigin="anonymous"
     />
     <style>
+      #unique-link {
+        background-color: #5941b7;
+        color: white;
+        border-radius: 8px; /* Adjust the value to change the roundness */
+        padding: 8px 16px;
+        margin-right: 10px;
+        font-family: "Palatino", serif;
+      }
+      #btnSubmit {
+        background-color:#5941b7; 
+        color: white;
+      }
       .box {
-        background-color: #c5e8ff;
+        background-color: #d3baff;
         border-radius: 10px;
         padding: 20px;
         margin-bottom: 20px;
         width: 300px;
       }
       button {
-        background-color: #0d6efd;
+        background-color: #5941b7;
         color: white;
         border-radius: 10px; /* Adjust the value to change the roundness */
         padding: 10px 20px;
@@ -41,10 +53,10 @@
 
           <ul class="nav nav-pills">
             <li class="nav-item">
-              <a href="/userhome" class="nav-link">Home</a>
+              <a href="/userhome" class="nav-link" id="unique-link">Home</a>
             </li>
             <li class="nav-item">
-              <a href="/logout" class="nav-link active">Logout</a>
+              <a href="/logout" class="nav-link active" id="unique-link">Logout</a>
             </li>
           </ul>
         </nav>
@@ -73,7 +85,7 @@
         />
 
         <button
-          id="btnSignIn"
+          id="btnSubmit"
           class="btn btn-lg btn-primary btn-block"
           type="submit"
         >
