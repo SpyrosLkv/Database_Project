@@ -13,12 +13,30 @@ import pipes
 
 app = Flask(__name__)
 
+def load_config_from_file(filename):
+    config_data = {}
+    with open(filename) as config_file:
+        for line in config_file:
+            if line.strip() and not line.startswith('#'):
+                key, value = line.strip().split('=', 1)
+                config_data[key.strip()] = value.strip()
+    app.config.from_mapping(config_data)
+
+# Get the path of the current script
+script_path = os.path.abspath(__file__)
+
+# Get the directory containing the script
+script_directory = os.path.dirname(script_path)
+
+config_file_path = os.path.join(script_directory, '../Setup/config.conf')
+print(config_file_path)
+load_config_from_file(config_file_path)
 
 # MySQL configurations
-app.config['MYSQL_HOST'] = 'localhost'
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'toyot2002'
-app.config['MYSQL_DB'] = 'semester_project'
+# app.config['MYSQL_HOST'] = 'localhost'
+# app.config['MYSQL_USER'] = 'root'
+# app.config['MYSQL_PASSWORD'] = 'toyot2002'
+# app.config['MYSQL_DB'] = 'semester_project'
 app.config['MYSQL_CONNECT_TIMEOUT'] = 300
 
 app.secret_key = 'VideoTapes'
@@ -129,18 +147,24 @@ def validateLogin():
     try:
         _username = request.form['inputUserName']
         _password = request.form['inputPassword']
+        
         if _username and _password:
+            
             with mysql.connection.cursor() as cursor:
+                print("hello2")
                 hashed = HashPass(_password)
+                print("hello3")
                 query = "select * from Users where username = %s and Password_Hashed = %s;"
                 params = (_username,hashed)
                 cursor.execute(query,params)
                 data = cursor.fetchall()
+                print("hello")
                 if len(data) == 0:
                     return json.dumps({'errorshow': "wrong credentials"})
                 if data[0][9] != 'Active':
                     return json.dumps({'errorshow': "account not active"})
                 role = data[0][8]
+                print("hello1")
                 session['user']= data[0][0]
                 session['role']= data[0][8]
                 return json.dumps({'message': 'Credentials Correct!', 'redirect_url': Home_for_role[session['role']]})

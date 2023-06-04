@@ -10,11 +10,26 @@ import os
 Οι προυποθέσεις αυτές πρέπει να τηρούνται για να μπορεί ο κώδικας να "δει" τα αρχεία στα σωστά  paths
 '''
 
+conf = {}
+
+def load_config_from_file(filename):
+    config_data = {}
+    with open(filename) as config_file:
+        for line in config_file:
+            if line.strip() and not line.startswith('#'):
+                key, value = line.strip().split('=', 1)
+                config_data[key.strip()] = value.strip()
+    return config_data
+    
+
+conf = load_config_from_file('config.conf')
+
+
 cnx = mysql.connector.connect(
-    user='root',
-    password ='toyot2002',
-    host='localhost',
-    database='semester_project'
+    user=conf['MYSQL_USER'],
+    password =conf['MYSQL_PASSWORD'],
+    host=conf['MYSQL_HOST'],
+    database=conf['MYSQL_DB']
 )
 
 '''
