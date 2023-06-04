@@ -22,18 +22,28 @@
         text-align: center;
         margin-bottom: 10px;
         margin-right: 10px;
+        font-family: "Palatino", serif;
       }
       a {
         text-decoration: none;
       }
+      #unique-link {
+        background-color: #5941b7;
+        color: white;
+        border-radius: 8px; /* Adjust the value to change the roundness */
+        padding: 8px 16px;
+        margin-right: 10px;
+        font-family: "Palatino", serif;
+      }
       button {
-        background-color: #0d6efd;
+        background-color: #5941b7;
         color: white;
         border-radius: 10px; /* Adjust the value to change the roundness */
         padding: 10px 20px;
+        font-family: "Palatino", serif;
       }
       .div1 {
-        background-color: #eaafff;
+        background-color: #f8f8f8;
         border-radius: 10px;
         padding: 20px;
       }
@@ -73,10 +83,10 @@
 
           <ul class="nav nav-pills">
             <li class="nav-item">
-              <a href="/Adminhome" class="nav-link">Home</a>
+              <a href="/userhome" class="nav-link" id="unique-link">Home</a>
             </li>
             <li class="nav-item">
-              <a href="/logout" class="nav-link active">Logout</a>
+              <a href="/logout" class="nav-link active" id="unique-link">Logout</a>
             </li>
           </ul>
         </nav>

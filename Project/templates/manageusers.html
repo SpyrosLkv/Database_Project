@@ -14,11 +14,26 @@
         <!-- so that the button is the same color as the table-->
         <style>
             button {
-                background-color: #009879;
-                border-radius: 5px;
-                padding: 10px;
-                margin-bottom: 10px;
-                width: 100px;
+            background-color: #5941b7;
+            color: white;
+            border-radius: 10px; /* Adjust the value to change the roundness */
+            padding: 10px 20px;
+            font-family: "Palatino", serif;
+            }
+            #unique-link {
+                background-color: #5941b7;
+                color: white;
+                border-radius: 10px; /* Adjust the value to change the roundness */
+                padding: 8px 16px;
+                margin-right: 10px;
+                font-family: "Palatino", serif;
+            }
+            .custom-button.table1-button {
+                background-color: #5941b7;
+                color: white;
+                border-radius: 10px; /* Adjust the value to change the roundness */
+                padding: 10px 20px;
+                font-family: "Palatino", serif;
             }
 
         </style>
@@ -39,10 +54,10 @@
 
                 <ul class="nav nav-pills">
                 <li class="nav-item">
-                    <a href="/userhome" class="nav-link">Home</a>
+                    <a href="/userhome" class="nav-link" id="unique-link">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/logout" class="nav-link active">Logout</a>
+                    <a href="/logout" class="nav-link active" id="unique-link">Logout</a>
                 </li>
                 </ul>
             </nav>
@@ -81,7 +96,7 @@
                     required autofocus
                 >
 
-                <button id="btnSignIn" class="btn btn-lg btn-primary btn-block" type="submit" style="width: 100px;">Search</button>
+                <button class="btn btn-lg btn-primary btn-block" type="submit" style="width: 100px;" id="unique-link">Search</button>
             </form>
         </div>
         
