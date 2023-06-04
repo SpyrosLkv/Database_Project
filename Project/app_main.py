@@ -1898,7 +1898,8 @@ def get_operators_loan_count():
                     GROUP BY U.users_library_id                 
                     HAVING loan_count > 20
                 ) AS SL ON u.users_library_id = SL.users_library_id             
-                WHERE u.user_role = 'Operator';
+                WHERE u.user_role = 'Operator'
+               ORDER BY SL.loan_count DESC;
             """
 
   
